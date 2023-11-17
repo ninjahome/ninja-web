@@ -1,0 +1,142 @@
+<!-- registration.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注册 - Dessage网页版</title>
+    <link rel="icon" type="image/png" href="/assets/logo.png"> <!-- 设置网页图标 -->
+    <link rel="stylesheet" type="text/css" href="/assets/css/registration.css">
+    <script src="/assets/js/nacl-fast.min.js"></script>
+
+</head>
+<body>
+<div class="registration-form">
+    <img src="/assets/logo.png" alt="Logo">
+    <form action="/register" method="post" onsubmit="event.preventDefault(); register()">
+        <label for="password">密码:</label>
+        <input type="password" id="password" name="password" required><br>
+
+        <label for="confirmPassword">再次输入密码:</label>
+        <input type="password" id="confirmPassword" name="confirmPassword" required><br>
+
+        <input type="submit" value="注册">
+
+        <div class="note">
+            请注意保存密码，本系统不提供密码找回功能。
+        </div>
+    </form>
+</div>
+
+<!-- 模态框内容 -->
+<div id="myModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <p id="modalText"></p>
+    </div>
+</div>
+
+<script>
+    function register() {
+        // 获取密码和确认密码的值
+        var password = document.getElementById("password").value;
+        var confirmPassword = document.getElementById("confirmPassword").value;
+
+        // 检查密码是否一致
+        if (password !== confirmPassword) {
+            // 显示模态框
+            showModal("密码不一致，请重新输入。");
+        } else {
+            // 校验成功，调用NewLightSubKey生成密钥
+            var key = NewLightSubKey(true);
+
+            // 打印密钥对象的 JSON 结构
+            console.log(JSON.stringify(key));
+
+            showModal("注册成功！");
+        }
+    }
+
+    // 显示模态框
+    function showModal(message) {
+        var modalText = document.getElementById("modalText");
+        modalText.innerHTML = message;
+
+        var modal = document.getElementById("myModal");
+        modal.style.display = "block";
+    }
+
+    // 关闭模态框
+    function closeModal() {
+        var modal = document.getElementById("myModal");
+        modal.style.display = "none";
+    }
+
+    // 点击模态框外部区域关闭模态框
+    window.onclick = function(event) {
+        var modal = document.getElementById("myModal");
+        if (event.target === modal) {
+            modal.style.display = "none";
+        }
+    };
+
+
+    function generateKeyPair() {
+        // 生成密钥对
+        var keyPair = nacl.sign.keyPair();
+
+        // 获取公钥和私钥
+        var publicKey = keyPair.publicKey;
+        var privateKey = keyPair.secretKey;
+
+        return { publicKey, privateKey };
+    }
+
+    function generateSubAddr(publicKey) {
+        // 将公钥转换为 SubAddr
+        var subAddr = new Uint8Array(SubAddressLen);
+        subAddr.set(publicKey.subarray(0, SubAddressLen));
+
+        return subAddr;
+    }
+
+    function NewLightSubKey(light) {
+        // 生成密钥对
+        var keyPair = generateKeyPair();
+
+        // 获取公钥和私钥
+        var publicKey = keyPair.publicKey;
+        var privateKey = keyPair.privateKey;
+
+        // 将公钥转换为 SubAddr
+        var addr = generateSubAddr(publicKey);
+
+        // 生成 UUID
+        var id = generateUUID();
+
+        // 创建 Key 对象
+        var key = {
+            Light: light,
+            ID: id,
+            Address: addr,
+            privateKey: privateKey,
+        };
+
+        return key;
+    }
+
+    function generateUUID() {
+        // 生成 UUID
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            var r = Math.random() * 16 | 0,
+                v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    }
+
+    // 定义 SubAddressLen
+    const SubAddressLen = 32;
+
+</script>
+</body>
+</html>

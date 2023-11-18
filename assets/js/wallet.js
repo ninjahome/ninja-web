@@ -1,5 +1,165 @@
 // wallet.js
 
+class EncryptedKeyJSON {
+    constructor(address, crypto, id, version) {
+        this.Address = address;
+        this.Crypto = crypto; // 假设 crypto 是 CryptoJSON 类的实例
+        this.ID = id;
+        this.Version = version;
+    }
+}
+
+async function newWallet(password) {
+    try {
+        const key = generateNewLightSubKey();
+        console.log("raw key:", key.toString());
+
+        const passwordBytes = stringToBytes(password);
+        const cryptoStruct = await encryptData(key.privateKey, passwordBytes);
+        const encryptedKeyJSON = new EncryptedKeyJSON(
+            key.AddrStr(),
+            cryptoStruct,
+            key.ID,
+            WalletVer);
+
+        return JSON.stringify(encryptedKeyJSON, null, '\t');
+    } catch (error) {
+        console.error("Error:", error);
+        throw error; // 抛出异常
+    }
+}
+
+class CryptoStruct {
+    constructor(cipher, cipherText, cipherParams, kdf, kdfParams, mac) {
+        this.Cipher = cipher;
+        this.CipherText = cipherText;
+        this.CipherParams = cipherParams;
+        this.KDF = kdf;
+        this.KDFParams = kdfParams;
+        this.MAC = mac;
+    }
+}
+
+
+async function encryptData(privateKey, passwordBytes) {
+    const salt = generateSalt(32);
+    const derivedKey = await deriveKeyFromPassword(passwordBytes, salt);
+
+    const encryptKey = derivedKey.slice(0, 16);
+    const iv = generateSalt(16);
+
+    const encryptedPrivateKey = await encryptPrivateKey(encryptKey, privateKey, iv);
+
+    const lastPiece = derivedKey.slice(16, 32);
+    const combinedArray = new Uint8Array([...lastPiece, ...encryptedPrivateKey]);
+
+    const mac = Web3.utils.sha3(combinedArray);
+
+    const scryptParams = {
+        n: LightScryptN,
+        r: ScryptR,
+        p: LightScryptP,
+        dklen: ScryptDKLen,
+        salt: Buffer.from(salt).toString('hex'),
+    };
+
+    const cipherParams = {
+        IV: Buffer.from(iv).toString('hex'),
+    };
+
+    return new CryptoStruct(
+        "aes-128-ctr",
+        Buffer.from(encryptedPrivateKey).toString('hex'),
+        cipherParams,
+        "scrypt",
+        scryptParams,
+        Buffer.from(mac).toString('hex')
+    );
+}
+
+function generateSalt(len) {
+    const salt = new Uint8Array(len);
+    window.crypto.getRandomValues(salt);
+    return salt;
+}
+
+async function deriveKeyFromPassword(passwordBytes, salt) {
+    return new Promise((resolve) => {
+        scrypt(passwordBytes, salt, { N: LightScryptN, r: ScryptR, p: LightScryptP, dkLen: ScryptDKLen, encoding: 'binary' }, resolve);
+    });
+}
+
+async function encryptPrivateKey(key, privateKey, iv) {
+    try {
+        const importedKey = await importAesKey(key);
+        const encrypted = await window.crypto.subtle.encrypt(
+            { name: "AES-CTR", counter: iv, length: 128 },
+            importedKey,
+            privateKey
+        );
+        return new Uint8Array(encrypted);
+    } catch (error) {
+        console.error("Encryption Error:", error);
+        throw error;
+    }
+}
+
+async function importAesKey(key) {
+    return window.crypto.subtle.importKey("raw", key, { name: "AES-CTR" }, false, ["encrypt", "decrypt"]);
+}
+
+class LightSubKey {
+    constructor(light, id, address, privateKey) {
+        this.Light = light;
+        this.ID = id;
+        this.Address = address;
+        this.privateKey = privateKey;
+    }
+
+    AddrStr() {
+        // 在这里使用 base58 编码库对 this.Address 进行编码
+        const encodedAddress = base58.encode(this.Address);
+        // 返回带有前缀的编码后的地址字符串
+        return SubAddrPrefix + encodedAddress;
+    }
+
+    toString() {
+        return JSON.stringify({
+            Light: this.Light,
+            ID: this.ID,
+            Address: this.Address,
+            privateKey: this.privateKey
+        });
+    }
+}
+
+function ToSubAddr(addStr){
+
+    if (!addStr.startsWith(SubAddrPrefix)) {
+        return { error: "字符串不以NJ开头", result: null };
+    }
+
+    const base58Str = addStr.substring(SubAddrPrefix.length);
+    const decodedResult = base58.decode(base58Str);
+
+    if (!decodedResult) {
+        return { error: "解码失败", result: null };
+    }
+
+    return { error: null, result: decodedResult };
+}
+
+function generateNewLightSubKey() {
+    const keyPair = generateKeyPair();
+    const publicKey = keyPair.publicKey;
+    const privateKey = keyPair.privateKey;
+
+    const addr = generateSubAddr(publicKey);
+    const id = generateUUID();
+    return new LightSubKey(true, id, addr, privateKey);
+}
+
+
 function generateKeyPair() {
     // 生成密钥对
     var keyPair = nacl.sign.keyPair();
@@ -15,47 +175,9 @@ function generateSubAddr(publicKey) {
     // 将公钥转换为 SubAddr
     var subAddr = new Uint8Array(SubAddressLen);
     subAddr.set(publicKey.subarray(0, SubAddressLen));
-
     return subAddr;
 }
 
-function NewLightSubKey(password) {
-    // 生成密钥对
-    var keyPair = generateKeyPair();
-
-    // 获取公钥和私钥
-    var publicKey = keyPair.publicKey;
-    var privateKey = keyPair.privateKey;
-
-    // 将公钥转换为 SubAddr
-    var addr = generateSubAddr(publicKey);
-
-    // 生成 UUID
-    var id = generateUUID();
-
-    // 创建 Key 对象
-    var key = {
-        Light: true,
-        ID: id,
-        Address: addr,
-        privateKey: privateKey,
-    };
-
-    var hash = Web3.utils.sha3('your data to hash');
-    console.log('Hash:', hash);
-
-    var salt = "your_salt";
-    var logN = 14; // 或者你选择的参数
-    var r = 8; // 或者你选择的参数
-    var p = 1; // 或者你选择的参数
-
-    scrypt(password, salt, logN, r, p, 64, function(derivedKey) {
-        console.log("scrypt: ",derivedKey);
-    });
-
-
-    return key;
-}
 
 function generateUUID() {
     // 生成 UUID
@@ -65,18 +187,22 @@ function generateUUID() {
         return v.toString(16);
     });
 }
-
-function encryptData(password){
-    var salt = new Uint8Array(32);
-    window.crypto.getRandomValues(salt);
-    scrypt(password, salt, LightScryptN, ScryptR, LightScryptP, ScryptDKLen, function(derivedKey) {
-        console.log("scrypt: ",derivedKey);
-    });
+// 将字符串转换为字节数组
+function stringToBytes(str) {
+    const encoder = new TextEncoder();
+    return encoder.encode(str);
 }
 
+// 将字节数组转换为字符串
+function bytesToString(bytes) {
+    const decoder = new TextDecoder();
+    return decoder.decode(bytes);
+}
 // 定义 SubAddressLen
 const SubAddressLen = 32;
-const  LightScryptN = 1 << 12;
+const  LightScryptN = 4096;
 const  LightScryptP = 6;
 const ScryptR      = 8;
 const ScryptDKLen  = 32;
+const SubAddrPrefix = "NJ";
+const WalletVer =1;

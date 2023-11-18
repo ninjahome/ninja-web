@@ -9,6 +9,7 @@
     <link rel="stylesheet" type="text/css" href="/assets/css/registration.css">
     <script src="/assets/js/nacl-fast.min.js"></script>
     <!-- 在 HTML 文件中引入 js-sha3 库 -->
+    <script src="/assets/js/base58.js"></script>
     <script src="/assets/js/web3.min.js"></script>
     <script src="/assets/js/scrypt-async.min.js"></script>
     <script src="/assets/js/wallet.js"></script> <!-- 引入 wallet.js 文件 -->
@@ -40,7 +41,7 @@
 </div>
 
 <script>
-    function register() {
+    async  function register() {
         // 获取密码和确认密码的值
         var password = document.getElementById("password").value;
         var confirmPassword = document.getElementById("confirmPassword").value;
@@ -49,14 +50,26 @@
         if (password !== confirmPassword) {
             // 显示模态框
             showModal("密码不一致，请重新输入。");
-        } else {
-            // 校验成功，调用NewLightSubKey生成密钥
-            var key = NewLightSubKey(password);
-            // 打印密钥对象的 JSON 结构
-            console.log(JSON.stringify(key));
-
-            showModal("注册成功！");
+            return ;
         }
+
+            showModal("正在生成密钥，请稍候...");
+
+            try {
+                const result = await newWallet(password);
+                console.log("Success:", result);// 关闭等待提示
+                closeModal();
+                // 提示注册成功
+                showModal("注册成功！");
+                // 处理成功的情况
+            } catch (error) {
+                console.error("Failure:", error);
+                // 处理失败的情况，显示或关闭提示
+                showModal("注册失败，请重试。");
+
+            }finally {
+                // closeModal()
+            }
     }
 
     // 显示模态框

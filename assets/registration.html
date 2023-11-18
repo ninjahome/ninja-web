@@ -8,7 +8,10 @@
     <link rel="icon" type="image/png" href="/assets/logo.png"> <!-- 设置网页图标 -->
     <link rel="stylesheet" type="text/css" href="/assets/css/registration.css">
     <script src="/assets/js/nacl-fast.min.js"></script>
-
+    <!-- 在 HTML 文件中引入 js-sha3 库 -->
+    <script src="/assets/js/web3.min.js"></script>
+    <script src="/assets/js/scrypt-async.min.js"></script>
+    <script src="/assets/js/wallet.js"></script> <!-- 引入 wallet.js 文件 -->
 </head>
 <body>
 <div class="registration-form">
@@ -48,8 +51,7 @@
             showModal("密码不一致，请重新输入。");
         } else {
             // 校验成功，调用NewLightSubKey生成密钥
-            var key = NewLightSubKey(true);
-
+            var key = NewLightSubKey(password);
             // 打印密钥对象的 JSON 结构
             console.log(JSON.stringify(key));
 
@@ -79,64 +81,6 @@
             modal.style.display = "none";
         }
     };
-
-
-    function generateKeyPair() {
-        // 生成密钥对
-        var keyPair = nacl.sign.keyPair();
-
-        // 获取公钥和私钥
-        var publicKey = keyPair.publicKey;
-        var privateKey = keyPair.secretKey;
-
-        return { publicKey, privateKey };
-    }
-
-    function generateSubAddr(publicKey) {
-        // 将公钥转换为 SubAddr
-        var subAddr = new Uint8Array(SubAddressLen);
-        subAddr.set(publicKey.subarray(0, SubAddressLen));
-
-        return subAddr;
-    }
-
-    function NewLightSubKey(light) {
-        // 生成密钥对
-        var keyPair = generateKeyPair();
-
-        // 获取公钥和私钥
-        var publicKey = keyPair.publicKey;
-        var privateKey = keyPair.privateKey;
-
-        // 将公钥转换为 SubAddr
-        var addr = generateSubAddr(publicKey);
-
-        // 生成 UUID
-        var id = generateUUID();
-
-        // 创建 Key 对象
-        var key = {
-            Light: light,
-            ID: id,
-            Address: addr,
-            privateKey: privateKey,
-        };
-
-        return key;
-    }
-
-    function generateUUID() {
-        // 生成 UUID
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-            var r = Math.random() * 16 | 0,
-                v = c == 'x' ? r : (r & 0x3 | 0x8);
-            return v.toString(16);
-        });
-    }
-
-    // 定义 SubAddressLen
-    const SubAddressLen = 32;
-
 </script>
 </body>
 </html>

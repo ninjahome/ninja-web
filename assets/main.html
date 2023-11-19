@@ -1,0 +1,32 @@
+<!-- main.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="/assets/js/utils.js"></script>
+</head>
+<body>
+<!-- ...（在这里添加 main.html 的页面内容） ... -->
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // 在页面加载完成后执行检查逻辑
+        checkSessionKeyPriKey();
+    });
+
+    function checkSessionKeyPriKey() {
+        // 使用 utils.js 中的函数检查 SessionKeyPriKey 是否存在
+        const priKeyData = getDataFromSessionStorage(SessionKeyPriKey);
+
+        if (!priKeyData) {
+            // 如果不存在，则跳转到根目录
+            window.location.href = "/";
+        } else {
+            // 如果存在，则可以在该页面停留
+            // 在这里可以使用 priKeyData 进行其他操作
+        }
+    }
+
+    // ...（在这里添加 main.html 的其他脚本代码） ...
+</script>
+</body>
+</html>

@@ -99,7 +99,7 @@ async function decryptData(cryptoStruct, password) {
 
     // 检查MAC是否匹配
     const combinedArray = new Uint8Array([...derivedKey.slice(16, 32), ...cipherTextBytes]);
-    const calculatedMAC = Web3.utils.sha3(combinedArray);
+    const calculatedMAC = Web3.utils.sha3(combinedArray).substring("0x".length);
     // const calculatedMACHexString = Buffer.from(calculatedMAC).toString('hex');
     if (calculatedMAC !== MAC) {
         console.log("calculated:",calculatedMAC,"\t mac", MAC);

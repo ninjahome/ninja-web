@@ -35,18 +35,19 @@
                 .then((result) => {
                     // 异步操作完成，关闭加载提示界面
                     hideLoading();
-                    storeDataToSessionStorage('globalEncryptedKeyJSON', {
+                    storeDataToSessionStorage(SessionKeyPriKey, {
                         walletAddress: walletAddr,
                         privateKey: result,
                         // 其他你需要存储的信息...
                     });
                     // 例如，简单地输出钱包地址和密码
                     console.log("Wallet unlock success : " + walletAddr);
+                    window.location.href = "/main";
                 })
                 .catch((error) => {
                     // 异步操作失败，关闭加载提示界面并处理错误
                     hideLoading();
-                    console.error("Error:", error);
+                    console.error("login error:", error);
                 });
         }
 
@@ -54,8 +55,8 @@
 
         }
         function hideLoading(){
-
         }
+
         document.addEventListener("DOMContentLoaded", function () {
             initializePage();
         });

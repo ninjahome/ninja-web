@@ -30,21 +30,6 @@ func init() {
 	}
 }
 
-// loginHandler 处理登录请求
-func loginHandler(w http.ResponseWriter, r *http.Request) {
-	// 处理登录逻辑，比如验证用户输入等
-	// 这里只是一个简单的例子，实际应用中需要根据具体情况进行处理
-
-	// 获取用户类型和密码
-	userType := r.FormValue("userType")
-	password := r.FormValue("password")
-
-	// 在这里可以进行用户验证等操作
-
-	// 例如，简单地输出用户类型和密码
-	w.Write([]byte("User Type: " + userType + "\nPassword: " + password))
-}
-
 // renderTemplate 加载并渲染HTML模板
 func renderTemplate(w http.ResponseWriter, templateName string, data interface{}) {
 	// 获取模板
@@ -86,12 +71,22 @@ func registrationHandler(w http.ResponseWriter, r *http.Request) {
 	renderTemplate(w, templateName, data)
 }
 
+// mainChatHandler
+func mainChatHandler(w http.ResponseWriter, r *http.Request) {
+	// 获取模板的名称（不带路径和扩展名）
+	templateName := filepath.Base("assets/main.html")
+
+	// 渲染HTML模板
+	data := RegistrationPageData{}
+	renderTemplate(w, templateName, data)
+}
 func main() {
 	http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
 	// 设置路由处理函数
 	http.HandleFunc("/", indexHandler)
-	http.HandleFunc("/login", loginHandler)
+	http.HandleFunc("/index", indexHandler)
 	http.HandleFunc("/registration", registrationHandler)
+	http.HandleFunc("/main", mainChatHandler)
 
 	// 启动Web服务器
 	http.ListenAndServe(":8080", nil)

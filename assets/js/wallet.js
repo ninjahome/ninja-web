@@ -88,7 +88,6 @@ async function getEncryptedKeyJSON(walletAddr, password) {
             keyData.Crypto.KDFParams,
             keyData.Crypto.MAC
         );
-
         const privateKey = await decryptData(cryptoStruct, password);
 
         if (!privateKey) {

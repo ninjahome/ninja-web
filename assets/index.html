@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dessage网页版</title>
     <link rel="icon" type="image/png" href="/assets/logo.png"> <!-- 设置网页图标 -->
+    <script src="/assets/js/wallet.js"></script>
     <style>
         body {
             background-color: #2c3e50; /* 深蓝灰色背景 */
@@ -100,24 +101,46 @@
             document.getElementById("registrationModal").style.display = "none";
         }
         function login() {
-            // 执行登录逻辑，例如获取用户类型和密码
-            var userType = document.getElementById("userType").value;
+            // 执行登录逻辑，例如获取钱包地址和密码
+            var walletAddr = document.getElementById("walletAddr").value;
             var password = document.getElementById("password").value;
 
             // 在这里可以进行用户验证等操作
 
-            // 例如，简单地输出用户类型和密码
-            console.log("User Type: " + userType + "\nPassword: " + password);
+            // 例如，简单地输出钱包地址和密码
+            console.log("Wallet Address: " + walletAddr + "\nPassword: " + password);
         }
+        document.addEventListener("DOMContentLoaded", function () {
+            initializePage();
+        });
 
+        function initializePage() {
+            // 加载或创建 AllLocalWallet 对象
+            const allWallets = loadOrCreateWallet();
+            // 填充地址列表
+            const walletAddrSelect = document.getElementById("walletAddr");
+            const wallets = allWallets.getWallets();
+
+            if (!Array.isArray(wallets)) {
+                console.error("Wallets is not an array:", wallets);
+                return;
+            }
+
+            wallets.forEach(address => {
+                const option = document.createElement("option");
+                option.value = address;
+                option.text = address;
+                walletAddrSelect.add(option);
+            });
+        }
     </script>
 
 </head>
 <body>
 <img src="/assets/logo.png" alt="Logo">
 <form action="/login" method="post" onsubmit="event.preventDefault(); login()">
-    <label for="userType">选择登录钱包:</label>
-    <select id="userType" name="userType">
+    <label for="walletAddr">选择登录钱包:</label>
+    <select id="walletAddr" name="walletAddr">
         <!-- 请将你的选项填写在这里 -->
     </select><br>
 

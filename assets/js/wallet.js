@@ -1,40 +1,44 @@
 // wallet.js
+
 class AllLocalWallet {
-    constructor() {
-        this.creationTime = new Date();
-        this.wallets = [];
+    constructor(data = { addresses: [] }) {
+        this.createTime = new Date();
+        this.addresses = data.addresses || [];
     }
 
-    addWallet(wallet) {
-        this.wallets.push(wallet);
-    }
-
-    getCreationTime() {
-        return this.creationTime;
+    addWallet(address) {
+        this.addresses.push(address);
+        this.saveToLocalStorage();
     }
 
     getWallets() {
-        return this.wallets;
+        return this.addresses;
+    }
+
+    saveToLocalStorage() {
+        const dataToStore = JSON.stringify(this);
+        localStorage.setItem(DBKeyAllWallets, dataToStore);
     }
 }
 
-function addToLocalWalletAndSave(walletString) {
+
+// 创建一个函数，通过localStorage加载或创建AllLocalWallet对象
+function loadOrCreateWallet() {
+    const storedWalletString = localStorage.getItem(DBKeyAllWallets);
+
     let allWallets;
-
-    const storedData = localStorage.getItem(DBKeyAllWallets);
-    if (storedData) {
-        allWallets = new AllLocalWallet();
-        const parsedData = JSON.parse(storedData);
-        allWallets.wallets = parsedData.wallets;
+    if (storedWalletString) {
+        // 如果已经有存储的数据，则加载
+        const storedWalletData = JSON.parse(storedWalletString);
+        allWallets = new AllLocalWallet(storedWalletData);
     } else {
+        // 如果没有存储的数据，则创建一个新的对象
         allWallets = new AllLocalWallet();
     }
 
-    allWallets.addWallet(walletString);
-
-    const serializedData = JSON.stringify(allWallets);
-    localStorage.setItem(DBKeyAllWallets, serializedData);
+    return allWallets;
 }
+
 class EncryptedKeyJSON {
     constructor(address, crypto, id, version) {
         this.Address = address;
@@ -59,7 +63,8 @@ async function newWallet(password) {
         const jsonString = JSON.stringify(encryptedKeyJSON, null, '\t');
         // 存储在本地存储中
         localStorage.setItem(DBKeyWalletAddr+key.AddrStr(), jsonString);
-        addToLocalWalletAndSave(key.AddrStr());
+        const allWallets = loadOrCreateWallet();
+        allWallets.addWallet(key.AddrStr())
         return jsonString
     } catch (error) {
         console.error("Error:", error);

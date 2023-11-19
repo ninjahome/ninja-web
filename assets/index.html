@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dessage网页版</title>
     <link rel="icon" type="image/png" href="/assets/logo.png"> <!-- 设置网页图标 -->
+    <link rel="stylesheet" type="text/css" href="/assets/css/common.css">
     <link rel="stylesheet" type="text/css" href="/assets/css/index.css">
     <script src="/assets/js/nacl-fast.min.js"></script>
     <script src="/assets/js/base58.js"></script>
@@ -15,76 +16,19 @@
     <script src="/assets/js/crypto.js"></script>
     <script src="/assets/js/key.js"></script>
     <script src="/assets/js/wallet.js"></script>
-    <script>
-        function openRegistrationModal() {
-            window.location.href = "/registration";
-        }
-
-        function closeRegistrationModal() {
-            document.getElementById("registrationModal").style.display = "none";
-        }
-
-        function login() {
-            // 执行登录逻辑，例如获取钱包地址和密码
-            const walletAddr = document.getElementById("walletAddr").value;
-            const password = document.getElementById("password").value;
-            showLoading();
-            // 获取 EncryptedKeyJSON 对象
-
-            getEncryptedKeyJSON(walletAddr, password)
-                .then((result) => {
-                    // 异步操作完成，关闭加载提示界面
-                    hideLoading();
-                    storeDataToSessionStorage(SessionKeyPriKey, {
-                        walletAddress: walletAddr,
-                        privateKey: result,
-                        // 其他你需要存储的信息...
-                    });
-                    // 例如，简单地输出钱包地址和密码
-                    console.log("Wallet unlock success : " + walletAddr);
-                    window.location.href = "/main";
-                })
-                .catch((error) => {
-                    // 异步操作失败，关闭加载提示界面并处理错误
-                    hideLoading();
-                    console.error("login error:", error);
-                });
-        }
-
-        function showLoading(){
-
-        }
-        function hideLoading(){
-        }
-
-        document.addEventListener("DOMContentLoaded", function () {
-            initializePage();
-        });
-
-        function initializePage() {
-            // 加载或创建 AllLocalWallet 对象
-            const allWallets = loadOrCreateWallet();
-            // 填充地址列表
-            const walletAddrSelect = document.getElementById("walletAddr");
-            const wallets = allWallets.getWallets();
-
-            if (!Array.isArray(wallets)) {
-                console.error("Wallets is not an array:", wallets);
-                return;
-            }
-
-            wallets.forEach(address => {
-                const option = document.createElement("option");
-                option.value = address;
-                option.text = address;
-                walletAddrSelect.add(option);
-            });
-        }
-    </script>
 </head>
+
 <body>
+<!-- 模态框内容 -->
+<div id="myModal" class="modal-dialog-main">
+    <div class="modal-content">
+        <span class="modal-dialog-close" onclick="closeModal()">&times;</span>
+        <p id="modalText"></p>
+    </div>
+</div>
+
 <img src="/assets/logo.png" alt="Logo">
-<form action="/login" method="post" onsubmit="event.preventDefault(); login()">
+<form id="loginForm" action="/login" method="post">
     <label for="walletAddr">选择登录钱包:</label>
     <select id="walletAddr" name="walletAddr">
         <!-- 请将你的选项填写在这里 -->
@@ -93,11 +37,97 @@
     <label for="password">密码:</label>
     <input type="password" id="password" name="password"><br>
 
-    <input type="submit" value="登录">
-
-    <div class="action-buttons">
-        <button onclick="openRegistrationModal()">注册账号</button><span class="separator">|</span><button>导入账号</button>
-    </div>
+    <!-- 将onclick事件直接绑定到登录按钮上 -->
+    <input type="button" value="登录" onclick="login()">
 </form>
+
+<div class="action-buttons">
+    <button onclick="openRegistrationModal()">注册账号</button><span class="separator">|</span><button>导入账号</button>
+</div>
+
+<script>
+    function openRegistrationModal() {
+        window.location.href = "/registration";
+    }
+
+    function closeRegistrationModal() {
+        document.getElementById("registrationModal").style.display = "none";
+    }
+
+    function login() {
+        // 执行登录逻辑，例如获取钱包地址和密码
+        const walletAddr = document.getElementById("walletAddr").value;
+        const password = document.getElementById("password").value;
+        showModal("解码中......");
+
+        // 获取 EncryptedKeyJSON 对象
+        getEncryptedKeyJSON(walletAddr, password)
+            .then((result) => {
+                // 异步操作完成，关闭加载提示界面
+                closeModal();
+                storeDataToSessionStorage(SessionKeyPriKey, {
+                    walletAddress: walletAddr,
+                    privateKey: result,
+                    // 其他你需要存储的信息...
+                });
+                // 例如，简单地输出钱包地址和密码
+                console.log("Wallet unlock success : " + walletAddr);
+                window.location.href = "/main";
+            })
+            .catch((error) => {
+                // 异步操作失败，关闭加载提示界面并处理错误
+                closeModal();
+                showModal("解码失败：" + error);
+                console.error("login error:", error);
+            });
+    }
+
+    // 显示模态框
+    function showModal(message) {
+        var modalText = document.getElementById("modalText");
+        modalText.innerHTML = message;
+
+        var modal = document.getElementById("myModal");
+        modal.style.display = "block";
+    }
+
+    // 关闭模态框
+    function closeModal() {
+        var modal = document.getElementById("myModal");
+        modal.style.display = "none";
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        initializePage();
+    });
+
+    function initializePage() {
+        // 加载或创建 AllLocalWallet 对象
+        const allWallets = loadOrCreateWallet();
+        // 填充地址列表
+        const walletAddrSelect = document.getElementById("walletAddr");
+        const wallets = allWallets.getWallets();
+
+        if (!Array.isArray(wallets)) {
+            console.error("Wallets is not an array:", wallets);
+            return;
+        }
+
+        wallets.forEach(address => {
+            const option = document.createElement("option");
+            option.value = address;
+            option.text = address;
+            walletAddrSelect.add(option);
+        });
+    }
+
+    // 点击模态框外部区域关闭模态框
+    window.onclick = function (event) {
+        var modal = document.getElementById("myModal");
+        if (event.target === modal) {
+            modal.style.display = "none";
+        }
+    };
+</script>
 </body>
 </html>

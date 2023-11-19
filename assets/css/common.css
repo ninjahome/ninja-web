@@ -1,0 +1,42 @@
+
+/* 模态框样式 */
+.modal-dialog-main {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5); /* 半透明背景 */
+}
+
+.modal-content {
+    background-color: #34495e; /* 深灰色底色，与 index.html 一致 */
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    border-radius: 8px;
+    width: 60%;
+    max-width: 400px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    color: #ecf0f1; /* 淡灰色文字，与 index.html 一致 */
+    position: relative;
+}
+.modal-dialog-close {
+    color: #ecf0f1; /* 淡灰色文字，与 index.html 一致 */
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.modal-dialog-close:hover,
+.modal-dialog-close:focus {
+    color: #c0392b; /* 深红色按钮，与 index.html 一致 */
+    text-decoration: none;
+    cursor: pointer;
+}

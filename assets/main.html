@@ -18,18 +18,22 @@
             color: #ecf0f1;
         }
 
+        /* 公共样式 */
+        .container {
+            display: flex;
+        }
+
         /* 中间好友消息列表区域样式 */
         .chat-container {
             width: 75%;
             height: 75vh; /* 占据整个页面的四分之三 */
-            display: flex;
         }
 
         .friend-list {
-            width: 120px;
-            background-color: #2ecc71;
-            overflow-y: auto;
+            width: 280px;
+            background-color: #34495e; /* 修改背景颜色，与整体背景协调 */
             padding: 20px;
+            overflow: hidden; /* 隐藏溢出部分 */
         }
 
         .friend-list h2 {
@@ -37,20 +41,44 @@
             margin-bottom: 10px;
         }
 
-        .friend-list ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .friend-list li {
-            margin-bottom: 10px;
-            color: #fff;
+        .friend-list .friend-info {
             cursor: pointer;
+            height: 70px;
+            background-color: #2c3e50; /* 深蓝色 */
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
         }
 
-        .friend-list li:hover {
-            text-decoration: underline;
+        .friend-list .friend-info:focus {
+            background-color: #34495e; /* 深灰蓝色 */
+            outline: none; /* 去掉默认的边框样式 */
+        }
+
+
+
+        .friend-list img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .friend-list .text-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            white-space: nowrap; /* 不换行 */
+            overflow: hidden; /* 超出部分隐藏 */
+            text-overflow: ellipsis; /* 超出部分用省略号表示 */
+        }
+
+        .friend-list span {
+            font-size: 14px; /* 调整字体大小为 14px */
+            white-space: nowrap; /* 不换行 */
+            overflow: hidden; /* 超出部分隐藏 */
+            text-overflow: ellipsis; /* 超出部分用省略号表示 */
         }
 
         /* 右侧聊天对话框区域样式 */
@@ -90,21 +118,33 @@
 </head>
 <body>
 <!-- ...（在这里添加 main.html 的页面内容） ... -->
-<script src="/assets/js/utils.js"></script>
-<script>
-    // ...（在这里添加 main.html 的其他脚本代码） ...
-</script>
 
-<!-- 中间好友消息列表区域 -->
-<div class="chat-container">
+<div class="container chat-container">
     <div class="friend-list">
         <h2>好友列表</h2>
-        <ul>
-            <li>好友1</li>
-            <li>好友2</li>
-            <li>好友3</li>
-            <!-- 添加更多好友列表项 -->
-        </ul>
+        <hr style="height: 2px; background-color: #ecf0f1; margin: 10px 0;"> <!-- 分隔符 -->
+        <div class="friend-info" tabindex="0">
+            <img src="/assets/logo.png" alt="Avatar">
+            <div class="text-info">
+                <span>好友昵称</span>
+                <span>最新消息内容的省略显示最新消息内容的省略显示最新消息内容的省略显示</span>
+            </div>
+        </div>
+        <div class="friend-info" tabindex="0">
+            <img src="/assets/logo.png" alt="Avatar">
+            <div class="text-info">
+                <span>好友昵称</span>
+                <span>最新消息内容的省略显示</span>
+            </div>
+        </div>
+        <div class="friend-info" tabindex="0">
+        <img src="/assets/logo.png" alt="Avatar">
+        <div class="text-info">
+            <span>好友昵称</span>
+            <span>最新消息内容的省略显示</span>
+        </div>
+    </div>
+        <!-- 添加更多好友列表项 -->
     </div>
 
     <!-- 右侧聊天对话框区域 -->

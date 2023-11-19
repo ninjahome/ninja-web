@@ -30,7 +30,7 @@
         }
 
         .friend-list {
-            width: 280px;
+            width: 220px;
             background-color: #34495e; /* 修改背景颜色，与整体背景协调 */
             padding: 20px;
             overflow: hidden; /* 隐藏溢出部分 */
@@ -114,6 +114,37 @@
         .chat-box button:hover {
             background-color: #c0392b;
         }
+
+        .text-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .friend-name {
+            font-size: 16px;
+            font-weight: bold;
+            color: #3498db;
+        }
+
+        .timestamp {
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+
+        .message-preview {
+            font-size: 14px;
+            color: #95a5a6;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
     </style>
 </head>
 <body>
@@ -123,27 +154,44 @@
     <div class="friend-list">
         <h2>好友列表</h2>
         <hr style="height: 2px; background-color: #ecf0f1; margin: 10px 0;"> <!-- 分隔符 -->
+
+
+
+
         <div class="friend-info" tabindex="0">
             <img src="/assets/logo.png" alt="Avatar">
             <div class="text-info">
-                <span>好友昵称</span>
-                <span>最新消息内容的省略显示最新消息内容的省略显示最新消息内容的省略显示</span>
+                <div class="message-header">
+                    <span class="friend-name">好友昵称</span>
+                    <span class="timestamp">12:34</span>
+                </div>
+                <div class="message-preview">最新消息内容的省略显示</div>
             </div>
         </div>
+
+
         <div class="friend-info" tabindex="0">
             <img src="/assets/logo.png" alt="Avatar">
             <div class="text-info">
-                <span>好友昵称</span>
-                <span>最新消息内容的省略显示</span>
+                <div class="message-header">
+                    <span class="friend-name">好友昵称</span>
+                    <span class="timestamp">12:34</span>
+                </div>
+                <div class="message-preview">最新消息内容的省略显示</div>
             </div>
         </div>
+
         <div class="friend-info" tabindex="0">
-        <img src="/assets/logo.png" alt="Avatar">
-        <div class="text-info">
-            <span>好友昵称</span>
-            <span>最新消息内容的省略显示</span>
+            <img src="/assets/logo.png" alt="Avatar">
+            <div class="text-info">
+                <div class="message-header">
+                    <span class="friend-name">好友昵称</span>
+                    <span class="timestamp">12:34</span>
+                </div>
+                <div class="message-preview">最新消息内容的省略显示</div>
+            </div>
         </div>
-    </div>
+
         <!-- 添加更多好友列表项 -->
     </div>
 

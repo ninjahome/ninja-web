@@ -1,5 +1,40 @@
 // wallet.js
+class AllLocalWallet {
+    constructor() {
+        this.creationTime = new Date();
+        this.wallets = [];
+    }
 
+    addWallet(wallet) {
+        this.wallets.push(wallet);
+    }
+
+    getCreationTime() {
+        return this.creationTime;
+    }
+
+    getWallets() {
+        return this.wallets;
+    }
+}
+
+function addToLocalWalletAndSave(walletString) {
+    let allWallets;
+
+    const storedData = localStorage.getItem(DBKeyAllWallets);
+    if (storedData) {
+        allWallets = new AllLocalWallet();
+        const parsedData = JSON.parse(storedData);
+        allWallets.wallets = parsedData.wallets;
+    } else {
+        allWallets = new AllLocalWallet();
+    }
+
+    allWallets.addWallet(walletString);
+
+    const serializedData = JSON.stringify(allWallets);
+    localStorage.setItem(DBKeyAllWallets, serializedData);
+}
 class EncryptedKeyJSON {
     constructor(address, crypto, id, version) {
         this.Address = address;
@@ -21,8 +56,11 @@ async function newWallet(password) {
             cryptoStruct,
             key.ID,
             WalletVer);
-
-        return JSON.stringify(encryptedKeyJSON, null, '\t');
+        const jsonString = JSON.stringify(encryptedKeyJSON, null, '\t');
+        // 存储在本地存储中
+        localStorage.setItem(DBKeyWalletAddr+key.AddrStr(), jsonString);
+        addToLocalWalletAndSave(key.AddrStr());
+        return jsonString
     } catch (error) {
         console.error("Error:", error);
         throw error; // 抛出异常
@@ -206,3 +244,5 @@ const ScryptR      = 8;
 const ScryptDKLen  = 32;
 const SubAddrPrefix = "NJ";
 const WalletVer =1;
+const  DBKeyWalletAddr = '__key__address';
+const  DBKeyAllWallets = '__key__all_wallets__';

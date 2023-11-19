@@ -65,3 +65,35 @@ async function newWallet(password) {
         throw error;
     }
 }
+
+async function getEncryptedKeyJSON(walletAddr, password) {
+        const keyString = localStorage.getItem(DBKeyWalletAddr + walletAddr);
+
+        if (!keyString) {
+            throw new Error("Key not found for wallet address:" + walletAddr);
+        }
+
+        const keyData = JSON.parse(keyString);
+
+        // 检查 keyData 是否包含必要的属性
+        if (!keyData.Address || !keyData.Crypto || !keyData.ID || !keyData.Version) {
+            throw new Error("Invalid key data");
+        }
+
+        const cryptoStruct = new CryptoStruct(
+            keyData.Crypto.Cipher,
+            keyData.Crypto.CipherText,
+            keyData.Crypto.CipherParams,
+            keyData.Crypto.KDF,
+            keyData.Crypto.KDFParams,
+            keyData.Crypto.MAC
+        );
+
+        const privateKey = await decryptData(cryptoStruct, password);
+
+        if (!privateKey) {
+            throw new Error("Failed to decrypt private key for wallet address:" + walletAddr);
+        }
+
+        return new LightSubKey(true, keyData.ID, keyData.Address, privateKey);
+}

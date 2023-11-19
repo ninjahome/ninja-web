@@ -18,7 +18,6 @@ class LightSubKey {
             Light: this.Light,
             ID: this.ID,
             Address: this.Address,
-            privateKey: this.privateKey
         });
     }
 }

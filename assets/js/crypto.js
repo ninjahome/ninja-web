@@ -78,3 +78,48 @@ async function importAesKey(key) {
 }
 
 
+async function decryptData(cryptoStruct, password) {
+    // 首先检查Cipher变量是否等于"aes-128-ctr"
+    if (cryptoStruct.Cipher !== "aes-128-ctr") {
+        throw new Error("Unsupported cipher");
+    }
+    // 从 CryptoStruct 中获取所需的信息
+    const { CipherText, CipherParams, KDF, KDFParams, MAC } = cryptoStruct;
+    const { IV } = CipherParams;
+
+    // 将参数转换为字节数组
+    const passwordBytes = stringToBytes(password);
+    const cipherTextBytes = hexStringToUint8Array(CipherText);
+    const ivBytes = hexStringToUint8Array(IV);
+
+    // 通过口令和盐派生密钥
+    const derivedKey = await deriveKeyFromPassword(passwordBytes, hexStringToUint8Array(KDFParams.salt));
+
+    // 检查MAC是否匹配
+    const combinedArray = new Uint8Array([...derivedKey.slice(16, 32), ...cipherTextBytes]);
+    const calculatedMAC = Web3.utils.sha3(combinedArray);
+    const calculatedMACHexString = Buffer.from(calculatedMAC).toString('hex');
+    if (calculatedMACHexString !== MAC) {
+        console.log("calculated:",calculatedMACHexString,"\t mac", MAC);
+        throw new Error("MAC verification failed");
+    }
+
+    // 使用派生密钥和IV解密私钥
+    const decryptKey = derivedKey.slice(0, 16);
+    return await decryptPrivateKey(decryptKey, cipherTextBytes, ivBytes);
+}
+
+async function decryptPrivateKey(key, cipherText, iv) {
+    try {
+        const importedKey = await importAesKey(key);
+        const decrypted = await window.crypto.subtle.decrypt(
+            { name: "AES-CTR", counter: iv, length: 128 },
+            importedKey,
+            cipherText
+        );
+        return new Uint8Array(decrypted);
+    } catch (error) {
+        console.error("Decryption Error:", error);
+        throw error;
+    }
+}

@@ -1,0 +1,82 @@
+/* index.css */
+body {
+    background-color: #2c3e50; /* 深蓝灰色背景 */
+    color: #ecf0f1; /* 淡灰色文字 */
+    font-family: 'Arial', sans-serif;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column; /* 垂直方向排列子元素 */
+    height: 100vh;
+}
+
+img {
+    width: 152px; /* 图片宽度 */
+    height: 152px; /* 图片高度 */
+    margin-bottom: 20px; /* 图片与下方元素的距离 */
+}
+
+form {
+    background-color: #34495e; /* 深灰色底色 */
+    color: #ecf0f1; /* 淡灰色文字 */
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 300px; /* 控制表单宽度 */
+    max-width: 100%; /* 确保不超过屏幕宽度 */
+    text-align: left; /* 左对齐 */
+    margin-top: 20px; /* 调整上边距 */
+    display: inline-block; /* 在一行显示 */
+}
+
+label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+select, input {
+    width: calc(100% - 20px); /* 保留10px的内边距 */
+    padding: 10px;
+    margin-bottom: 20px;
+    box-sizing: border-box;
+}
+
+input[type="submit"] {
+    background-color: #e74c3c; /* 红色按钮 */
+    color: #fff;
+    cursor: pointer;
+    width: 100%;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    margin-top: 10px;
+}
+
+input[type="submit"]:hover {
+    background-color: #c0392b; /* 深红色按钮 */
+}
+
+.action-buttons {
+    display: flex;
+    align-items: center; /* 垂直居中 */
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.action-buttons button {
+    background-color: transparent;
+    color: #fff;
+    cursor: pointer;
+    padding: 5px;
+    border: none;
+    outline: none;
+    margin: 0 5px; /* 为按钮之间添加一些间距 */
+}
+
+.action-buttons .separator {
+    color: #ecf0f1; /* 淡灰色文字 */
+}

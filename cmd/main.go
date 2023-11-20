@@ -89,5 +89,5 @@ func main() {
 	http.HandleFunc("/main", mainChatHandler)
 
 	// 启动Web服务器
-	http.ListenAndServe(":8080", nil)
+	http.ListenAndServe(":80", nil)
 }

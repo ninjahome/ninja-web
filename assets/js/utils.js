@@ -18,6 +18,11 @@ function hexStringToUint8Array(hexString) {
     return new Uint8Array(arrayBuffer);
 }
 
+// function hexStringToUint8Array(hexString) {
+//     const arrayBuffer = new Uint8Array(hexString.match(/.{1,2}/g).map(byte => parseInt(byte, 16))).buffer;
+//     return new Uint8Array(arrayBuffer);
+// }
+
 // 存储数据到sessionStorage
 function storeDataToSessionStorage(key, value) {
     sessionStorage.setItem(key, JSON.stringify(value));

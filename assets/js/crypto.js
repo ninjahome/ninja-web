@@ -24,23 +24,21 @@ async function encryptData(privateKey, passwordBytes) {
 
     const mac = Web3.utils.sha3(combinedArray);
 
-    console.log("mac:",mac, "    hex mac",Buffer.from(mac).toString('hex'))
-
     const scryptParams = {
         n: LightScryptN,
         r: ScryptR,
         p: LightScryptP,
         dklen: ScryptDKLen,
-        salt: Buffer.from(salt).toString('hex'),
+        salt: hexStringToUint8Array(salt).toString()
     };
 
     const cipherParams = {
-        IV: Buffer.from(iv).toString('hex'),
+        IV: hexStringToUint8Array(iv).toString(),
     };
 
     return new CryptoStruct(
         "aes-128-ctr",
-        Buffer.from(encryptedPrivateKey).toString('hex'),
+        hexStringToUint8Array(encryptedPrivateKey).toString(),
         cipherParams,
         "scrypt",
         scryptParams,
@@ -100,7 +98,6 @@ async function decryptData(cryptoStruct, password) {
     // 检查MAC是否匹配
     const combinedArray = new Uint8Array([...derivedKey.slice(16, 32), ...cipherTextBytes]);
     const calculatedMAC = Web3.utils.sha3(combinedArray).substring("0x".length);
-    // const calculatedMACHexString = Buffer.from(calculatedMAC).toString('hex');
     if (calculatedMAC !== MAC) {
         console.log("calculated:",calculatedMAC,"\t mac", MAC);
         throw new Error("MAC verification failed");

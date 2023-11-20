@@ -1,0 +1,216 @@
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+    font-family: 'Arial', sans-serif;
+    background-color: #2c3e50;
+    color: #ecf0f1;
+}
+
+/* 公共样式 */
+.container {
+    display: flex;
+}
+
+/* 中间好友消息列表区域样式 */
+.chat-container {
+    width: 75%;
+    height: 75vh; /* 占据整个页面的四分之三 */
+}
+
+.friend-list {
+    width: 220px;
+    background-color: #34495e; /* 修改背景颜色，与整体背景协调 */
+    padding: 20px;
+    overflow: hidden; /* 隐藏溢出部分 */
+    min-width: 220px;
+    min-height: 480px;
+}
+
+.friend-list h2 {
+    color: #fff;
+    margin-bottom: 10px;
+}
+
+.friend-list .friend-info {
+    cursor: pointer;
+    height: 70px;
+    background-color: #2c3e50; /* 深蓝色 */
+    transition: background-color 0.3s;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+}
+
+.friend-list .friend-info:focus {
+    background-color: #34495e; /* 深灰蓝色 */
+    outline: none; /* 去掉默认的边框样式 */
+}
+
+
+
+.friend-list img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.friend-list .text-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    white-space: nowrap; /* 不换行 */
+    overflow: hidden; /* 超出部分隐藏 */
+    text-overflow: ellipsis; /* 超出部分用省略号表示 */
+}
+
+.friend-list span {
+    font-size: 14px; /* 调整字体大小为 14px */
+    white-space: nowrap; /* 不换行 */
+    overflow: hidden; /* 超出部分隐藏 */
+    text-overflow: ellipsis; /* 超出部分用省略号表示 */
+}
+
+/* 右侧聊天对话框区域样式 */
+.chat-box {
+    flex: 1;
+    background-color: #ecf0f1;
+    padding: 20px;
+    color: #fff;
+    overflow-y: auto;
+    min-width: 480px; /* 设置 chat-box 的最小宽度为 480px */
+    min-height: 480px;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-box h2 {
+    margin-bottom: 10px;
+}
+
+.chat-box input {
+    width: calc(100% - 20px);
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.text-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.message-header {
+    display: flex;
+    justify-content: space-between;
+}
+
+.friend-name {
+    font-size: 18px;
+    font-weight: bold;
+    color: #ecf0f1;
+}
+
+.timestamp {
+    font-size: 12px;
+    color: #7f8c8d;
+}
+
+.message-preview {
+    font-size: 12px;
+    color: #ecf0f1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.top-bar {
+    height: 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #3498db; /* 顶部背景颜色 */
+    padding: 0 10px;
+    border-bottom: 2px solid #2c3e50; /* 顶部底边框 */
+}
+
+.message-area {
+    flex: 1;
+    overflow-y: auto;
+    background-color: #fff; /* 中部背景颜色 */
+    padding: 10px;
+    height: 50%; /* 占据 chat-box 高度的一半 */
+    border: 1px solid #bdc3c7;
+}
+
+.tool-button {
+    cursor: pointer;
+    border: none;
+    background-color: transparent;
+    padding: 0; /* 取消按钮的内边距 */
+    margin-right: 5px; /* 调整按钮之间的间距 */
+    width: 30px; /* 设置按钮的宽度 */
+    height: 30px; /* 设置按钮的高度 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.tool-button i {
+    font-size: 20px; /* 放大图标 */
+    color: #3f7786; /* 设置图标颜色 */
+}
+
+/* 设置按钮样式 */
+.chat-box .settings-button {
+    background-color: #2c3e50; /* 设置按钮的背景颜色 */
+    color: #fff;
+    cursor: pointer;
+    border: 1px solid #34495e; /* 添加边框，与背景对比 */
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.chat-box .settings-button:hover {
+    background-color: #34495e; /* 悬停时的背景颜色 */
+}
+
+.chat-title {
+    /* 其他样式... */
+    white-space: nowrap; /* 不换行 */
+    overflow: hidden; /* 超出部分隐藏 */
+    text-overflow: ellipsis; /* 超出部分用省略号表示 */
+}
+.bottom-bar {
+    display: flex;
+    flex-direction: column;
+    height: calc(50% - 48px); /* 底部高度占据剩余空间 */
+}
+
+.toolbar {
+    height: 44px;
+    display: flex;
+    background-color: #bdc3c7; /* 工具栏背景颜色 */
+    align-items: center; /* 居中对齐 */
+    margin-bottom: 0;
+}
+
+label {
+    display: flex;
+    flex: 1; /* 占据剩余空间 */
+    margin-top: -10px; /* 或者 -10px，根据需要微调 */
+}
+
+textarea {
+    border: 1px solid #bdc3c7;
+    padding: 10px;
+    resize: none; /* 禁止用户调整 textarea 的大小 */
+    box-sizing: border-box; /* 让 padding 不会撑大 textarea 的尺寸 */
+    margin-top: 0; /* 与 bottom-bar 底部对齐 */
+    margin-right: 0; /* 调整右侧的边距，与工具按钮对齐 */
+    width: 100%; /* 设置宽度为100% */
+    height: 100%; /* 占据全部高度 */
+}

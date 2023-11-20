@@ -9,20 +9,6 @@ function bytesToString(bytes) {
     return decoder.decode(bytes);
 }
 
-function hexStringToUint8Array(hexString) {
-    // 从十六进制字符串创建字节数组
-    const arrayBuffer = new Uint8Array(hexString.match(/[\da-f]{2}/gi).map(function (h) {
-        return parseInt(h, 16);
-    })).buffer;
-
-    return new Uint8Array(arrayBuffer);
-}
-
-// function hexStringToUint8Array(hexString) {
-//     const arrayBuffer = new Uint8Array(hexString.match(/.{1,2}/g).map(byte => parseInt(byte, 16))).buffer;
-//     return new Uint8Array(arrayBuffer);
-// }
-
 // 存储数据到sessionStorage
 function storeDataToSessionStorage(key, value) {
     sessionStorage.setItem(key, JSON.stringify(value));

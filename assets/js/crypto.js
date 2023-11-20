@@ -29,16 +29,16 @@ async function encryptData(privateKey, passwordBytes) {
         r: ScryptR,
         p: LightScryptP,
         dklen: ScryptDKLen,
-        salt: hexStringToUint8Array(salt).toString()
+        salt: bytesToString(salt)
     };
 
     const cipherParams = {
-        IV: hexStringToUint8Array(iv).toString(),
+        IV: bytesToString(iv),
     };
 
     return new CryptoStruct(
         "aes-128-ctr",
-        hexStringToUint8Array(encryptedPrivateKey).toString(),
+        bytesToString(encryptedPrivateKey),
         cipherParams,
         "scrypt",
         scryptParams,
@@ -89,11 +89,11 @@ async function decryptData(cryptoStruct, password) {
 
     // 将参数转换为字节数组
     const passwordBytes = stringToBytes(password);
-    const cipherTextBytes = hexStringToUint8Array(CipherText);
-    const ivBytes = hexStringToUint8Array(IV);
+    const cipherTextBytes = stringToBytes(CipherText);
+    const ivBytes = stringToBytes(IV);
 
     // 通过口令和盐派生密钥
-    const derivedKey = await deriveKeyFromPassword(passwordBytes, hexStringToUint8Array(KDFParams.salt));
+    const derivedKey = await deriveKeyFromPassword(passwordBytes, stringToBytes(KDFParams.salt));
 
     // 检查MAC是否匹配
     const combinedArray = new Uint8Array([...derivedKey.slice(16, 32), ...cipherTextBytes]);

@@ -60,20 +60,19 @@
 
             try {
                 const result = await newWallet(password);
-                console.log("Success:", result);// 关闭等待提示
+                storeDataToSessionStorage(SessionCurWallet,result)
+                console.log("new wallet:=>",result)
                 closeModal();
                 // 提示注册成功
                 showModal("注册成功！");
 
-                window.location.href = "/";
+                window.location.href = "/showWallet";
                 // 处理成功的情况
             } catch (error) {
                 console.error("Failure:", error);
                 // 处理失败的情况，显示或关闭提示
                 showModal("注册失败，请重试。");
 
-            }finally {
-                // closeModal()
             }
     }
 

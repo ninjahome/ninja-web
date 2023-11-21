@@ -8,6 +8,7 @@
     <title>Dessage网页版</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link rel="stylesheet" type="text/css" href="/assets/css/main.css">
+    <script src="/assets/js/utils.js"></script>
 </head>
 <body>
 
@@ -103,10 +104,10 @@
         if (!priKeyData) {
             // 如果不存在，则跳转到根目录
             window.location.href = "/";
-        } else {
-            // 如果存在，则可以在该页面停留
-            // 在这里可以使用 priKeyData 进行其他操作
+        }else{
+            console.log("we have private key......", priKeyData)
         }
+
     }
 
     // 清空 sessionStorage

@@ -1,0 +1,75 @@
+/* showWallet.css */
+body {
+    background-color: #2c3e50;
+    color: #ecf0f1;
+    font-family: 'Arial', sans-serif;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    height: 100vh;
+}
+
+.status-buttons {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+}
+
+.status-buttons button {
+    background-color: #34495e;
+    color: #ecf0f1;
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.status-buttons button:hover {
+    background-color: #2c3e50;
+}
+
+.display-area {
+    background-color: #34495e;
+    color: #ecf0f1;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 300px;
+    max-width: 100%;
+    text-align: left;
+    margin-top: 20px;
+}
+
+.action-buttons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.action-buttons button {
+    background-color: #e74c3c;
+    color: #fff;
+    cursor: pointer;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    margin: 0 10px;
+}
+
+.action-buttons button:hover {
+    background-color: #c0392b;
+}
+
+#qrCodeButton {
+    background-color: #c0392b; /* 模拟选中时的颜色 */
+    color: #fff; /* 文字颜色 */
+}
+.status-buttons button.selected {
+    background-color: #c0392b; /* 选中时的颜色 */
+    color: #fff; /* 文字颜色 */
+}

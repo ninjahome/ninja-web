@@ -14,8 +14,8 @@ body {
 }
 
 img {
-    width: 152px; /* 图片宽度 */
-    height: 152px; /* 图片高度 */
+    width: 100px; /* 图片宽度 */
+    height: 100px; /* 图片高度 */
     margin-bottom: 20px; /* 图片与下方元素的距离 */
 }
 

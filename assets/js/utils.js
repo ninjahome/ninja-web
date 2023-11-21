@@ -9,6 +9,27 @@ function bytesToString(bytes) {
     return decoder.decode(bytes);
 }
 
+function hexStringToUint8Array(hexString) {
+    if (typeof hexString !== 'string') {
+        throw new Error('输入不是字符串');
+    }
+
+    // 从映射到整数的 hexString 创建一个 ArrayBuffer，然后使用它创建一个 Uint8Array
+    const arrayBuffer = new Uint8Array(hexString.match(/[\da-f]{2}/gi).map(function (h) {
+        return parseInt(h, 16);
+    })).buffer;
+
+    return new Uint8Array(arrayBuffer);
+}
+
+function uint8ArrayToHexString(uint8Array) {
+    if (!(uint8Array instanceof Uint8Array)) {
+        throw new Error('Input is not a Uint8Array');
+    }
+
+    return Array.from(uint8Array, byte => ('0' + (byte & 0xFF).toString(16)).slice(-2)).join('');
+}
+
 // 存储数据到sessionStorage
 function storeDataToSessionStorage(key, value) {
     sessionStorage.setItem(key, JSON.stringify(value));
@@ -38,3 +59,4 @@ const WalletVer = 1;
 const DBKeyWalletAddr = '__key__address';
 const DBKeyAllWallets = '__key__all_wallets__';
 const SessionKeyPriKey = '__key_global_private_key__';
+const SessionCurWallet = '__key_global_current_wallet__';

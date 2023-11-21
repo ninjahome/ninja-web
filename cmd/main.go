@@ -8,9 +8,21 @@ import (
 
 var templates map[string]*template.Template
 
-// LoginPageData 包含登录页面的数据结构
-type LoginPageData struct {
-	// 在这里定义需要在登录页面中使用的数据字段
+var (
+	simpleRouterMap = map[string]*RouterDataApi{
+		"/":             &RouterDataApi{"assets/index.html", nil},
+		"/index":        {"assets/index.html", nil},
+		"/registration": {"assets/registration.html", nil},
+		"/main":         {"assets/main.html", nil},
+		"/showWallet":   {"assets/showWallet.html", nil},
+	}
+)
+
+type RouterData func() any
+
+type RouterDataApi struct {
+	Path     string
+	DataFunc RouterData
 }
 
 func init() {
@@ -46,48 +58,27 @@ func renderTemplate(w http.ResponseWriter, templateName string, data interface{}
 	}
 }
 
-// indexHandler 处理首页的请求
-func indexHandler(w http.ResponseWriter, r *http.Request) {
-	// 获取模板的名称（不带路径和扩展名）
-	templateName := filepath.Base("assets/index.html")
+func simpleRouter(api *RouterDataApi) func(http.ResponseWriter, *http.Request) {
+	return func(writer http.ResponseWriter, request *http.Request) {
+		// 获取模板的名称（不带路径和扩展名）
+		templateName := filepath.Base(api.Path)
 
-	// 渲染HTML模板
-	data := LoginPageData{}
-	renderTemplate(w, templateName, data)
+		// 渲染HTML模板
+		var data any
+		if api.DataFunc != nil {
+			data = api.DataFunc
+		}
+		renderTemplate(writer, templateName, data)
+	}
 }
 
-// RegistrationPageData 包含注册页面的数据结构
-type RegistrationPageData struct {
-	// 在这里定义需要在注册页面中使用的数据字段
-}
-
-// registrationHandler 处理注册页面的请求
-func registrationHandler(w http.ResponseWriter, r *http.Request) {
-	// 获取模板的名称（不带路径和扩展名）
-	templateName := filepath.Base("assets/registration.html")
-
-	// 渲染HTML模板
-	data := RegistrationPageData{}
-	renderTemplate(w, templateName, data)
-}
-
-// mainChatHandler
-func mainChatHandler(w http.ResponseWriter, r *http.Request) {
-	// 获取模板的名称（不带路径和扩展名）
-	templateName := filepath.Base("assets/main.html")
-
-	// 渲染HTML模板
-	data := RegistrationPageData{}
-	renderTemplate(w, templateName, data)
-}
 func main() {
 	http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
 	// 设置路由处理函数
-	http.HandleFunc("/", indexHandler)
-	http.HandleFunc("/index", indexHandler)
-	http.HandleFunc("/registration", registrationHandler)
-	http.HandleFunc("/main", mainChatHandler)
+	for route, api := range simpleRouterMap {
+		http.HandleFunc(route, simpleRouter(api))
 
+	}
 	// 启动Web服务器
 	http.ListenAndServe(":80", nil)
 }

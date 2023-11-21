@@ -66,15 +66,11 @@ async function newWallet(password) {
     }
 }
 
-async function getEncryptedKeyJSON(walletAddr, password) {
-        const keyString = localStorage.getItem(DBKeyWalletAddr + walletAddr);
-
+async function getEncryptedKeyJSON(keyString, password) {
         if (!keyString) {
-            throw new Error("Key not found for wallet address:" + walletAddr);
+            throw new Error("Key not found for wallet address:" + keyString);
         }
-
         const keyData = JSON.parse(keyString);
-
         // 检查 keyData 是否包含必要的属性
         if (!keyData.Address || !keyData.Crypto || !keyData.ID || !keyData.Version) {
             throw new Error("Invalid key data");
@@ -91,7 +87,7 @@ async function getEncryptedKeyJSON(walletAddr, password) {
         const privateKey = await decryptData(cryptoStruct, password);
 
         if (!privateKey) {
-            throw new Error("Failed to decrypt private key for wallet address:" + walletAddr);
+            throw new Error("Failed to decrypt private key for wallet:" + keyString);
         }
 
         return new LightSubKey(true, keyData.ID, keyData.Address, privateKey);

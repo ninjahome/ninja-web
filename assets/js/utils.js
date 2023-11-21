@@ -44,8 +44,17 @@ function getDataFromSessionStorage(key) {
 function logout() {
     // 清空sessionStorage
     sessionStorage.clear();
-
     // 其他退出逻辑...
+}
+
+function saveDataToDisk(data, fileName){
+    const blob = new Blob([data], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
 }
 
 // Constants

@@ -116,13 +116,16 @@
             showModal('无效数据，无法保存为空的内容');
             return;
         }
-        const blob = new Blob([textContent], { type: 'application/json' });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = 'ninja_wallet.json';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+
+        saveDataToDisk(textContent, 'ninja_wallet.json');
+
+        // const blob = new Blob([textContent], { type: 'application/json' });
+        // const a = document.createElement('a');
+        // a.href = URL.createObjectURL(blob);
+        // a.download = 'ninja_wallet.json';
+        // document.body.appendChild(a);
+        // a.click();
+        // document.body.removeChild(a);
     }
 
     async function copyToClipboard() {

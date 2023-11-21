@@ -42,18 +42,14 @@
 </form>
 
 <div class="action-buttons">
-    <button onclick="openRegistrationModal()">注册账号</button><span class="separator">|</span><button>导入账号</button>
+    <input type="file" id="fileInput" onchange="readJsonFile(this)" style="display: none;" />
+    <button onclick="openRegistrationModal()">注册账号</button><span class="separator">|</span><button onclick="loadWalletFile()">导入账号</button>
 </div>
 
 <script>
     function openRegistrationModal() {
         window.location.href = "/registration";
     }
-
-    function closeRegistrationModal() {
-        document.getElementById("registrationModal").style.display = "none";
-    }
-
     function login() {
         // 执行登录逻辑，例如获取钱包地址和密码
         const walletAddr = document.getElementById("walletAddr").value;
@@ -100,6 +96,7 @@
 
     document.addEventListener("DOMContentLoaded", function () {
         initializePage();
+        // resetCache();
     });
 
     function initializePage() {
@@ -129,6 +126,49 @@
             modal.style.display = "none";
         }
     };
+
+    function loadWalletFile(){
+        const fileInput = document.getElementById('fileInput');
+        fileInput.click();
+    }
+
+    // 读取 JSON 文件的函数
+    function readJsonFile(fileInput) {
+        const file = fileInput.files[0];
+
+        if (!file) {
+            showModal('请先选择文件');
+            return;
+        }
+
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+            try {
+                const content = JSON.parse(e.target.result);
+                if (!content.Address){
+                    showModal("无效的账号文件");
+                    return;
+                }
+
+                console.log("load wallet data:=>",content);
+                console.log("load wallet address:=>",content.Address);
+                const wallets = loadOrCreateWallet();
+                if (wallets.has(content.Address)){
+                    showModal("该账号已经存在");
+                    return;
+                }
+                addNewKeyItem(content);
+
+            } catch (error) {
+                console.error('文件解析错误:', error);
+                showModal('文件解析错误，请确保选择的文件是有效的 JSON 文件。');
+            }
+        };
+
+        reader.readAsText(file);
+    }
+
 </script>
 </body>
 </html>

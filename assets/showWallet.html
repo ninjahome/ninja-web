@@ -174,7 +174,7 @@
         const data = getDataFromSessionStorage(SessionCurWallet);
         // 设置 displayArea 的内容
         console.log("new wallet:=>",data)
-        document.getElementById('displayArea').innerText = data;
+        document.getElementById('displayArea').innerText = JSON.stringify(data, null, '\t');
     };
 
 </script>

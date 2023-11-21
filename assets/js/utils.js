@@ -47,6 +47,10 @@ function logout() {
     // 其他退出逻辑...
 }
 
+function resetCache(){
+    localStorage.clear();
+}
+
 function saveDataToDisk(data, fileName){
     const blob = new Blob([data], { type: 'application/json' });
     const a = document.createElement('a');

@@ -1,22 +1,43 @@
 // wallet.js
 class AllLocalWallet {
-    constructor(data = { addresses: [] }) {
-        this.createTime = new Date();
+    constructor(data = {addresses: []}) {
         this.addresses = data.addresses || [];
     }
 
     addWallet(address) {
-        this.addresses.push(address);
+        if (!this.has(address)) {
+            this.addresses.push(address);
+            this.saveToLocalStorage();
+            return true; // 表示地址成功添加
+        } else {
+            return false; // 表示地址已存在
+        }
+    }
+
+    removeWallet(address) {
+        const index = this.addresses.indexOf(address);
+        if (index !== -1) {
+            this.addresses.splice(index, 1);
+            this.saveToLocalStorage();
+            return true; // 表示地址成功删除
+        } else {
+            return false; // 表示地址不存在
+        }
+    }
+
+    clearWallets() {
+        this.addresses = [];
         this.saveToLocalStorage();
     }
 
     getWallets() {
         return this.addresses;
     }
-
+    has(address) {
+        return this.addresses.includes(address);
+    }
     saveToLocalStorage() {
-        const dataToStore = JSON.stringify(this);
-        localStorage.setItem(DBKeyAllWallets, dataToStore);
+        localStorage.setItem(DBKeyAllWallets, JSON.stringify(this));
     }
 }
 
@@ -34,6 +55,7 @@ function loadOrCreateWallet() {
     return allWallets;
 }
 
+
 class EncryptedKeyJSON {
     constructor(address, crypto, id, version) {
         this.Address = address;
@@ -41,6 +63,13 @@ class EncryptedKeyJSON {
         this.ID = id;
         this.Version = version;
     }
+}
+
+function addNewKeyItem(encryptedKeyJSON) {
+    const jsonString = JSON.stringify(encryptedKeyJSON, null, '\t');
+    localStorage.setItem(DBKeyWalletAddr + encryptedKeyJSON.Address, jsonString);
+    const allWallets = loadOrCreateWallet();
+    allWallets.addWallet(encryptedKeyJSON.Address)
 }
 
 async function newWallet(password) {
@@ -55,11 +84,8 @@ async function newWallet(password) {
             cryptoStruct,
             key.ID,
             WalletVer);
-        const jsonString = JSON.stringify(encryptedKeyJSON, null, '\t');
-        localStorage.setItem(DBKeyWalletAddr+key.AddrStr(), jsonString);
-        const allWallets = loadOrCreateWallet();
-        allWallets.addWallet(key.AddrStr())
-        return jsonString
+        addNewKeyItem(encryptedKeyJSON);
+        return encryptedKeyJSON;
     } catch (error) {
         console.error("Error:", error);
         throw error;
@@ -67,28 +93,28 @@ async function newWallet(password) {
 }
 
 async function getEncryptedKeyJSON(keyString, password) {
-        if (!keyString) {
-            throw new Error("Key not found for wallet address:" + keyString);
-        }
-        const keyData = JSON.parse(keyString);
-        // 检查 keyData 是否包含必要的属性
-        if (!keyData.Address || !keyData.Crypto || !keyData.ID || !keyData.Version) {
-            throw new Error("Invalid key data");
-        }
+    if (!keyString) {
+        throw new Error("Key not found for wallet address:" + keyString);
+    }
+    const keyData = JSON.parse(keyString);
+    // 检查 keyData 是否包含必要的属性
+    if (!keyData.Address || !keyData.Crypto || !keyData.ID || !keyData.Version) {
+        throw new Error("Invalid key data");
+    }
 
-        const cryptoStruct = new CryptoStruct(
-            keyData.Crypto.Cipher,
-            keyData.Crypto.CipherText,
-            keyData.Crypto.CipherParams,
-            keyData.Crypto.KDF,
-            keyData.Crypto.KDFParams,
-            keyData.Crypto.MAC
-        );
-        const privateKey = await decryptData(cryptoStruct, password);
+    const cryptoStruct = new CryptoStruct(
+        keyData.Crypto.Cipher,
+        keyData.Crypto.CipherText,
+        keyData.Crypto.CipherParams,
+        keyData.Crypto.KDF,
+        keyData.Crypto.KDFParams,
+        keyData.Crypto.MAC
+    );
+    const privateKey = await decryptData(cryptoStruct, password);
 
-        if (!privateKey) {
-            throw new Error("Failed to decrypt private key for wallet:" + keyString);
-        }
+    if (!privateKey) {
+        throw new Error("Failed to decrypt private key for wallet:" + keyString);
+    }
 
-        return new LightSubKey(true, keyData.ID, keyData.Address, privateKey);
+    return new LightSubKey(true, keyData.ID, keyData.Address, privateKey);
 }

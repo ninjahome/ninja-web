@@ -1,0 +1,197 @@
+<!-- main.html -->
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/assets/logo.png">
+    <title>Dessage网页版</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="/assets/css/main2.css">
+    <script src="/assets/js/nacl-fast.min.js"></script>
+    <script src="/assets/js/base58.js"></script>
+    <script src="/assets/js/web3.min.js"></script>
+    <script src="/assets/js/scrypt-async.min.js"></script>
+    <script src="/assets/js/utils.js"></script>
+    <script src="/assets/js/crypto.js"></script>
+    <script src="/assets/js/key.js"></script>
+    <script src="/assets/js/wallet.js"></script>
+</head>
+<body>
+
+<div class="main-container">
+
+    <div class="profile-container">
+        <img src="/assets/logo.png" alt="Profile Picture" class="profile-picture">
+        <div class="profile-info">
+            <div class="profile-name">Your Nickname</div>
+            <div class="profile-description" id="profileDescription"></div>
+        </div>
+        <button class="export-button" onclick="openExportDialog()">导出账号</button>
+    </div>
+
+    <div id="passwordDialog" class="modal">
+        <div class="modal-content">
+            <p>请输入密码</p>
+            <div class="input-container">
+                <input type="password" id="passwordInput" placeholder="密码">
+            </div>
+            <p id="errorText" class="error-text">错误信息将在此显示</p>
+            <div class="button-container">
+                <button id="confirmButton" onclick="validatePassword()">确认</button>
+                <button id="cancelButton" onclick="closeExportDialog()">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container chat-container">
+        <div class="friend-list">
+            <h2>消息列表</h2>
+            <hr style="height: 2px; background-color: #ecf0f1; margin: 10px 0;"> <!-- 分隔符 -->
+
+            <div class="friend-info" tabindex="0">
+                <img src="/assets/logo.png" alt="Avatar">
+                <div class="text-info">
+                    <div class="message-header">
+                        <span class="friend-name">好友昵称</span>
+                        <span class="timestamp">12:34</span>
+                    </div>
+                    <div class="message-preview">最新消息内容的省略显示最新消息内容的省略显示</div>
+                </div>
+            </div>
+
+            <div class="friend-info" tabindex="1">
+                <img src="/assets/logo.png" alt="Avatar">
+                <div class="text-info">
+                    <div class="message-header">
+                        <span class="friend-name">好友昵称</span>
+                        <span class="timestamp">12:34</span>
+                    </div>
+                    <div class="message-preview">最新消息内容的省略显示最新消息内容的省略显示</div>
+                </div>
+            </div>
+
+            <div class="friend-info" tabindex="2">
+                <img src="/assets/logo.png" alt="Avatar">
+                <div class="text-info">
+                    <div class="message-header">
+                        <span class="friend-name">好友昵称</span>
+                        <span class="timestamp">12:34</span>
+                    </div>
+                    <div class="message-preview">最新消息内容的省略显示最新消息内容的省略显示</div>
+                </div>
+            </div>
+
+            <!-- 添加更多好友列表项 -->
+        </div>
+
+        <!-- 右侧聊天对话框区域 -->
+        <div class="chat-box">
+            <!-- 在 <div class="chat-box"> 中添加以下内容 -->
+            <div class="top-bar">
+                <span class="chat-title">聊天标题</span>
+            </div>
+
+            <div class="message-area">
+                <!-- 聊天消息显示区域 -->
+                <!-- 这部分的高度占据 chat-box 的一半 -->
+
+                <!-- 示例消息 -->
+                <div class="message sent">我发送的消息</div>
+                <div class="message received">我收到的消息</div>
+            </div>
+
+            <div class="bottom-bar">
+                <div class="toolbar">
+                    <button class="tool-button"><i class="fas fa-image"></i></button>
+                    <button class="tool-button"><i class="fas fa-map-marker-alt"></i></button>
+                    <button class="tool-button"><i class="fas fa-money-bill-wave"></i></button>
+                    <button class="tool-button"><i class="fas fa-id-card"></i></button>
+                    <button class="tool-button"><i class="fas fa-cut"></i></button>
+                </div>
+                <label>
+                    <textarea placeholder="输入消息"
+                              style="border: 1px solid #bdc3c7; padding: 10px; margin-top: 10px; min-height: 50px;"></textarea>
+                </label>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+<script>
+    let privateKey = null;
+    document.addEventListener("DOMContentLoaded", function () {
+        // 在页面加载完成后执行检查逻辑
+        checkSessionKeyPriKey();
+        // 监听浏览器的回退事件
+        window.addEventListener('popstate', function (event) {
+            clearSessionStorage();
+        });
+    });
+
+    function checkSessionKeyPriKey() {
+        // 使用 utils.js 中的函数检查 SessionKeyPriKey 是否存在
+        privateKey = getDataFromSessionStorage(SessionKeyPriKey);
+
+        if (!privateKey) {
+            // 如果不存在，则跳转到根目录
+            window.location.href = "/";
+            return;
+        }
+        document.getElementById('profileDescription').innerText = privateKey.Address;
+    }
+
+    // 清空 sessionStorage
+    function clearSessionStorage() {
+        sessionStorage.clear();
+        privateKey = null;
+    }
+
+    function openExportDialog() {
+        document.getElementById('passwordDialog').style.display = 'block';
+    }
+
+    function closeExportDialog() {
+        document.getElementById('passwordDialog').style.display = 'none';
+        clearErrorText();
+    }
+
+    function validatePassword() {
+        const password = document.getElementById('passwordInput').value;
+        const errorText = document.getElementById('errorText');
+        if (password.length === 0) {
+            errorText.innerText = '密码不能为空';
+            errorText.style.display = 'block';
+            return;
+        }
+
+        const keyString = localStorage.getItem(DBKeyWalletAddr + privateKey.Address);
+        if (!keyString) {
+            errorText.innerText = '加载钱包信息失败：'+privateKey.Address;
+            errorText.style.display = 'block';
+            return
+        }
+
+        getEncryptedKeyJSON(keyString, password).then((result) => {
+            clearErrorText();
+            saveDataToDisk(keyString, 'ninja_wallet.json');
+            closeExportDialog();
+        }).catch((error) => {
+            // 异步操作失败，关闭加载提示界面并处理错误
+            errorText.innerText = '密码错误，请重新输入:' + error;
+            errorText.style.display = 'block';
+        });
+    }
+
+    function clearErrorText() {
+        const errorText = document.getElementById('errorText');
+        errorText.innerText = ''; // 清空错误信息
+        errorText.style.display = 'none'; // 隐藏错误提示
+    }
+
+</script>
+
+</body>
+</html>
+

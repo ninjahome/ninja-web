@@ -41,12 +41,6 @@ function getDataFromSessionStorage(key) {
     return storedValue ? JSON.parse(storedValue) : null;
 }
 
-function logout() {
-    // 清空sessionStorage
-    sessionStorage.clear();
-    // 其他退出逻辑...
-}
-
 function resetCache(){
     localStorage.clear();
 }

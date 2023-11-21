@@ -1,323 +1,162 @@
+/* main.css */
+
 body {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
     margin: 0;
+    padding: 0;
     font-family: 'Arial', sans-serif;
-    background-color: #2c3e50;
-    color: #ecf0f1;
-}
-
-/* 公共样式 */
-.container {
-    display: flex;
-}
-
-/* 中间好友消息列表区域样式 */
-.chat-container {
-    width: 75%;
-    height: 75vh; /* 占据整个页面的四分之三 */
-}
-
-.friend-list {
-    width: 220px;
-    background-color: #34495e; /* 修改背景颜色，与整体背景协调 */
-    padding: 20px;
-    overflow: hidden; /* 隐藏溢出部分 */
-    min-width: 220px;
-    min-height: 480px;
-}
-
-.friend-list h2 {
+    background-color: #1a1a1a;
     color: #fff;
-    margin-bottom: 10px;
 }
 
-.friend-list .friend-info {
-    cursor: pointer;
-    height: 70px;
-    background-color: #2c3e50; /* 深蓝色 */
-    transition: background-color 0.3s;
+#container {
     display: flex;
-    align-items: center;
-    padding: 0 10px;
+    height: 100vh;
 }
 
-.friend-list .friend-info:focus {
-    background-color: #34495e; /* 深灰蓝色 */
-    outline: none; /* 去掉默认的边框样式 */
-}
-
-
-
-.friend-list img {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    margin-right: 10px;
-}
-
-.friend-list .text-info {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    white-space: nowrap; /* 不换行 */
-    overflow: hidden; /* 超出部分隐藏 */
-    text-overflow: ellipsis; /* 超出部分用省略号表示 */
-}
-
-.friend-list span {
-    font-size: 14px; /* 调整字体大小为 14px */
-    white-space: nowrap; /* 不换行 */
-    overflow: hidden; /* 超出部分隐藏 */
-    text-overflow: ellipsis; /* 超出部分用省略号表示 */
-}
-
-/* 右侧聊天对话框区域样式 */
-.chat-box {
-    flex: 1;
-    background-color: #ecf0f1;
+#friendList {
+    width: 200px;
+    background-color: #333;
     padding: 20px;
-    color: #fff;
-    overflow-y: auto;
-    min-width: 480px; /* 设置 chat-box 的最小宽度为 480px */
-    min-height: 480px;
-    display: flex;
-    flex-direction: column;
-}
-
-.chat-box h2 {
-    margin-bottom: 10px;
-}
-
-.chat-box input {
-    width: calc(100% - 20px);
-    padding: 10px;
     box-sizing: border-box;
 }
 
-.text-info {
+#friendList h2 {
+    color: #3399cc;
+    border-bottom: 1px solid #3399cc;
+    padding-bottom: 10px;
+}
+
+#friendList ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+#friendList li {
+    margin-bottom: 10px;
+}
+
+#friendList a {
+    text-decoration: none;
+    color: #3399cc;
+    font-size: 16px;
+}
+
+#friendList a:hover {
+    color: #66ccff;
+}
+
+#content {
+    flex: 1;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+#messageBox {
+    border: 1px solid #666;
+    padding: 10px;
+    height: 300px;
+    overflow-y: auto;
+    background-color: #333;
+    color: #fff;
+    margin-bottom: 10px;
+}
+
+#inputContainer {
     display: flex;
     flex-direction: column;
-    justify-content: center;
-}
-
-.message-header {
-    display: flex;
-    justify-content: space-between;
-}
-
-.friend-name {
-    font-size: 18px;
-    font-weight: bold;
-    color: #ecf0f1;
-}
-
-.timestamp {
-    font-size: 12px;
-    color: #7f8c8d;
-}
-
-.message-preview {
-    font-size: 12px;
-    color: #ecf0f1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.top-bar {
-    height: 48px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #3498db; /* 顶部背景颜色 */
-    padding: 0 10px;
-    border-bottom: 2px solid #2c3e50; /* 顶部底边框 */
-}
-
-.message-area {
-    flex: 1;
-    overflow-y: auto;
-    background-color: #fff; /* 中部背景颜色 */
+    background-color: #333;
     padding: 10px;
-    height: 50%; /* 占据 chat-box 高度的一半 */
-    border: 1px solid #bdc3c7;
+    margin-bottom: 10px;
 }
 
-.tool-button {
+#toolBar {
+    display: flex;
+    align-items: center;
+    background-color: #333;
+}
+
+.toolButton {
+    padding: 5px;
     cursor: pointer;
+    margin-right: 10px;
     border: none;
     background-color: transparent;
-    padding: 0; /* 取消按钮的内边距 */
-    margin-right: 5px; /* 调整按钮之间的间距 */
-    width: 30px; /* 设置按钮的宽度 */
-    height: 30px; /* 设置按钮的高度 */
-    display: flex;
-    justify-content: center;
-    align-items: center;
 }
 
-.tool-button i {
-    font-size: 20px; /* 放大图标 */
-    color: #3f7786; /* 设置图标颜色 */
+.toolButton img {
+    width: 20px;
+    height: 20px;
 }
 
-.chat-title {
-    /* 其他样式... */
-    white-space: nowrap; /* 不换行 */
-    overflow: hidden; /* 超出部分隐藏 */
-    text-overflow: ellipsis; /* 超出部分用省略号表示 */
-}
-.bottom-bar {
-    display: flex;
-    flex-direction: column;
-    height: calc(50% - 48px); /* 底部高度占据剩余空间 */
-}
-
-.toolbar {
-    height: 44px;
-    display: flex;
-    background-color: #bdc3c7; /* 工具栏背景颜色 */
-    align-items: center; /* 居中对齐 */
-    margin-bottom: 0;
-}
-
-label {
-    display: flex;
-    flex: 1; /* 占据剩余空间 */
-    margin-top: -10px; /* 或者 -10px，根据需要微调 */
-}
-
-textarea {
-    border: 1px solid #bdc3c7;
+#messageInput {
     padding: 10px;
-    resize: none; /* 禁止用户调整 textarea 的大小 */
-    box-sizing: border-box; /* 让 padding 不会撑大 textarea 的尺寸 */
-    margin-top: 0; /* 与 bottom-bar 底部对齐 */
-    margin-right: 0; /* 调整右侧的边距，与工具按钮对齐 */
-    width: 100%; /* 设置宽度为100% */
-    height: 100%; /* 占据全部高度 */
+    box-sizing: border-box;
+    height: 200px;
+    resize: none;
 }
 
-
-.profile-container {
+/* 添加新样式规则 */
+#friendListButtons {
     display: flex;
-    align-items: center;
     justify-content: space-between;
-    background-color: #3498db;
+    margin-bottom: 10px;
+}
+
+#messageButton, #contactsButton {
+    padding: 5px;
+    cursor: pointer;
+    border: none;
+    background-color: #333;
+    color: #fff;
+    font-size: 14px;
+}
+
+#messageButton:hover, #contactsButton:hover {
+    background-color: #555;
+}
+
+#searchInput {
+    padding: 5px;
+    margin-bottom: 10px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+#friendListContent {
+    overflow-y: auto;
+}
+<!-- main.css -->
+/* 添加新样式规则 */
+#settingsButton {
+    padding: 5px;
+    cursor: pointer;
+    border: none;
+    background-color: #333;
+    color: #fff;
+    font-size: 14px;
+}
+
+#settingsButton:hover {
+    background-color: #555;
+}
+
+#settingsMenu {
+    display: none;
+    background-color: #333;
     padding: 10px;
-    margin-bottom: 20px;
+    box-sizing: border-box;
+    margin-top: 10px;
 }
 
-.profile-picture {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    margin-right: 10px;
-}
-
-.profile-info {
-    flex: 1;
-}
-
-.profile-name {
-    font-size: 18px;
-    font-weight: bold;
-    color: #ecf0f1;
+.settingsMenuItem {
+    cursor: pointer;
+    color: #fff;
     margin-bottom: 5px;
 }
 
-.profile-description {
-    font-size: 14px;
-    color: #ecf0f1;
+.settingsMenuItem:hover {
+    color: #66ccff;
 }
 
-.export-button {
-    background-color: #2c3e50;
-    color: #ecf0f1;
-    border: none;
-    padding: 8px 16px;
-    font-size: 14px;
-    cursor: pointer;
-    border-radius: 5px;
-}
-
-.export-button:hover {
-    background-color: #34495e;
-}
-
-/* 根据修改更新样式规则 */
-#passwordDialog {
-    display: none;
-    position: fixed;
-    z-index: 1;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0, 0, 0, 0.7);
-}
-
-#passwordDialog .close {
-    color: #ecf0f1;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-}
-
-#passwordDialog .close:hover {
-    cursor: pointer;
-}
-
-#passwordDialog .input-container {
-    margin-bottom: 15px;
-}
-
-#passwordDialog input {
-    width: calc(100% - 10px);
-    padding: 10px;
-    box-sizing: border-box;
-}
-
-#passwordDialog .modal-content {
-    background-color: #3498db;
-    margin: 10% auto; /* 调整 margin */
-    padding: 20px;
-    border: 1px solid #2c3e50;
-    width: 24%; /* 缩小长度 */
-    border-radius: 5px;
-    color: #ecf0f1;
-}
-
-#passwordDialog button {
-    padding: 10px 20px; /* 增加确认按钮长度 */
-    margin: 0 5px;
-    cursor: pointer;
-    border: none;
-    border-radius: 5px;
-}
-
-#passwordDialog #confirmButton {
-    background-color: #2ecc71;
-    color: #ecf0f1;
-}
-
-#passwordDialog #cancelButton {
-    background-color: #e74c3c;
-    color: #ecf0f1;
-}
-
-#passwordDialog .button-container {
-    display: flex;
-    justify-content: center; /* 居中按钮 */
-    margin-top: 20px; /* 增加间隔 */
-}
-#passwordDialog .error-text {
-    color: #e74c3c; /* 红色，用于显明错误信息 */
-    display: none; /* 默认不显示 */
-    margin-top: 10px; /* 增加间隔 */
-    text-align: center; /* 居中显示 */
-}
+/* ... 其他样式规则 ... */

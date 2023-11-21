@@ -27,8 +27,10 @@
         <label for="confirmPassword">再次输入密码:</label>
         <input type="password" id="confirmPassword" name="confirmPassword" required><br>
 
-        <input type="submit" value="注册">
-
+        <div class="button-container">
+            <input type="submit" value="注册">
+            <input type="button" value="取消" onclick="cancelRegistration()">
+        </div>
         <div class="note">
             请注意保存密码，本系统不提供密码找回功能。
         </div>
@@ -44,6 +46,10 @@
 </div>
 
 <script>
+    function cancelRegistration() {
+        window.location.href = "/"; // 返回根目录
+    }
+
     async  function register() {
         // 获取密码和确认密码的值
         var password = document.getElementById("password").value;

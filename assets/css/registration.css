@@ -68,11 +68,34 @@ input[type="submit"]:hover {
 }
 
 .note {
-    color: #ecf0f1; /* 淡灰色文字，与 index.html 一致 */
-    font-size: 14px;
+    /* 淡灰色文字，与 index.html 一致 */
     margin-top: 10px;
     text-align: left; /* 左对齐 */
     color: #7f8c8d; /* 淡灰色文字，修改字体颜色 */
     font-size: 12px; /* 缩小字体大小 */
 }
 
+input[type="button"] {
+    background-color: #3498db; /* 蓝色按钮，与 index.html 一致 */
+    color: #fff;
+    cursor: pointer;
+    width: 100%;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    margin-top: 10px;
+}
+
+input[type="button"]:hover {
+    background-color: #2980b9; /* 深蓝色按钮，与 index.html 一致 */
+}
+.button-container {
+    display: flex;
+    justify-content: space-between;
+}
+
+input[type="submit"],
+input[type="button"] {
+    flex-grow: 1;
+    margin-right: 5px; /* 添加一些间距，防止按钮过于靠近 */
+}

@@ -16,6 +16,7 @@
     <script src="/assets/js/crypto.js"></script>
     <script src="/assets/js/key.js"></script>
     <script src="/assets/js/wallet.js"></script>
+
 </head>
 
 <body>
@@ -42,14 +43,20 @@
 </form>
 
 <div class="action-buttons">
-    <input type="file" id="fileInput" onchange="readJsonFile(this)" style="display: none;" />
-    <button onclick="openRegistrationModal()">注册账号</button><span class="separator">|</span><button onclick="loadWalletFile()">导入账号</button>
+    <input type="file" id="fileInput" accept="image/*, .txt, .json" onchange="readJsonFile(this)"
+           style="display: none;"/>
+    <div id="qrcode" style="display: none;"></div>
+    <button onclick="openRegistrationModal()">注册账号</button>
+    <span class="separator">|</span>
+    <button onclick="loadWalletFile()">导入账号</button>
+    <button onclick="resetCache()">reset</button>
 </div>
 
 <script>
     function openRegistrationModal() {
         window.location.href = "/registration";
     }
+
     function login() {
         // 执行登录逻辑，例如获取钱包地址和密码
         const walletAddr = document.getElementById("walletAddr").value;
@@ -58,7 +65,7 @@
 
         const keyString = localStorage.getItem(DBKeyWalletAddr + walletAddr);
         if (!keyString) {
-            showModal("加载钱包信息失败:"+walletAddr);
+            showModal("加载钱包信息失败:" + walletAddr);
             return
         }
         // 获取 EncryptedKeyJSON 对象
@@ -96,7 +103,6 @@
 
     document.addEventListener("DOMContentLoaded", function () {
         initializePage();
-        // resetCache();
     });
 
     function initializePage() {
@@ -127,7 +133,7 @@
         }
     };
 
-    function loadWalletFile(){
+    function loadWalletFile() {
         const fileInput = document.getElementById('fileInput');
         fileInput.click();
     }
@@ -135,40 +141,57 @@
     // 读取 JSON 文件的函数
     function readJsonFile(fileInput) {
         const file = fileInput.files[0];
-
         if (!file) {
             showModal('请先选择文件');
             return;
         }
+        console.log("file type:=>", file.type)
+        if (file.type === 'application/json' || file.type === 'text/plain') {
+            readJsonTxt(file);
+        } else if (file.type.startsWith('image')) {
+            readQrCode(file);
+        } else {
+            showModal("不支持此文件格式");
+        }
+    }
 
+    function readQrCode(file) {
         const reader = new FileReader();
+    }
 
+
+    function saveLoadedWalletStr(walletString) {
+        const content = JSON.parse(walletString);
+        console.log("wallet:", content, content.address);
+        if (!content.address) {
+            showModal("无效的账号文件");
+            return;
+        }
+
+        const wallets = loadOrCreateWallet();
+        console.log("all the wallets:===>>", wallets.getWallets())
+        console.log("current wallets:===>>", content.address)
+        if (wallets.has(content.address)) {
+            showModal("该账号已经存在");
+            return;
+        }
+        addNewKeyItem(content);
+        location.reload(true);
+    }
+
+    function readJsonTxt(file) {
+        const reader = new FileReader();
         reader.onload = function (e) {
             try {
-                const content = JSON.parse(e.target.result);
-                if (!content.Address){
-                    showModal("无效的账号文件");
-                    return;
-                }
-
-                console.log("load wallet data:=>",content);
-                console.log("load wallet address:=>",content.Address);
-                const wallets = loadOrCreateWallet();
-                if (wallets.has(content.Address)){
-                    showModal("该账号已经存在");
-                    return;
-                }
-                addNewKeyItem(content);
-
+                saveLoadedWalletStr(e.target.result)
             } catch (error) {
                 console.error('文件解析错误:', error);
                 showModal('文件解析错误，请确保选择的文件是有效的 JSON 文件。');
             }
-        };
+        }
 
         reader.readAsText(file);
     }
-
 </script>
 </body>
 </html>

@@ -58,31 +58,29 @@ function loadOrCreateWallet() {
 
 class EncryptedKeyJSON {
     constructor(address, crypto, id, version) {
-        this.Address = address;
-        this.Crypto = crypto;
-        this.ID = id;
-        this.Version = version;
+        this.address = address;
+        this.crypto = crypto;
+        this.id = id;
+        this.version = version;
     }
 }
 
 function addNewKeyItem(encryptedKeyJSON) {
     const jsonString = JSON.stringify(encryptedKeyJSON, null, '\t');
-    localStorage.setItem(DBKeyWalletAddr + encryptedKeyJSON.Address, jsonString);
+    localStorage.setItem(DBKeyWalletAddr + encryptedKeyJSON.address, jsonString);
     const allWallets = loadOrCreateWallet();
-    allWallets.addWallet(encryptedKeyJSON.Address)
+    allWallets.addWallet(encryptedKeyJSON.address)
 }
 
 async function newWallet(password) {
     try {
         const key = generateNewLightSubKey();
-        console.log("raw key:", key.toString());
-
         const passwordBytes = stringToBytes(password);
         const cryptoStruct = await encryptData(key.privateKey, passwordBytes);
         const encryptedKeyJSON = new EncryptedKeyJSON(
             key.AddrStr(),
             cryptoStruct,
-            key.ID,
+            key.id,
             WalletVer);
         addNewKeyItem(encryptedKeyJSON);
         return encryptedKeyJSON;
@@ -98,17 +96,17 @@ async function getEncryptedKeyJSON(keyString, password) {
     }
     const keyData = JSON.parse(keyString);
     // 检查 keyData 是否包含必要的属性
-    if (!keyData.Address || !keyData.Crypto || !keyData.ID || !keyData.Version) {
+    if (!keyData.address || !keyData.crypto || !keyData.id || !keyData.version) {
         throw new Error("Invalid key data");
     }
 
     const cryptoStruct = new CryptoStruct(
-        keyData.Crypto.Cipher,
-        keyData.Crypto.CipherText,
-        keyData.Crypto.CipherParams,
-        keyData.Crypto.KDF,
-        keyData.Crypto.KDFParams,
-        keyData.Crypto.MAC
+        keyData.crypto.cipher,
+        keyData.crypto.ciphertext,
+        keyData.crypto.cipherParams,
+        keyData.crypto.kdf,
+        keyData.crypto.kdfParams,
+        keyData.crypto.mac
     );
     const privateKey = await decryptData(cryptoStruct, password);
 
@@ -116,5 +114,5 @@ async function getEncryptedKeyJSON(keyString, password) {
         throw new Error("Failed to decrypt private key for wallet:" + keyString);
     }
 
-    return new LightSubKey(true, keyData.ID, keyData.Address, privateKey);
+    return new LightSubKey(true, keyData.id, keyData.address, privateKey);
 }

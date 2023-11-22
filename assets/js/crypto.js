@@ -1,18 +1,26 @@
 // crypto.js
 class CryptoStruct {
     constructor(cipher, cipherText, cipherParams, kdf, kdfParams, mac) {
-        this.Cipher = cipher;
-        this.CipherText = cipherText;
-        this.CipherParams = cipherParams;
-        this.KDF = kdf;
-        this.KDFParams = kdfParams;
-        this.MAC = mac;
+        this.cipher = cipher;
+        this.ciphertext = cipherText;
+        this.cipherParams = cipherParams;
+        this.kdf = kdf;
+        this.kdfParams = kdfParams;
+        this.mac = mac;
     }
 }
 
 async function encryptData(privateKey, passwordBytes) {
     const salt = generateSalt(32);
-    const derivedKey = await deriveKeyFromPassword(passwordBytes, salt);
+    const scryptParams = {
+        n: LightScryptN,
+        r: ScryptR,
+        p: LightScryptP,
+        dklen: ScryptDKLen,
+        salt: salt
+    };
+
+    const derivedKey = await deriveKeyFromPassword(passwordBytes, scryptParams);
 
     const encryptKey = derivedKey.slice(0, 16);
     const iv = generateSalt(16);
@@ -24,17 +32,11 @@ async function encryptData(privateKey, passwordBytes) {
 
     const mac = Web3.utils.sha3(combinedArray);
 
-    const scryptParams = {
-        n: LightScryptN,
-        r: ScryptR,
-        p: LightScryptP,
-        dklen: ScryptDKLen,
-        salt: uint8ArrayToHexString(salt)
+    const cipherParams = {
+        iv: uint8ArrayToHexString(iv),
     };
 
-    const cipherParams = {
-        IV: uint8ArrayToHexString(iv),
-    };
+    scryptParams.salt = uint8ArrayToHexString(salt)
 
     return new CryptoStruct(
         "aes-128-ctr",
@@ -52,9 +54,13 @@ function generateSalt(len) {
     return salt;
 }
 
-async function deriveKeyFromPassword(passwordBytes, salt) {
+async function deriveKeyFromPassword(passwordBytes, param) {
     return new Promise((resolve) => {
-        scrypt(passwordBytes, salt, { N: LightScryptN, r: ScryptR, p: LightScryptP, dkLen: ScryptDKLen, encoding: 'binary' }, resolve);
+        scrypt(passwordBytes, param.salt, { N: param.n,
+            r: param.r,
+            p: param.p,
+            dkLen: param.dkLen,
+            encoding: 'binary' }, resolve);
     });
 }
 
@@ -80,27 +86,27 @@ async function importAesKey(key) {
 
 async function decryptData(cryptoStruct, password) {
     // 首先检查Cipher变量是否等于"aes-128-ctr"
-    if (cryptoStruct.Cipher !== "aes-128-ctr") {
+    if (cryptoStruct.cipher !== "aes-128-ctr") {
         throw new Error("Unsupported cipher");
     }
     // 从 CryptoStruct 中获取所需的信息
-    const { CipherText, CipherParams, KDF, KDFParams, MAC } = cryptoStruct;
-    const { IV } = CipherParams;
+    const { ciphertext, cipherParams, kdf, kdfParams, mac } = cryptoStruct;
+    const { iv } = cipherParams;
 
     // 将参数转换为字节数组
     const passwordBytes = stringToBytes(password);
-    const cipherTextBytes = hexStringToUint8Array(CipherText);
-    const ivBytes = hexStringToUint8Array(IV);
-
+    const cipherTextBytes = hexStringToUint8Array(ciphertext);
+    const ivBytes = hexStringToUint8Array(iv);
+    kdfParams.salt = hexStringToUint8Array(kdfParams.salt)
     // 通过口令和盐派生密钥
-    const derivedKey = await deriveKeyFromPassword(passwordBytes, hexStringToUint8Array(KDFParams.salt));
+    const derivedKey = await deriveKeyFromPassword(passwordBytes, kdfParams);
 
-    // 检查MAC是否匹配
+    // 检查mac是否匹配
     const combinedArray = new Uint8Array([...derivedKey.slice(16, 32), ...cipherTextBytes]);
     const calculatedMAC = Web3.utils.sha3(combinedArray).substring("0x".length);
-    if (calculatedMAC !== MAC) {
-        console.log("calculated:",calculatedMAC,"\t mac", MAC);
-        throw new Error("MAC verification failed");
+    if (calculatedMAC !== mac) {
+        console.log("calculated:",calculatedMAC,"\t mac", mac);
+        throw new Error("mac verification failed");
     }
 
     // 使用派生密钥和IV解密私钥

@@ -118,14 +118,6 @@
         }
 
         saveDataToDisk(textContent, 'ninja_wallet.json');
-
-        // const blob = new Blob([textContent], { type: 'application/json' });
-        // const a = document.createElement('a');
-        // a.href = URL.createObjectURL(blob);
-        // a.download = 'ninja_wallet.json';
-        // document.body.appendChild(a);
-        // a.click();
-        // document.body.removeChild(a);
     }
 
     async function copyToClipboard() {
@@ -162,7 +154,7 @@
     }
 
     // 点击模态框外部区域关闭模态框
-    window.onclick = function(event) {
+    window.onclick = function (event) {
         const modal = document.getElementById("myModal");
         if (event.target === modal) {
             modal.style.display = "none";
@@ -173,7 +165,7 @@
         // 传入字符串参数作为键
         const data = getDataFromSessionStorage(SessionCurWallet);
         // 设置 displayArea 的内容
-        console.log("new wallet:=>",data)
+        console.log("new wallet:=>", data)
         document.getElementById('displayArea').innerText = JSON.stringify(data, null, '\t');
     };
 

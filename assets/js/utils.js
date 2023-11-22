@@ -45,6 +45,11 @@ function resetCache(){
     localStorage.clear();
 }
 
+function quitFromSession(){
+    sessionStorage.clear();
+    window.location.href = "/";
+}
+
 function saveDataToDisk(data, fileName){
     const blob = new Blob([data], { type: 'application/json' });
     const a = document.createElement('a');

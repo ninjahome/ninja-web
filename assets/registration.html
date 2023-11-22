@@ -50,56 +50,56 @@
         window.location.href = "/"; // 返回根目录
     }
 
-    async  function register() {
+    async function register() {
         // 获取密码和确认密码的值
-        var password = document.getElementById("password").value;
-        var confirmPassword = document.getElementById("confirmPassword").value;
+        const password = document.getElementById("password").value;
+        const confirmPassword = document.getElementById("confirmPassword").value;
 
         // 检查密码是否一致
         if (password !== confirmPassword) {
             // 显示模态框
             showModal("密码不一致，请重新输入。");
-            return ;
+            return;
         }
 
-            showModal("正在生成密钥，请稍候...");
+        showModal("正在生成密钥，请稍候...");
 
-            try {
-                const result = await newWallet(password);
-                storeDataToSessionStorage(SessionCurWallet,result)
-                console.log("new wallet:=>",result)
-                closeModal();
-                // 提示注册成功
-                showModal("注册成功！");
+        try {
+            const result = await newWallet(password);
+            storeDataToSessionStorage(SessionCurWallet, result)
+            console.log("new wallet:=>", result)
+            closeModal();
+            // 提示注册成功
+            showModal("注册成功！");
 
-                window.location.href = "/showWallet";
-                // 处理成功的情况
-            } catch (error) {
-                console.error("Failure:", error);
-                // 处理失败的情况，显示或关闭提示
-                showModal("注册失败，请重试。");
+            window.location.href = "/showWallet";
+            // 处理成功的情况
+        } catch (error) {
+            console.error("Failure:", error);
+            // 处理失败的情况，显示或关闭提示
+            showModal("注册失败，请重试。");
 
-            }
+        }
     }
 
     // 显示模态框
     function showModal(message) {
-        var modalText = document.getElementById("modalText");
+        const modalText = document.getElementById("modalText");
         modalText.innerHTML = message;
 
-        var modal = document.getElementById("myModal");
+        const modal = document.getElementById("myModal");
         modal.style.display = "block";
     }
 
     // 关闭模态框
     function closeModal() {
-        var modal = document.getElementById("myModal");
+        const modal = document.getElementById("myModal");
         modal.style.display = "none";
     }
 
     // 点击模态框外部区域关闭模态框
-    window.onclick = function(event) {
-        var modal = document.getElementById("myModal");
+    window.onclick = function (event) {
+        const modal = document.getElementById("myModal");
         if (event.target === modal) {
             modal.style.display = "none";
         }

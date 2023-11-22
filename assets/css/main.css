@@ -230,3 +230,34 @@ body {
     margin-top: 10px; /* 增加间隔 */
     text-align: center; /* 居中显示 */
 }
+
+
+/* main.css */
+
+/* 新增样式规则 */
+#messageControlPanel {
+    text-align: center; /* 文本居中 */
+}
+
+#messageTipsList {
+    list-style: none;
+    padding: 0;
+}
+
+.messageTipsItem {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.messageTipsItem img {
+    width: 50px; /* 调整头像的宽度 */
+    height: 50px; /* 调整头像的高度 */
+    border-radius: 50%; /* 圆形头像 */
+    margin-bottom: 5px;
+}
+
+.messageTipsItem span {
+    color: #777; /* 时间和文字的颜色 */
+}

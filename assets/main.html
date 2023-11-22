@@ -13,6 +13,8 @@
     <script src="/assets/js/crypto.js"></script>
     <script src="/assets/js/key.js"></script>
     <script src="/assets/js/wallet.js"></script>
+    <script src="/assets/js/friends.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/handlebars/dist/handlebars.min.js"></script>
 </head>
 <body>
 
@@ -37,13 +39,27 @@
         </nav>
 
         <div id="switchingArea">
-            <div id="messageControlPanel"></div>
+            <div id="messageControlPanel">
+                <ul id="messageTipsListTemplate" style="display: none">
+                    {{#each messages}}
+                    <li class="messageTipsItem">
+                        <img src="{{avatarUrl}}" alt="Avatar">
+                        <span class="nickname">{{nickname}}</span>
+                        <span class="time">{{time}}</span>
+                        <span class="description">{{description}}</span>
+                    </li>
+                    {{/each}}
+                </ul>
+                <ul id="messageTipsList"></ul>
+
+            </div>
             <div id="friendControlPanel"></div>
             <div id="settingsMenu">
                 <div class="settingsMenuItem" onclick="logout()">退出登录</div>
                 <div class="settingsMenuItem" onclick="deleteAccount()">删除账号</div>
                 <div class="settingsMenuItem" onclick="exportAccount()">导出账号</div>
                 <div class="settingsMenuItem" onclick="displayBalance()">显示余额</div>
+                <div class="settingsMenuItem" onclick="clearCachedMsg()">清空聊天</div>
             </div>
         </div>
 
@@ -126,6 +142,7 @@
         window.addEventListener('popstate', function (event) {
             clearSessionStorage();
         });
+        loadCachedMsgList();
     });
 
     function checkSessionKeyPriKey() {
@@ -135,9 +152,7 @@
         if (!privateKey) {
             // 如果不存在，则跳转到根目录
             window.location.href = "/";
-            return;
         }
-        // document.getElementById('profileDescription').innerText = privateKey.address;
     }
 
     // 清空 sessionStorage
@@ -166,7 +181,7 @@
 
         const keyString = localStorage.getItem(DBKeyWalletAddr + privateKey.address);
         if (!keyString) {
-            errorText.innerText = '加载钱包信息失败：'+privateKey.address;
+            errorText.innerText = '加载钱包信息失败：' + privateKey.address;
             errorText.style.display = 'block';
             return
         }
@@ -186,6 +201,27 @@
         const errorText = document.getElementById('errorText');
         errorText.innerText = ''; // 清空错误信息
         errorText.style.display = 'none'; // 隐藏错误提示
+    }
+
+    function loadCachedMsgList() {
+        // 从HTML中获取Handlebars模板源代码
+        const source = document.getElementById("messageTipsListTemplate").innerHTML;
+
+// 编译模板
+        const template = Handlebars.compile(source);
+
+// 示例数据（用你的实际数据替换这部分）
+        const messages = cacheLoadCachedMsgList()
+
+// 使用数据渲染模板
+        const renderedHTML = template({messages: messages});
+
+// 将渲染的HTML插入到#messageTipsList元素中
+        document.getElementById("messageTipsList").innerHTML = renderedHTML;
+    }
+
+    function clearCachedMsg() {
+
     }
 </script>
 

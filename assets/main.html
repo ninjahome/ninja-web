@@ -44,9 +44,13 @@
                     {{#each messages}}
                     <li class="messageTipsItem">
                         <img src="{{avatarUrl}}" alt="Avatar">
-                        <span class="nickname">{{nickname}}</span>
-                        <span class="time">{{time}}</span>
-                        <span class="description">{{description}}</span>
+                        <div class="info-container">
+                            <div class="nickname-time">
+                                <span class="nickname">{{nickname}}</span>
+                                <span class="time">{{formatTime time}}</span>
+                            </div>
+                            <div class="description">{{description}}</div>
+                        </div>
                     </li>
                     {{/each}}
                 </ul>
@@ -133,6 +137,26 @@
         console.log('执行显示余额操作');
     }
 
+    Handlebars.registerHelper('formatTime', function (time) {
+        const currentDate = new Date();
+        const messageDate = new Date(time);
+        const timeDiff = currentDate - messageDate;
+        console.log("time from data:",time, "diff",timeDiff);
+
+        if (timeDiff > 24 * 60 * 60 * 1000) {
+            // If the time difference is more than 24 hours, use DD/MM/YY format
+            const day = messageDate.getDate();
+            const month = messageDate.getMonth() + 1; // Month is zero-based
+            const year = messageDate.getFullYear().toString().slice(-2); // Get last two digits of the year
+            return `${String(day).padStart(2, '0')}/${String(month).padStart(2, '0')}/${year}`;
+        } else {
+            // Otherwise, use MM:SS format
+            const minutes = messageDate.getUTCMinutes();
+            const seconds = messageDate.getSeconds();
+            return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+    });
+
 
     let privateKey = null;
     document.addEventListener("DOMContentLoaded", function () {
@@ -214,10 +238,7 @@
         const messages = cacheLoadCachedMsgList()
 
 // 使用数据渲染模板
-        const renderedHTML = template({messages: messages});
-
-// 将渲染的HTML插入到#messageTipsList元素中
-        document.getElementById("messageTipsList").innerHTML = renderedHTML;
+        document.getElementById("messageTipsList").innerHTML = template({messages: messages});
     }
 
     function clearCachedMsg() {

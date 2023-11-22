@@ -14,15 +14,20 @@ class messageTipsItem {
 
 function cacheLoadCachedMsgList() {
     const result = [];
+    const currentDate = new Date();
+    const twoDaysAgo = new Date();
+    twoDaysAgo.setDate(currentDate.getDate() - 2);
+    console.log("this diff",currentDate - twoDaysAgo, 2*24 * 60 * 60 * 1000)
+
     const item_1 = new messageTipsItem("NJA1fmxxVFRY2XWvcPU41zfxMrjb2iXDzaRW4jSD1gVCFg",
         "/assets/logo.png", "日本聪",
-        new Date(), "文本消息");
+        currentDate, "文本消息");
     const item_2 = new messageTipsItem("NJJ5ryLVoNG9Cm9yaPheMQH4tpUYoGyKYXGWNfFqLTFGLP",
         "/assets/logo.png", "中本聪",
-        new Date(), "文本消息");
+        currentDate, "文本消息");
     const item_3 = new messageTipsItem("NJA1fmxxVFRY2XWvcPU41zfxMrjb2iXDzaRW4jSD1gVCFg",
         "/assets/logo.png", "V神",
-        new Date(), "文本消息");
+        twoDaysAgo, "文本消息");
 
     result.push(item_1);
     result.push(item_2);

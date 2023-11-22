@@ -30,14 +30,14 @@ body {
 }
 
 #leftControlPanel {
-    width: 200px;
+    width: 400px;
     background-color: var(--bg-color);
     padding: 20px;
     box-sizing: border-box;
     position: relative; /* 添加相对定位 */
     display: flex;
     flex-direction: column;
-    align-items: center; /* 垂直方向居中 */
+    align-items: stretch; /* 垂直方向居中 */
 }
 
 /* 修改content的样式 */
@@ -224,6 +224,7 @@ body {
     justify-content: center; /* 居中按钮 */
     margin-top: 20px; /* 增加间隔 */
 }
+
 #passwordDialog .error-text {
     color: #e74c3c; /* 红色，用于显明错误信息 */
     display: none; /* 默认不显示 */
@@ -237,16 +238,19 @@ body {
 /* 新增样式规则 */
 #messageControlPanel {
     text-align: center; /* 文本居中 */
+    align-items: flex-start; /* 在交叉轴上的起点对齐 */
 }
 
 #messageTipsList {
     list-style: none;
     padding: 0;
+    display: flex;
+    flex-direction: column; /* 垂直方向的列布局 */
+    align-items: flex-start; /* 在交叉轴上的起点对齐 */
 }
 
 .messageTipsItem {
     display: flex;
-    flex-direction: column;
     align-items: center;
     margin-bottom: 20px;
 }
@@ -255,9 +259,48 @@ body {
     width: 50px; /* 调整头像的宽度 */
     height: 50px; /* 调整头像的高度 */
     border-radius: 50%; /* 圆形头像 */
-    margin-bottom: 5px;
+    vertical-align: top; /* 设置垂直对齐方式为顶部 */
+    background-color: #c0392b;
 }
 
 .messageTipsItem span {
+    margin-left: 14px; /* 左侧边距 */
     color: #777; /* 时间和文字的颜色 */
 }
+
+/* 在 main.css 中添加样式规则 */
+.messageTipsItem .info-container {
+    display: flex;
+    flex-direction: column;
+    margin-left: 0; /* 左侧边距，与原来的 margin-left 保持一致 */
+    background-color: rebeccapurple;
+    height: 50px; /* 设置高度为 100% */
+}
+
+.messageTipsItem .nickname-time {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    background-color: green;
+}
+
+.messageTipsItem .nickname {
+    margin-left: 5px;
+    font-size: 14px; /* 修改字体大小 */
+    text-align: left; /* 左对齐 */
+}
+
+.messageTipsItem .time {
+    color: #777; /* 时间颜色 */
+    font-size: 12px; /* 修改字体大小 */
+    text-align: right; /* 右对齐 */
+}
+
+.messageTipsItem .description {
+    margin-left: 5px;
+    color: #777; /* 描述颜色 */
+    font-size: 12px; /* 修改字体大小 */
+    text-align: left; /* 左对齐 */
+    margin-top: auto;
+}
+

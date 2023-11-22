@@ -17,116 +17,91 @@
 <body>
 
 <div id="container">
-    <div id="friendList">
-        <div id="friendListButtons">
-            <button id="messageButton">消息</button>
-            <button id="contactsButton">通讯录</button>
-            <button id="settingsButton">设置</button>
-        </div>
-        <input type="text" id="searchInput" placeholder="搜索好友">
-        <div id="friendListContent"></div>
-        <div id="settingsMenu">
-            <div class="settingsMenuItem" onclick="logout()">退出登录</div>
-            <div class="settingsMenuItem" onclick="deleteAccount()">删除账号</div>
-            <div class="settingsMenuItem" onclick="exportAccount()">导出账号</div>
-            <div class="settingsMenuItem" onclick="displayBalance()">显示余额</div>
-        </div>
-    </div>
 
-    <div id="content">
-        <div id="messageBox"></div>
-        <div id="inputContainer">
-            <div id="toolBar">
-                <button class="toolButton"><img src="/assets/logo.png" alt="Tool 1"></button>
-                <button class="toolButton"><img src="/assets/logo.png" alt="Tool 2"></button>
-                <button class="toolButton"><img src="/assets/logo.png" alt="Tool 3"></button>
-                <button class="toolButton"><img src="/assets/logo.png" alt="Tool 4"></button>
+    <section id="leftControlPanel">
+
+        <label for="msgSearchInput">
+            <input type="text" id="msgSearchInput" placeholder="搜索消息">
+        </label>
+
+        <nav id="controlElements">
+            <button class="button" id="messageButton"
+                    onclick="togglePanels('messageControlPanel', 'messageContentArea')">消息
+            </button>
+            <button class="button" id="contactsButton"
+                    onclick="togglePanels('friendControlPanel', 'contactContentArea')">通讯录
+            </button>
+            <button class="button" id="settingsButton" onclick="togglePanels('settingsMenu', 'settingContentArea')">
+                设置
+            </button>
+        </nav>
+
+        <div id="switchingArea">
+            <div id="messageControlPanel"></div>
+            <div id="friendControlPanel"></div>
+            <div id="settingsMenu">
+                <div class="settingsMenuItem" onclick="logout()">退出登录</div>
+                <div class="settingsMenuItem" onclick="deleteAccount()">删除账号</div>
+                <div class="settingsMenuItem" onclick="exportAccount()">导出账号</div>
+                <div class="settingsMenuItem" onclick="displayBalance()">显示余额</div>
             </div>
-            <textarea id="messageInput" placeholder="输入消息"></textarea>
         </div>
-    </div>
+
+    </section>
+
+    <section id="content">
+        <div id="messageContentArea">
+            <div id="messageContainer"></div>
+            <div id="inputContainer">
+                <div id="toolBar">
+                    <button class="toolButton"><img src="/assets/logo.png" alt="Tool 1"></button>
+                    <button class="toolButton"><img src="/assets/logo.png" alt="Tool 2"></button>
+                    <button class="toolButton"><img src="/assets/logo.png" alt="Tool 3"></button>
+                    <button class="toolButton"><img src="/assets/logo.png" alt="Tool 4"></button>
+                </div>
+                <label for="messageInput">
+                    <textarea id="messageInput" placeholder="输入消息"></textarea>
+                </label>
+            </div>
+        </div>
+
+        <div id="contactContentArea"></div>
+        <div id="settingContentArea"></div>
+    </section>
 </div>
 
 <script>
+    document.getElementById('messageControlPanel').style.display = 'block';
+    document.getElementById('messageContentArea').style.display = 'block';
 
-    document.addEventListener('DOMContentLoaded', function () {
-        const messageButton = document.getElementById('messageButton');
-        const contactsButton = document.getElementById('contactsButton');
-        const settingsButton = document.getElementById('settingsButton');
-        const settingsMenu = document.getElementById('settingsMenu');
-        const friendListContent = document.getElementById('friendListContent');
-        const searchInput = document.getElementById('searchInput');
+    function togglePanels(panelToShow, contentToShow) {
+        document.getElementById('messageControlPanel').style.display = 'none';
+        document.getElementById('friendControlPanel').style.display = 'none';
+        document.getElementById('settingsMenu').style.display = 'none';
 
-        messageButton.addEventListener('click', function () {
-            showMessageFriends();
-        });
+        document.getElementById('messageContentArea').style.display = 'none';
+        document.getElementById('contactContentArea').style.display = 'none';
+        document.getElementById('settingContentArea').style.display = 'none';
 
-        contactsButton.addEventListener('click', function () {
-            showContacts();
-        });
+        document.getElementById(panelToShow).style.display = 'block';
+        document.getElementById(contentToShow).style.display = 'block';
+    }
 
-        settingsButton.addEventListener('click', function () {
-            showSettingsMenu();
-        });
+    function logout() {
+        console.log('执行退出登录操作');
+    }
 
-        function showMessageFriends() {
-            hideSettingsMenu();
-            friendListContent.innerHTML = '';
-            searchInput.style.display = 'block'; // 显示搜索按钮
+    function deleteAccount() {
+        console.log('执行删除账号操作');
+    }
 
-            // 显示消息列表的内容
-            const messageFriends = ["好友1", "好友2", "好友3"];
-            messageFriends.forEach(function (friend) {
-                const listItem = document.createElement('div');
-                listItem.textContent = friend;
-                friendListContent.appendChild(listItem);
-            });
-        }
+    function exportAccount() {
+        console.log('执行导出账号操作');
+    }
 
-        function showContacts() {
-            hideSettingsMenu();
-            friendListContent.innerHTML = '';
-            searchInput.style.display = 'block'; // 显示搜索按钮
-
-            // 显示好友列表的内容
-            const contacts = ["好友A", "好友B", "好友C"];
-            contacts.forEach(function (contact) {
-                const listItem = document.createElement('div');
-                listItem.textContent = contact;
-                friendListContent.appendChild(listItem);
-            });
-        }
-
-        function showSettingsMenu() {
-            friendListContent.innerHTML = '';
-            searchInput.style.display = 'none'; // 隐藏搜索按钮
-
-            // 显示设置菜单的内容
-            settingsMenu.style.display = 'block';
-        }
-
-        function hideSettingsMenu() {
-            settingsMenu.style.display = 'none';
-        }
-
-        // 添加你的处理函数，例如：
-        function logout() {
-            console.log('执行退出登录操作');
-        }
-
-        function deleteAccount() {
-            console.log('执行删除账号操作');
-        }
-
-        function exportAccount() {
-            console.log('执行导出账号操作');
-        }
-
-        function displayBalance() {
-            console.log('执行显示余额操作');
-        }
-    });
-
+    function displayBalance() {
+        console.log('执行显示余额操作');
+    }
 </script>
 
 </body>

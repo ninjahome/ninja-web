@@ -1,10 +1,15 @@
 /* main.css */
 
+:root {
+    --bg-color: #333;
+    --hover-color: #555;
+}
+
 body {
     margin: 0;
     padding: 0;
     font-family: 'Arial', sans-serif;
-    background-color: #1a1a1a;
+    background-color: var(--bg-color);
     color: #fff;
 }
 
@@ -13,37 +18,15 @@ body {
     height: 100vh;
 }
 
-#friendList {
+#leftControlPanel {
     width: 200px;
-    background-color: #333;
+    background-color: var(--bg-color);
     padding: 20px;
     box-sizing: border-box;
-}
-
-#friendList h2 {
-    color: #3399cc;
-    border-bottom: 1px solid #3399cc;
-    padding-bottom: 10px;
-}
-
-#friendList ul {
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-}
-
-#friendList li {
-    margin-bottom: 10px;
-}
-
-#friendList a {
-    text-decoration: none;
-    color: #3399cc;
-    font-size: 16px;
-}
-
-#friendList a:hover {
-    color: #66ccff;
+    position: relative; /* 添加相对定位 */
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* 垂直方向居中 */
 }
 
 #content {
@@ -52,12 +35,12 @@ body {
     box-sizing: border-box;
 }
 
-#messageBox {
+#messageContainer {
     border: 1px solid #666;
     padding: 10px;
     height: 300px;
     overflow-y: auto;
-    background-color: #333;
+    background-color: var(--bg-color);
     color: #fff;
     margin-bottom: 10px;
 }
@@ -65,7 +48,7 @@ body {
 #inputContainer {
     display: flex;
     flex-direction: column;
-    background-color: #333;
+    background-color: var(--bg-color);
     padding: 10px;
     margin-bottom: 10px;
 }
@@ -73,7 +56,7 @@ body {
 #toolBar {
     display: flex;
     align-items: center;
-    background-color: #333;
+    background-color: var(--bg-color);
 }
 
 .toolButton {
@@ -89,64 +72,63 @@ body {
     height: 20px;
 }
 
-#messageInput {
-    padding: 10px;
-    box-sizing: border-box;
-    height: 200px;
-    resize: none;
-}
-
 /* 添加新样式规则 */
-#friendListButtons {
+#controlElements {
     display: flex;
     justify-content: space-between;
     margin-bottom: 10px;
+    border-bottom: 1px solid #555; /* 添加下划线 */
 }
 
-#messageButton, #contactsButton {
+.button {
     padding: 5px;
     cursor: pointer;
     border: none;
-    background-color: #333;
-    color: #fff;
     font-size: 14px;
 }
 
-#messageButton:hover, #contactsButton:hover {
-    background-color: #555;
+.button:hover {
+    background-color: var(--hover-color);
 }
 
-#searchInput {
+#messageButton, #contactsButton, #settingsButton {
+    background-color: var(--bg-color);
+    color: #fff;
+}
+
+#messageButton:hover, #contactsButton:hover, #settingsButton:hover {
+    background-color: var(--hover-color);
+}
+
+#msgSearchInput, #friendSearchInput {
     padding: 5px;
     margin-bottom: 10px;
     width: 100%;
     box-sizing: border-box;
+    background-color: #444; /* 添加的样式 */
+    color: #fff; /* 添加的样式 */
+    border: 1px solid #666; /* 添加的样式 */
+}
+
+#messageInput {
+    width: 100%; /* 与父容器相同的宽度 */
+    height: 220px; /* 设置高度为 220px */
+    box-sizing: border-box; /* 包括 padding 和 border 在内的盒模型 */
+    resize: none; /* 禁止用户调整大小 */
 }
 
 #friendListContent {
     overflow-y: auto;
 }
-<!-- main.css -->
-/* 添加新样式规则 */
-#settingsButton {
-    padding: 5px;
-    cursor: pointer;
-    border: none;
-    background-color: #333;
-    color: #fff;
-    font-size: 14px;
-}
-
-#settingsButton:hover {
-    background-color: #555;
-}
 
 #settingsMenu {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
     display: none;
-    background-color: #333;
+    background-color: var(--bg-color);
     padding: 10px;
     box-sizing: border-box;
-    margin-top: 10px;
 }
 
 .settingsMenuItem {
@@ -156,7 +138,5 @@ body {
 }
 
 .settingsMenuItem:hover {
-    color: #66ccff;
+    color: var(--hover-color);
 }
-
-/* ... 其他样式规则 ... */

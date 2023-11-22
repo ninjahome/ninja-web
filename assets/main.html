@@ -167,6 +167,19 @@
             clearSessionStorage();
         });
         loadCachedMsgList();
+
+        // 获取所有的 messageTipsItem 元素
+        const messageItems = document.querySelectorAll('.messageTipsItem');
+
+// 为每个 messageTipsItem 元素添加点击事件监听器
+        messageItems.forEach(item => {
+            item.addEventListener('click', () => {
+                // 移除所有 messageTipsItem 的 .selected 类
+                messageItems.forEach(otherItem => otherItem.classList.remove('selected'));
+                // 为被点击的 messageTipsItem 添加 .selected 类
+                item.classList.add('selected');
+            });
+        });
     });
 
     function checkSessionKeyPriKey() {

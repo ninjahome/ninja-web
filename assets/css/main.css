@@ -252,7 +252,14 @@ body {
 .messageTipsItem {
     display: flex;
     align-items: center;
-    margin-bottom: 20px;
+    /*margin: 10px;*/
+    width: 95%; /* 新增这一行 */
+    background-color: #2c3e50; /* 设置背景色 */
+    padding: 10px; /* 添加内边距以增强可读性 */
+}
+
+.messageTipsItem.selected {
+    background-color: #202d3a; /* 设置选中时的背景色 */
 }
 
 .messageTipsItem img {
@@ -260,7 +267,6 @@ body {
     height: 50px; /* 调整头像的高度 */
     border-radius: 50%; /* 圆形头像 */
     vertical-align: top; /* 设置垂直对齐方式为顶部 */
-    background-color: #c0392b;
 }
 
 .messageTipsItem span {
@@ -273,15 +279,14 @@ body {
     display: flex;
     flex-direction: column;
     margin-left: 0; /* 左侧边距，与原来的 margin-left 保持一致 */
-    background-color: rebeccapurple;
     height: 50px; /* 设置高度为 100% */
+    width: 100%; /* 新增这一行 */
 }
 
 .messageTipsItem .nickname-time {
     display: flex;
-    justify-content: flex-start;
+    justify-content: space-between;
     align-items: flex-start;
-    background-color: green;
 }
 
 .messageTipsItem .nickname {

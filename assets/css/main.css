@@ -16,6 +16,17 @@ body {
 #container {
     display: flex;
     height: 100vh;
+    position: relative;
+}
+
+#container::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 200px; /* 左侧控制面板的宽度 */
+    width: 1px;
+    height: 100%;
+    background-color: #555; /* 竖线的颜色 */
 }
 
 #leftControlPanel {
@@ -29,10 +40,14 @@ body {
     align-items: center; /* 垂直方向居中 */
 }
 
+/* 修改content的样式 */
 #content {
     flex: 1;
     padding: 20px;
     box-sizing: border-box;
+    background-color: #444; /* 新的背景颜色 */
+    color: #ccc; /* 新的文本颜色 */
+    overflow-y: auto; /* 添加溢出设置 */
 }
 
 #messageContainer {

@@ -141,7 +141,7 @@
         const currentDate = new Date();
         const messageDate = new Date(time);
         const timeDiff = currentDate - messageDate;
-        console.log("time from data:",time, "diff",timeDiff);
+        console.log("time from data:", time, "diff", timeDiff);
 
         if (timeDiff > 24 * 60 * 60 * 1000) {
             // If the time difference is more than 24 hours, use DD/MM/YY format
@@ -167,20 +167,18 @@
             clearSessionStorage();
         });
         loadCachedMsgList();
+        addItemColorChangeAction();
+    });
 
-        // 获取所有的 messageTipsItem 元素
+    function addItemColorChangeAction() {
         const messageItems = document.querySelectorAll('.messageTipsItem');
-
-// 为每个 messageTipsItem 元素添加点击事件监听器
         messageItems.forEach(item => {
             item.addEventListener('click', () => {
-                // 移除所有 messageTipsItem 的 .selected 类
                 messageItems.forEach(otherItem => otherItem.classList.remove('selected'));
-                // 为被点击的 messageTipsItem 添加 .selected 类
                 item.classList.add('selected');
             });
         });
-    });
+    }
 
     function checkSessionKeyPriKey() {
         // 使用 utils.js 中的函数检查 SessionKeyPriKey 是否存在

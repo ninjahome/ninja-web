@@ -68,6 +68,20 @@
         <div id="contactContentArea"></div>
         <div id="settingContentArea"></div>
     </section>
+
+    <div id="passwordDialog" class="modal">
+        <div class="modal-content">
+            <p>请输入密码</p>
+            <div class="input-container">
+                <input type="password" id="passwordInput" placeholder="密码">
+            </div>
+            <p id="errorText" class="error-text">错误信息将在此显示</p>
+            <div class="button-container">
+                <button id="confirmButton" onclick="validatePassword()">确认</button>
+                <button id="cancelButton" onclick="closeExportDialog()">取消</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -96,11 +110,82 @@
     }
 
     function exportAccount() {
-        console.log('执行导出账号操作');
+        openExportDialog();
     }
 
     function displayBalance() {
         console.log('执行显示余额操作');
+    }
+
+
+    let privateKey = null;
+    document.addEventListener("DOMContentLoaded", function () {
+        // 在页面加载完成后执行检查逻辑
+        checkSessionKeyPriKey();
+        // 监听浏览器的回退事件
+        window.addEventListener('popstate', function (event) {
+            clearSessionStorage();
+        });
+    });
+
+    function checkSessionKeyPriKey() {
+        // 使用 utils.js 中的函数检查 SessionKeyPriKey 是否存在
+        privateKey = getDataFromSessionStorage(SessionKeyPriKey);
+
+        if (!privateKey) {
+            // 如果不存在，则跳转到根目录
+            window.location.href = "/";
+            return;
+        }
+        // document.getElementById('profileDescription').innerText = privateKey.address;
+    }
+
+    // 清空 sessionStorage
+    function clearSessionStorage() {
+        sessionStorage.clear();
+        privateKey = null;
+    }
+
+    function openExportDialog() {
+        document.getElementById('passwordDialog').style.display = 'block';
+    }
+
+    function closeExportDialog() {
+        document.getElementById('passwordDialog').style.display = 'none';
+        clearErrorText();
+    }
+
+    function validatePassword() {
+        const password = document.getElementById('passwordInput').value;
+        const errorText = document.getElementById('errorText');
+        if (password.length === 0) {
+            errorText.innerText = '密码不能为空';
+            errorText.style.display = 'block';
+            return;
+        }
+
+        const keyString = localStorage.getItem(DBKeyWalletAddr + privateKey.address);
+        if (!keyString) {
+            errorText.innerText = '加载钱包信息失败：'+privateKey.address;
+            errorText.style.display = 'block';
+            return
+        }
+
+        getEncryptedKeyJSON(keyString, password).then((result) => {
+            clearErrorText();
+            saveDataToDisk(keyString, 'ninja_wallet.json');
+            closeExportDialog();
+        }).catch((error) => {
+            // 异步操作失败，关闭加载提示界面并处理错误
+            errorText.innerText = '密码错误，请重新输入:' + error;
+            errorText.style.display = 'block';
+        });
+    }
+
+    function clearErrorText() {
+        const errorText = document.getElementById('errorText');
+        errorText.innerText = ''; // 清空错误信息
+        errorText.style.display = 'none'; // 隐藏错误提示
     }
 </script>
 

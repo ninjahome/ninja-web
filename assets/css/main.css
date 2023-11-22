@@ -140,3 +140,78 @@ body {
 .settingsMenuItem:hover {
     color: var(--hover-color);
 }
+
+
+/* 根据修改更新样式规则 */
+#passwordDialog {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+#passwordDialog .close {
+    color: #ecf0f1;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+#passwordDialog .close:hover {
+    cursor: pointer;
+}
+
+#passwordDialog .input-container {
+    margin-bottom: 15px;
+}
+
+#passwordDialog input {
+    width: calc(100% - 10px);
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+#passwordDialog .modal-content {
+    background-color: #3498db;
+    margin: 10% auto; /* 调整 margin */
+    padding: 20px;
+    border: 1px solid #2c3e50;
+    width: 24%; /* 缩小长度 */
+    border-radius: 5px;
+    color: #ecf0f1;
+}
+
+#passwordDialog button {
+    padding: 10px 20px; /* 增加确认按钮长度 */
+    margin: 0 5px;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+}
+
+#passwordDialog #confirmButton {
+    background-color: #2ecc71;
+    color: #ecf0f1;
+}
+
+#passwordDialog #cancelButton {
+    background-color: #e74c3c;
+    color: #ecf0f1;
+}
+
+#passwordDialog .button-container {
+    display: flex;
+    justify-content: center; /* 居中按钮 */
+    margin-top: 20px; /* 增加间隔 */
+}
+#passwordDialog .error-text {
+    color: #e74c3c; /* 红色，用于显明错误信息 */
+    display: none; /* 默认不显示 */
+    margin-top: 10px; /* 增加间隔 */
+    text-align: center; /* 居中显示 */
+}

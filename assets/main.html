@@ -106,26 +106,25 @@
                 <img id="avatarImage" src="/assets/logo.png" alt="头像">
 
                 <div id="accountInfoContainer">
-                    <p>区块链地址: <span id="blockchainAddress">xxxxxx</span></p>
+                    <p>地址: <span id="blockchainAddress">xxxxxx</span></p>
                     <p>昵称: <span id="nickname">xxxx</span></p>
-                    <p>ETH余额: <span id="ethBalance">0.00 ETH</span></p>
-                    <p>USDT余额: <span id="usdtBalance">120.02 USDT</span></p>
+                    <p>ETH: <span id="ethBalance">0.00 ETH</span></p>
+                    <p>USDT: <span id="usdtBalance">120.02 USDT</span></p>
                 </div>
 
                 <div class="button-row">
-                    <button onclick="openExportDialog()">导出账号</button>
-                    <button onclick="deleteAccount()">删除账号</button>
+                    <button onclick="openExportDialog('export')">导出账号</button>
+                    <button onclick="openExportDialog('delete')">删除账号</button>
                 </div>
-
             </div>
-
-
         </div>
 
     </section>
 
     <div id="passwordDialog" class="modal">
         <div class="modal-content">
+            <input type="hidden" id="operationType" value="">
+
             <p>请输入密码</p>
             <div class="input-container">
                 <label for="passwordInput">
@@ -139,6 +138,7 @@
             </div>
         </div>
     </div>
+
 </div>
 
 </body>

@@ -40,10 +40,6 @@ function accountSetting() {
     document.getElementById('usdtBalance').innerText = '实际的USDT余额';
 }
 
-function displayBalance() {
-    console.log('执行显示余额操作');
-}
-
 Handlebars.registerHelper('formatTime', function (time) {
     const currentDate = new Date();
     const messageDate = new Date(time);
@@ -114,18 +110,24 @@ function clearSessionStorage() {
     privateKey = null;
 }
 
-function openExportDialog() {
+function openExportDialog(opType) {
+    clearErrorText();
+    document.getElementById('passwordInput').value = '';
+    document.getElementById('operationType').value = opType;
     document.getElementById('passwordDialog').style.display = 'block';
 }
 
 function closeExportDialog() {
     document.getElementById('passwordDialog').style.display = 'none';
+    document.getElementById('operationType').value = '';
+    document.getElementById('passwordInput').value = '';
     clearErrorText();
 }
 
 function validatePassword() {
     const password = document.getElementById('passwordInput').value;
-    const errorText = document.getElementById('errorText');
+    const operationType = document.getElementById('operationType').value;
+
     if (password.length === 0) {
         showError('密码不能为空');
         return;
@@ -139,11 +141,18 @@ function validatePassword() {
 
     getEncryptedKeyJSON(keyString, password).then(() => {
         clearErrorText();
-        saveDataToDisk(keyString, 'ninja_wallet.json');
+
+        if (operationType === 'export'){
+            saveDataToDisk(keyString, 'ninja_wallet.json');
+        }else  if (operationType === 'delete'){
+            removeKeyItem(privateKey.address);
+            window.location.href = '/';
+        }
+
         closeExportDialog();
+
     }).catch((error) => {
         showError('密码错误，请重新输入:' + error);
-        ;
     });
 }
 
@@ -174,10 +183,6 @@ function loadCachedMsgList() {
 }
 
 function clearCachedMsg() {
-
-}
-
-function deleteAccount() {
 
 }
 

@@ -72,6 +72,12 @@ function addNewKeyItem(encryptedKeyJSON) {
     allWallets.addWallet(encryptedKeyJSON.address)
 }
 
+function  removeKeyItem(address){
+    const allWallets = loadOrCreateWallet();
+    allWallets.removeWallet(address);
+    localStorage.removeItem(DBKeyWalletAddr + address);
+}
+
 async function newWallet(password) {
     try {
         const key = generateNewLightSubKey();

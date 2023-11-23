@@ -266,8 +266,8 @@ body {
 }
 
 #messageControlPanel {
-    text-align: center; /* 文本居中 */
-    align-items: flex-start; /* 在交叉轴上的起点对齐 */
+    width: 100%;
+    margin-top: -15px;
 }
 
 #messageTipsList {
@@ -285,6 +285,7 @@ body {
     background-color: #2c3e50; /* 设置背景色 */
     padding: 10px; /* 添加内边距以增强可读性 */
     cursor: pointer; /* 添加指针样式 */
+    /*border-bottom: 1px solid #555;*/
 }
 
 .messageTipsItem.selected {
@@ -342,8 +343,8 @@ body {
 
 /* 新增样式规则 */
 #friendControlPanel {
-    text-align: center; /* 文本居中 */
-    align-items: flex-start; /* 在交叉轴上的起点对齐 */
+    width: 100%;
+    margin-top: -15px;
 }
 
 #friendList {

@@ -44,7 +44,7 @@
             <div id="messageControlPanel">
                 <ul id="messageTipsListTemplate" style="display: none">
                     {{#each messages}}
-                    <li class="messageTipsItem">
+                    <li class="messageTipsItem" onclick="loadCachedMsgListForAddr('{{address}}')">
                         <img src="{{avatarUrl}}" alt="Avatar">
                         <div class="info-container">
                             <div class="nickname-time">
@@ -82,9 +82,26 @@
 
     <section id="content">
         <div id="messageContentArea">
-            <div id="messageContainer">
 
+            <div id="messageContainer">
+                <script id="messageTemplate" type="text/x-handlebars-template">
+                    {{#each messages}}
+                    <div class="messageItem {{#if isSelf}}self{{else}}other{{/if}}">
+                        <img src="{{avatarUrl}}" alt="Avatar">
+                        <div class="messageContent">
+                            <div class="info-container">
+                                <div class="nickname-time">
+                                    <span class="nickname">{{nickname}}</span>
+                                    <span class="time">{{formatTime time}}</span>
+                                </div>
+                                <div class="description">{{description}}</div>
+                            </div>
+                        </div>
+                    </div>
+                    {{/each}}
+                </script>
             </div>
+
             <div id="inputContainer">
                 <div id="toolBar">
                     <button class="toolButton"> <img src="/assets/read_pack_icon.png" alt="红包"> </button>
@@ -142,6 +159,36 @@
     </div>
 
 </div>
+
+<script>
+    // 请确保在加载 Handlebars 后执行以下操作
+
+    // 假设你有一个消息数组
+    const messages = [
+        {
+            isSelf: true,
+            avatarUrl: "/assets/logo.png",
+            nickname: "你的昵称",
+            description: "你发送的消息你发送的消息你发送的消息你发送的消息你发送的消息你发送的消息你发送的消息",
+            time: new Date()
+        },
+        {
+            isSelf: false,
+            avatarUrl: "/assets/logo.png",
+            nickname: "其他人的昵称",
+            description: "其他人发送的消息 其他人发送的消息 其他人发送的消息其他人发送的消息其他人发送的消息其他人发送的消息",
+            time: new Date()
+        },
+        // 添加更多消息
+    ];
+
+    // 获取 Handlebars 模板
+    const messageTemplate = Handlebars.compile(document.getElementById('messageTemplate').innerHTML);
+
+    // 渲染消息并插入到 messageContainer 中
+    document.getElementById('messageContainer').innerHTML = messageTemplate({ messages });
+
+</script>
 
 </body>
 </html>

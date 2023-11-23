@@ -69,7 +69,7 @@ document.addEventListener("DOMContentLoaded", function () {
     window.addEventListener('popstate', function () {
         clearSessionStorage();
     });
-    loadCachedMsgList();
+    loadCachedMsgTipsList();
     loadCachedFriendList();
     addItemColorChangeAction();
     togglePanels(null, 'messageControlPanel', 'messageContentArea');
@@ -167,8 +167,10 @@ function clearErrorText() {
     errorText.innerText = ''; // 清空错误信息
     errorText.style.display = 'none'; // 隐藏错误提示
 }
-
-function loadCachedMsgList() {
+function loadCachedMsgListForAddr(address){
+    console.log("query cached msg for :===>",address);
+}
+function loadCachedMsgTipsList() {
     // 从HTML中获取Handlebars模板源代码
     const source = document.getElementById("messageTipsListTemplate").innerHTML;
 

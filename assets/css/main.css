@@ -50,16 +50,6 @@ body {
     overflow-y: auto; /* 添加溢出设置 */
 }
 
-#messageContainer {
-    border: 1px solid #666;
-    padding: 10px;
-    height: 400px;
-    overflow-y: auto;
-    background-color: var(--bg-color);
-    color: #fff;
-    margin-bottom: 10px;
-    margin-top: 30px;
-}
 
 #inputContainer {
     display: flex;
@@ -467,4 +457,63 @@ body {
 
 #accountSettingContentArea button:hover {
     background-color: #2980b9; /* 按钮悬停时背景颜色 */
+}
+
+#messageContainer {
+    border: 1px solid #666;
+    padding: 10px;
+    height: 400px;
+    overflow-y: auto;
+    background-color: var(--bg-color);
+    color: #fff;
+    margin-bottom: 10px;
+    margin-top: 30px;
+    flex-direction: column;
+    display: flex;
+}
+
+.messageItem {
+    display: flex;
+    margin-bottom: 10px;
+    position: relative;
+}
+
+.messageItem img {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.messageItem .messageContent {
+    max-width: 70%; /* 调整消息内容最大宽度 */
+    padding: 10px;
+    border-radius: 10px;
+}
+
+.messageItem.self {
+    justify-content: flex-end; /* 将自己发送的消息靠右对齐 */
+    align-items: flex-end;
+}
+
+.messageItem.self .messageContent {
+    background-color: #3498db; /* 自己发送的消息背景色 */
+    color: #fff; /* 自己发送的消息文字颜色 */
+    position: relative;
+    left: -50px; /* 左偏移 */
+}
+
+.messageItem.other {
+    justify-content: flex-start; /* 将接收到的消息靠左对齐 */
+    align-items: flex-start;
+}
+
+.messageItem.other .messageContent {
+    background-color: #ecf0f1; /* 接收到的消息背景色 */
+    color: #333; /* 接收到的消息文字颜色 */
+}
+.messageItem.self img {
+    position: absolute;
+    top: 0;
+    right: 0;
 }

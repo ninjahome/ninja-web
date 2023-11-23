@@ -103,14 +103,20 @@
         <div id="settingContentArea">
 
             <div id="accountSettingContentArea">
-                <img src="/assets/logo.png" alt="头像" id="avatarImage"
-                     style="width: 100px; height: 100px; border-radius: 50%;">
-                <p>区块链地址: <span id="blockchainAddress">xxxxxx</span></p>
-                <p>昵称: <span id="nickname">xxxx</span></p>
-                <p>ETH余额: <span id="ethBalance">0.00 ETH</span></p>
-                <p>USDT余额: <span id="usdtBalance">120.02 USDT</span></p>
-                <button onclick="openExportDialog()">导出账号</button>
-                <button onclick="deleteAccount()">删除账号</button>
+                <img id="avatarImage" src="/assets/logo.png" alt="头像">
+
+                <div id="accountInfoContainer">
+                    <p>区块链地址: <span id="blockchainAddress">xxxxxx</span></p>
+                    <p>昵称: <span id="nickname">xxxx</span></p>
+                    <p>ETH余额: <span id="ethBalance">0.00 ETH</span></p>
+                    <p>USDT余额: <span id="usdtBalance">120.02 USDT</span></p>
+                </div>
+
+                <div class="button-row">
+                    <button onclick="openExportDialog()">导出账号</button>
+                    <button onclick="deleteAccount()">删除账号</button>
+                </div>
+
             </div>
 
 

@@ -8,6 +8,8 @@ function togglePanels(button, panelToShow, contentToShow) {
     document.getElementById('contactContentArea').style.display = 'none';
     document.getElementById('settingContentArea').style.display = 'none';
 
+    document.getElementById('accountSettingContentArea').style.visibility = 'hidden';
+
     document.getElementById(panelToShow).style.display = 'block';
     document.getElementById(contentToShow).style.display = 'block';
     toggleButton(button);
@@ -30,7 +32,7 @@ function logout() {
 }
 
 function accountSetting() {
-    document.getElementById('accountSettingContentArea').style.display = 'block';
+    document.getElementById('accountSettingContentArea').style.visibility = 'visible';
     document.getElementById('avatarImage').src = '/assets/logo.png';
     document.getElementById('blockchainAddress').innerText = '实际的区块链地址';
     document.getElementById('nickname').innerText = '实际的昵称';

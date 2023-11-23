@@ -188,7 +188,7 @@ body {
 #passwordDialog {
     display: none;
     position: fixed;
-    z-index: 1;
+    z-index: 2;
     left: 0;
     top: 0;
     width: 100%;
@@ -388,35 +388,44 @@ body {
 
 /* 在 main.css 中更新样式规则 */
 #accountSettingContentArea {
-    display: none; /* 默认不显示 */
+    visibility: hidden;
+    display: flex; /* 默认不显示 */
     position: absolute; /* 或其他合适的定位方式 */
     width: 420px; /* 固定宽度，扩大 40% */
     height: 560px; /* 固定高度，扩大 40% */
-    top: 50%;
+    top: 20%;
     left: 50%;
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, -20%);
     background-color: #2c3e50; /* 背景颜色，与其他设置相匹配 */
     padding: 20px; /* 内边距 */
     box-sizing: border-box; /* 包括 padding 和 border 在内的盒模型 */
     border-radius: 10px; /* 圆角 */
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* 阴影效果 */
-    z-index: 2; /* 确保在其他元素之上 */
+    z-index: 1; /* 确保在其他元素之上 */
+    flex-direction: column;
+    align-items: center;
 }
 
 /* 更新 accountSettingContentArea 内元素的样式 */
 #accountSettingContentArea #avatarImage {
     width: 100px;
     height: 100px;
-    border-radius: 50%;
-    margin-bottom: 20px; /* 调整与下方元素的间距 */
+    top: 20px;
+    margin-bottom: 20px;
 }
 
-#accountSettingContentArea #blockchainAddress,
-#accountSettingContentArea #nickname,
-#accountSettingContentArea #ethBalance,
-#accountSettingContentArea #usdtBalance {
+#accountSettingContentArea #accountInfoContainer {
     color: #fff; /* 文本颜色 */
-    margin-bottom: 15px; /* 元素间距 */
+    margin-bottom: 0; /* 元素间距 */
+}
+
+
+#accountSettingContentArea .button-row {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    align-items: center;
+    margin-bottom: 20px; /* 添加这一行，设置底部外边距 */
 }
 
 #accountSettingContentArea button {
@@ -426,6 +435,8 @@ body {
     border: none; /* 去除按钮边框 */
     border-radius: 5px; /* 圆角 */
     cursor: pointer;
+    margin-bottom: 15px; /* 按钮之间的间距 */
+    width: 60%;
 }
 
 #accountSettingContentArea button:hover {

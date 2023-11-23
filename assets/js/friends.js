@@ -1,5 +1,29 @@
-function LoadCachedFriedList() {
-    return ["NJA1fmxxVFRY2XWvcPU41zfxMrjb2iXDzaRW4jSD1gVCFg", "NJJ5ryLVoNG9Cm9yaPheMQH4tpUYoGyKYXGWNfFqLTFGLP"];
+
+class contactItem{
+    constructor(address, avatarUrl,nickname) {
+        this.address = address;
+        this.avatarUrl = avatarUrl;
+        this.nickname = nickname;
+    }
+}
+
+function cacheLoadCachedFriedList() {
+    const item_1 = new contactItem(
+        "NJA1fmxxVFRY2XWvcPU41zfxMrjb2iXDzaRW4jSD1gVCFg",
+                "/assets/logo.png",
+                "日本聪"
+    )
+    const item_2 = new contactItem(
+        "NJJ5ryLVoNG9Cm9yaPheMQH4tpUYoGyKYXGWNfFqLTFGLP",
+        "/assets/logo.png",
+        "中本聪"
+    )
+
+    const result = [];
+    result.push(item_1);
+    result.push(item_2);
+
+    return result;
 }
 
 class messageTipsItem {

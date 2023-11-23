@@ -28,12 +28,13 @@
 
         <nav id="controlElements">
             <button class="button" id="messageButton"
-                    onclick="togglePanels('messageControlPanel', 'messageContentArea')">消息
+                    onclick="togglePanels(this, 'messageControlPanel', 'messageContentArea')">消息
             </button>
             <button class="button" id="contactsButton"
-                    onclick="togglePanels('friendControlPanel', 'contactContentArea')">通讯录
+                    onclick="togglePanels(this, 'friendControlPanel', 'contactContentArea')">通讯录
             </button>
-            <button class="button" id="settingsButton" onclick="togglePanels('settingsMenu', 'settingContentArea')">
+            <button class="button" id="settingsButton"
+                    onclick="togglePanels(this, 'settingsMenu', 'settingContentArea')">
                 设置
             </button>
         </nav>
@@ -57,13 +58,22 @@
                 <ul id="messageTipsList"></ul>
 
             </div>
-            <div id="friendControlPanel"></div>
+            <div id="friendControlPanel">
+                <ul id="friendListTemplate" style="display: none">
+                    {{#each friends}}
+                    <li class="friendListItem">
+                        <img src="{{avatarUrl}}" alt="Friend Avatar">
+                        <span class="friendNickname">{{nickname}}</span>
+                    </li>
+                    {{/each}}
+                </ul>
+                <ul id="friendList"></ul>
+            </div>
+
             <div id="settingsMenu">
-                <div class="settingsMenuItem" onclick="logout()">退出登录</div>
-                <div class="settingsMenuItem" onclick="deleteAccount()">删除账号</div>
-                <div class="settingsMenuItem" onclick="exportAccount()">导出账号</div>
-                <div class="settingsMenuItem" onclick="displayBalance()">显示余额</div>
+                <div class="settingsMenuItem" onclick="accountSetting()">账号管理</div>
                 <div class="settingsMenuItem" onclick="clearCachedMsg()">清空聊天</div>
+                <div class="settingsMenuItem" onclick="logout()">退出登录</div>
             </div>
         </div>
 
@@ -85,15 +95,32 @@
             </div>
         </div>
 
-        <div id="contactContentArea"></div>
-        <div id="settingContentArea"></div>
+        <div id="contactContentArea">
+
+        </div>
+
+        <div id="settingContentArea">
+            <div id="accountSettingContentArea">
+                <img src="/assets/logo.png" alt="头像" id="avatarImage"
+                     style="width: 100px; height: 100px; border-radius: 50%;">
+                <p>区块链地址: <span id="blockchainAddress">xxxxxx</span></p>
+                <p>昵称: <span id="nickname">xxxx</span></p>
+                <p>ETH余额: <span id="ethBalance">0.00 ETH</span></p>
+                <p>USDT余额: <span id="usdtBalance">120.02 USDT</span></p>
+                <button onclick="openExportDialog()">导出账号</button>
+                <button onclick="deleteAccount()">删除账号</button>
+            </div>
+        </div>
+
     </section>
 
     <div id="passwordDialog" class="modal">
         <div class="modal-content">
             <p>请输入密码</p>
             <div class="input-container">
-                <input type="password" id="passwordInput" placeholder="密码">
+                <label for="passwordInput">
+                    <input type="password" id="passwordInput" placeholder="密码">
+                </label>
             </div>
             <p id="errorText" class="error-text">错误信息将在此显示</p>
             <div class="button-container">
@@ -108,7 +135,7 @@
     document.getElementById('messageControlPanel').style.display = 'block';
     document.getElementById('messageContentArea').style.display = 'block';
 
-    function togglePanels(panelToShow, contentToShow) {
+    function togglePanels(button, panelToShow, contentToShow) {
         document.getElementById('messageControlPanel').style.display = 'none';
         document.getElementById('friendControlPanel').style.display = 'none';
         document.getElementById('settingsMenu').style.display = 'none';
@@ -119,18 +146,32 @@
 
         document.getElementById(panelToShow).style.display = 'block';
         document.getElementById(contentToShow).style.display = 'block';
+        toggleButton(button);
+    }
+
+    function toggleButton(button) {
+        // 移除所有按钮的选中状态
+        const buttons = document.querySelectorAll('.button');
+        buttons.forEach(b => b.classList.remove('selected'));
+
+        // 添加选中状态到当前按钮
+        if (!button) {
+            button = buttons[0];
+        }
+        button.classList.add('selected');
     }
 
     function logout() {
         quitFromSession();
     }
 
-    function deleteAccount() {
-        console.log('执行删除账号操作');
-    }
-
-    function exportAccount() {
-        openExportDialog();
+    function accountSetting() {
+        document.getElementById('accountSettingContentArea').style.display = 'block';
+        document.getElementById('avatarImage').src = '/assets/logo.png';
+        document.getElementById('blockchainAddress').innerText = '实际的区块链地址';
+        document.getElementById('nickname').innerText = '实际的昵称';
+        document.getElementById('ethBalance').innerText = '实际的ETH余额'; // 例如：'0.00 ETH'
+        document.getElementById('usdtBalance').innerText = '实际的USDT余额';
     }
 
     function displayBalance() {
@@ -163,11 +204,13 @@
         // 在页面加载完成后执行检查逻辑
         checkSessionKeyPriKey();
         // 监听浏览器的回退事件
-        window.addEventListener('popstate', function (event) {
+        window.addEventListener('popstate', function () {
             clearSessionStorage();
         });
         loadCachedMsgList();
+        loadCachedFriendList();
         addItemColorChangeAction();
+        togglePanels(null, 'messageControlPanel', 'messageContentArea');
     });
 
     function addItemColorChangeAction() {
@@ -178,6 +221,15 @@
                 item.classList.add('selected');
             });
         });
+
+        const friendListItem = document.querySelectorAll('.friendListItem');
+        friendListItem.forEach(item => {
+            item.addEventListener('click', () => {
+                friendListItem.forEach(otherItem => otherItem.classList.remove('selected'));
+                item.classList.add('selected');
+            });
+        });
+
     }
 
     function checkSessionKeyPriKey() {
@@ -221,7 +273,7 @@
             return
         }
 
-        getEncryptedKeyJSON(keyString, password).then((result) => {
+        getEncryptedKeyJSON(keyString, password).then(() => {
             clearErrorText();
             saveDataToDisk(keyString, 'ninja_wallet.json');
             closeExportDialog();
@@ -255,6 +307,25 @@
     function clearCachedMsg() {
 
     }
+
+    function deleteAccount() {
+
+    }
+
+    function loadCachedFriendList() {
+        // Get the Handlebars template source code
+        const source = document.getElementById("friendListTemplate").innerHTML;
+
+        // Compile the template
+        const template = Handlebars.compile(source);
+
+        // Replace this with actual data for your friends
+        const friends = cacheLoadCachedFriedList();
+
+        // Render the template with the friend data
+        document.getElementById("friendList").innerHTML = template({friends: friends});
+    }
+
 </script>
 
 </body>

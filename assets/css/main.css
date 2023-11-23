@@ -30,7 +30,7 @@ body {
 }
 
 #leftControlPanel {
-    width: 400px;
+    width: 300px;
     background-color: var(--bg-color);
     padding: 20px;
     box-sizing: border-box;
@@ -53,11 +53,12 @@ body {
 #messageContainer {
     border: 1px solid #666;
     padding: 10px;
-    height: 300px;
+    height: 400px;
     overflow-y: auto;
     background-color: var(--bg-color);
     color: #fff;
     margin-bottom: 10px;
+    margin-top: 30px;
 }
 
 #inputContainer {
@@ -77,14 +78,21 @@ body {
 .toolButton {
     padding: 5px;
     cursor: pointer;
-    margin-right: 10px;
-    border: none;
+    margin-right: 5px;
+    border: 1px;
     background-color: transparent;
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* 添加过渡效果 */
+    border-radius: 8px; /* 圆角边框 */
+}
+.toolButton:hover {
+    transform: scale(1.2); /* 悬停时放大按钮 */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* 添加阴影效果 */
 }
 
+
 .toolButton img {
-    width: 20px;
-    height: 20px;
+    width: 25px;
+    height: 25px;
 }
 
 /* 添加新样式规则 */
@@ -159,9 +167,7 @@ body {
 
 #settingsMenu {
     position: absolute;
-    /*left: 50%;*/
-    /*transform: translateX(-50%);*/
-    width: 95%; /* 新增这一行 */
+    width: 80%; /* 新增这一行 */
     display: none;
     background-color: #2c3e50; /* 与 friendListItem 相似的背景色 */
     padding: 10px;
@@ -376,12 +382,10 @@ body {
 
 #settingContentArea {
     display: none; /* 默认不显示 */
-    width: 100vh; /* 设置宽度为父元素宽度的 80% */
-    height: 100vh; /* 设置高度为视口高度的 100% */
+    /*width: 100vh; !* 设置宽度为父元素宽度的 80% *!*/
+    height: 80vh; /* 设置高度为视口高度的 100% */
     margin: auto; /* 在水平和垂直方向上都居中 */
     padding: 20px; /* 添加内边距 */
-    /*box-sizing: border-box; !* 包括 padding 和 border 在内的盒模型 *!*/
-    /*background-color: #tr; !* 临时颜色，可以根据实际情况更改 *!*/
     position: relative;
     /* 其他样式属性根据需要添加 */
 }

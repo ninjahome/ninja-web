@@ -74,6 +74,7 @@ body {
     transition: transform 0.3s ease, box-shadow 0.3s ease; /* 添加过渡效果 */
     border-radius: 8px; /* 圆角边框 */
 }
+
 .toolButton:hover {
     transform: scale(1.2); /* 悬停时放大按钮 */
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* 添加阴影效果 */
@@ -275,7 +276,6 @@ body {
     background-color: #2c3e50; /* 设置背景色 */
     padding: 10px; /* 添加内边距以增强可读性 */
     cursor: pointer; /* 添加指针样式 */
-    /*border-bottom: 1px solid #555;*/
 }
 
 .messageTipsItem.selected {
@@ -322,14 +322,13 @@ body {
     text-align: right; /* 右对齐 */
 }
 
-.messageTipsItem .description {
+.messageTipsItem .msgPayload {
     margin-left: 5px;
     color: #777; /* 描述颜色 */
     font-size: 12px; /* 修改字体大小 */
     text-align: left; /* 左对齐 */
     margin-top: auto;
 }
-
 
 /* 新增样式规则 */
 #friendControlPanel {
@@ -420,6 +419,7 @@ body {
     flex: 1;
     text-align: right;
 }
+
 #accountInfoContainer p {
     display: flex;
     justify-content: space-between;
@@ -512,8 +512,84 @@ body {
     background-color: #ecf0f1; /* 接收到的消息背景色 */
     color: #333; /* 接收到的消息文字颜色 */
 }
+
 .messageItem.self img {
     position: absolute;
     top: 0;
     right: 0;
+}
+
+
+#contactContentArea {
+    position: absolute;
+    width: 520px;
+    height: 520px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #2c3e50;
+    padding: 20px;
+    box-sizing: border-box;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    visibility: hidden;
+}
+
+#contactContentArea img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    margin-bottom: 20px;
+}
+
+#contactContentArea .contactInfoContainer {
+    color: #fff;
+    margin-bottom: 25px;
+}
+
+#contactContentArea span {
+    flex: 1;
+    text-align: right;
+}
+
+#contactContentArea p {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+    padding: 4px 5px;
+}
+
+#contactContentArea p:nth-child(odd) {
+    background-color: #2c3e50;
+}
+
+#contactContentArea p:nth-child(even) {
+    background-color: #34495e;
+}
+
+#contactContentArea .button-row {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 10px;
+    margin-top: 20px;
+    width: 60%;
+}
+
+#contactContentArea button {
+    background-color: #3498db;
+    color: #fff;
+    padding: 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 20px;
+    width: 60%;
+}
+
+#contactContentArea button:hover {
+    background-color: #2980b9;
 }

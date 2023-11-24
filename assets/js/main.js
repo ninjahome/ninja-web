@@ -5,10 +5,11 @@ function togglePanels(button, panelToShow, contentToShow) {
     document.getElementById('settingsMenu').style.display = 'none';
 
     document.getElementById('messageContentArea').style.display = 'none';
-    document.getElementById('contactContentArea').style.display = 'none';
+    document.getElementById('contactContentAreaBackGrd').style.display = 'none';
     document.getElementById('settingContentArea').style.display = 'none';
 
     document.getElementById('accountSettingContentArea').style.visibility = 'hidden';
+    document.getElementById('contactContentArea').style.visibility = 'hidden';
 
     document.getElementById(panelToShow).style.display = 'block';
     document.getElementById(contentToShow).style.display = 'block';
@@ -16,11 +17,9 @@ function togglePanels(button, panelToShow, contentToShow) {
 }
 
 function toggleButton(button) {
-    // 移除所有按钮的选中状态
     const buttons = document.querySelectorAll('.button');
     buttons.forEach(b => b.classList.remove('selected'));
 
-    // 添加选中状态到当前按钮
     if (!button) {
         button = buttons[0];
     }
@@ -44,7 +43,6 @@ Handlebars.registerHelper('formatTime', function (time) {
     const currentDate = new Date();
     const messageDate = new Date(time);
     const timeDiff = currentDate - messageDate;
-    console.log("time from data:", time, "diff", timeDiff);
 
     if (timeDiff > 24 * 60 * 60 * 1000) {
         // If the time difference is more than 24 hours, use DD/MM/YY format
@@ -63,9 +61,7 @@ Handlebars.registerHelper('formatTime', function (time) {
 
 let privateKey = null;
 document.addEventListener("DOMContentLoaded", function () {
-    // 在页面加载完成后执行检查逻辑
     checkSessionKeyPriKey();
-    // 监听浏览器的回退事件
     window.addEventListener('popstate', function () {
         clearSessionStorage();
     });
@@ -91,15 +87,12 @@ function addItemColorChangeAction() {
             item.classList.add('selected');
         });
     });
-
 }
 
 function checkSessionKeyPriKey() {
-    // 使用 utils.js 中的函数检查 SessionKeyPriKey 是否存在
     privateKey = getDataFromSessionStorage(SessionKeyPriKey);
 
     if (!privateKey) {
-        // 如果不存在，则跳转到根目录
         window.location.href = "/";
     }
 }
@@ -167,20 +160,21 @@ function clearErrorText() {
     errorText.innerText = ''; // 清空错误信息
     errorText.style.display = 'none'; // 隐藏错误提示
 }
+
 function loadCachedMsgListForAddr(address){
-    console.log("query cached msg for :===>",address);
+    const messages = cacheLoadCachedMsgListForAddr(address);
+    const messageTemplate = Handlebars.compile(document.getElementById('messageTemplate').innerHTML);
+    document.getElementById('messageContainer').innerHTML = messageTemplate({ messages });
 }
+
+
 function loadCachedMsgTipsList() {
-    // 从HTML中获取Handlebars模板源代码
     const source = document.getElementById("messageTipsListTemplate").innerHTML;
 
-// 编译模板
     const template = Handlebars.compile(source);
 
-// 示例数据（用你的实际数据替换这部分）
-    const messages = cacheLoadCachedMsgList()
+    const messages = cacheLoadCachedMsgTipsList()
 
-// 使用数据渲染模板
     document.getElementById("messageTipsList").innerHTML = template({messages: messages});
 }
 
@@ -200,4 +194,30 @@ function loadCachedFriendList() {
 
     // Render the template with the friend data
     document.getElementById("friendList").innerHTML = template({friends: friends});
+}
+
+function fullFillContact(address) {
+    document.getElementById('contactContentArea').style.visibility = 'visible';
+    const  contactInfo = loadContactDetails(address);
+    document.getElementById("contactAvatarImage").src = contactInfo.avatarUrl;
+    document.getElementById("contactInfoContainer").innerHTML = `
+        <span>昵称：${contactInfo.nickname}</span>
+        <p>地址：${contactInfo.address}</p>
+        <p>别名: ${contactInfo.alias}</p>
+        <p>备注: ${contactInfo.demo}</p>
+    `;
+
+    const buttonRow = document.querySelector("#contactContentArea .button-row");
+    buttonRow.innerHTML = `
+        <button onclick="startChatWithFriend('${address}')">开始聊天</button>
+        <button onclick="deleteFriend('${address}')">删除好友</button>
+    `;
+}
+
+function startChatWithFriend(friendAddress) {
+    console.log("start to chat with friend:", friendAddress);
+}
+
+function deleteFriend(friendAddress) {
+    console.log("start to delete friend:",friendAddress);
 }

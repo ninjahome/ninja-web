@@ -14,7 +14,7 @@
     <script src="/assets/js/crypto.js"></script>
     <script src="/assets/js/key.js"></script>
     <script src="/assets/js/wallet.js"></script>
-    <script src="/assets/js/friends.js"></script>
+    <script src="/assets/js/database_util.js"></script>
     <script src="/assets/js/main.js"></script>
 </head>
 <body>
@@ -32,7 +32,7 @@
                     onclick="togglePanels(this, 'messageControlPanel', 'messageContentArea')">消息
             </button>
             <button class="button" id="contactsButton"
-                    onclick="togglePanels(this, 'friendControlPanel', 'contactContentArea')">通讯录
+                    onclick="togglePanels(this, 'friendControlPanel', 'contactContentAreaBackGrd')">通讯录
             </button>
             <button class="button" id="settingsButton"
                     onclick="togglePanels(this, 'settingsMenu', 'settingContentArea')">
@@ -51,7 +51,7 @@
                                 <span class="nickname">{{nickname}}</span>
                                 <span class="time">{{formatTime time}}</span>
                             </div>
-                            <div class="description">{{description}}</div>
+                            <div class="msgPayload">{{msgPayload}}</div>
                         </div>
                     </li>
                     {{/each}}
@@ -62,7 +62,7 @@
             <div id="friendControlPanel">
                 <ul id="friendListTemplate" style="display: none">
                     {{#each friends}}
-                    <li class="friendListItem">
+                    <li class="friendListItem" onclick="fullFillContact('{{address}}')">
                         <img src="{{avatarUrl}}" alt="Friend Avatar">
                         <span class="friendNickname">{{nickname}}</span>
                     </li>
@@ -83,40 +83,52 @@
     <section id="content">
         <div id="messageContentArea">
 
-            <div id="messageContainer">
-                <script id="messageTemplate" type="text/x-handlebars-template">
-                    {{#each messages}}
-                    <div class="messageItem {{#if isSelf}}self{{else}}other{{/if}}">
-                        <img src="{{avatarUrl}}" alt="Avatar">
-                        <div class="messageContent">
-                            <div class="info-container">
-                                <div class="nickname-time">
-                                    <span class="nickname">{{nickname}}</span>
-                                    <span class="time">{{formatTime time}}</span>
-                                </div>
-                                <div class="description">{{description}}</div>
+            <script id="messageTemplate" type="text/x-handlebars-template">
+                {{#each messages}}
+                <div class="messageItem {{#if isSelf}}self{{else}}other{{/if}}">
+                    <img src="{{avatarUrl}}" alt="Avatar">
+                    <div class="messageContent">
+                        <div class="info-container">
+                            <div class="nickname-time">
+                                <span class="nickname">{{nickname}}</span>
+                                <span class="time">{{formatTime time}}</span>
                             </div>
+                            <div class="msgPayload">{{msgPayload}}</div>
                         </div>
                     </div>
-                    {{/each}}
-                </script>
-            </div>
+                </div>
+                {{/each}}
+            </script>
+
+            <div id="messageContainer"></div>
 
             <div id="inputContainer">
                 <div id="toolBar">
-                    <button class="toolButton"> <img src="/assets/read_pack_icon.png" alt="红包"> </button>
+                    <button class="toolButton"><img src="/assets/read_pack_icon.png" alt="红包"></button>
                     <button class="toolButton"><img src="/assets/contact_info_icon.png" alt="联系人"></button>
                     <button class="toolButton"><img src="/assets/phone_icon.png" alt="图片"></button>
-<!--                    <button class="toolButton"><img src="/assets/logo.png" alt="Tool 4"></button>-->
+                    <!--                    <button class="toolButton"><img src="/assets/logo.png" alt="Tool 4"></button>-->
                 </div>
                 <label for="messageInput">
                     <textarea id="messageInput" placeholder="输入消息"></textarea>
                 </label>
             </div>
         </div>
+        <div id="contactContentAreaBackGrd">
+            <div id="contactContentArea">
+                <img id="contactAvatarImage" src="/assets/logo.png" alt="Avatar Image">
+                <div id="contactInfoContainer">
+                    <span>Contact Name</span>
+                    <p>Address: Actual address</p>
+                    <p>Alias: Actual alias</p>
+                    <p>Demo: Actual demo</p>
+                </div>
 
-        <div id="contactContentArea">
-
+                <div class="button-row">
+                    <button onclick="startChatWithFriend(this)">开始聊天</button>
+                    <button onclick="deleteFriend(this)">删除好友</button>
+                </div>
+            </div>
         </div>
 
         <div id="settingContentArea">
@@ -159,36 +171,6 @@
     </div>
 
 </div>
-
-<script>
-    // 请确保在加载 Handlebars 后执行以下操作
-
-    // 假设你有一个消息数组
-    const messages = [
-        {
-            isSelf: true,
-            avatarUrl: "/assets/logo.png",
-            nickname: "你的昵称",
-            description: "你发送的消息你发送的消息你发送的消息你发送的消息你发送的消息你发送的消息你发送的消息",
-            time: new Date()
-        },
-        {
-            isSelf: false,
-            avatarUrl: "/assets/logo.png",
-            nickname: "其他人的昵称",
-            description: "其他人发送的消息 其他人发送的消息 其他人发送的消息其他人发送的消息其他人发送的消息其他人发送的消息",
-            time: new Date()
-        },
-        // 添加更多消息
-    ];
-
-    // 获取 Handlebars 模板
-    const messageTemplate = Handlebars.compile(document.getElementById('messageTemplate').innerHTML);
-
-    // 渲染消息并插入到 messageContainer 中
-    document.getElementById('messageContainer').innerHTML = messageTemplate({ messages });
-
-</script>
 
 </body>
 </html>

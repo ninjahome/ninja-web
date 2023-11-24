@@ -10,22 +10,40 @@ class contactItem{
 }
 
 function cacheLoadCachedFriedList() {
-    const item_1 = new contactItem(
-        "NJA1fmxxVFRY2XWvcPU41zfxMrjb2iXDzaRW4jSD1gVCFg",
-                "/assets/logo.png",
-                "日本聪"
-    )
-    const item_2 = new contactItem(
-        "NJJ5ryLVoNG9Cm9yaPheMQH4tpUYoGyKYXGWNfFqLTFGLP",
-        "/assets/logo.png",
-        "中本聪"
-    )
 
-    const result = [];
-    result.push(item_1);
-    result.push(item_2);
+    const storedData =localStorage.getItem(DBKeyAllContactData)
+    if (!storedData){
+        return [];
+    }
 
-    return result;
+    const parsedData = JSON.parse(storedData);
+    // 将数组中的每个元素实例化为 messageTipsItem 对象
+    return parsedData.map(item => {
+        return new contactItem(
+            item.address,
+            item.avatarUrl,
+            item.nickname,
+            item.alias,
+            item.demo
+        );
+    });
+
+    // const item_1 = new contactItem(
+    //     "NJA1fmxxVFRY2XWvcPU41zfxMrjb2iXDzaRW4jSD1gVCFg",
+    //             "/assets/logo.png",
+    //             "日本聪"
+    // )
+    // const item_2 = new contactItem(
+    //     "NJJ5ryLVoNG9Cm9yaPheMQH4tpUYoGyKYXGWNfFqLTFGLP",
+    //     "/assets/logo.png",
+    //     "中本聪"
+    // )
+    //
+    // const result = [];
+    // result.push(item_1);
+    // result.push(item_2);
+    //
+    // return result;
 }
 
 function  loadContactDetails(address){
@@ -46,6 +64,7 @@ class messageTipsItem {
 }
 
 function cacheLoadCachedMsgTipsList() {
+
     const result = [];
     const currentDate = new Date();
     const twoDaysAgo = new Date();
@@ -78,7 +97,8 @@ class messageItem{
     }
 }
 
-function cacheLoadCachedMsgListForAddr(address){
+async function cacheLoadCachedMsgListForAddr(address){
+
     const result = [];
 
     const currentDate = new Date();

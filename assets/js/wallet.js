@@ -55,7 +55,6 @@ function loadOrCreateWallet() {
     return allWallets;
 }
 
-
 class EncryptedKeyJSON {
     constructor(address, crypto, id, version) {
         this.address = address;

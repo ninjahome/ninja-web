@@ -1,4 +1,3 @@
-
 function togglePanels(button, panelToShow, contentToShow) {
     document.getElementById('messageControlPanel').style.display = 'none';
     document.getElementById('friendControlPanel').style.display = 'none';
@@ -135,9 +134,9 @@ function validatePassword() {
     getEncryptedKeyJSON(keyString, password).then(() => {
         clearErrorText();
 
-        if (operationType === 'export'){
+        if (operationType === 'export') {
             saveDataToDisk(keyString, 'ninja_wallet.json');
-        }else  if (operationType === 'delete'){
+        } else if (operationType === 'delete') {
             removeKeyItem(privateKey.address);
             window.location.href = '/';
         }
@@ -161,10 +160,14 @@ function clearErrorText() {
     errorText.style.display = 'none'; // 隐藏错误提示
 }
 
-function loadCachedMsgListForAddr(address){
-    const messages = cacheLoadCachedMsgListForAddr(address);
-    const messageTemplate = Handlebars.compile(document.getElementById('messageTemplate').innerHTML);
-    document.getElementById('messageContainer').innerHTML = messageTemplate({ messages });
+function loadCachedMsgListForAddr(address) {
+
+    cacheLoadCachedMsgListForAddr(address).then(messages => {
+        const messageTemplate = Handlebars.compile(document.getElementById('messageTemplate').innerHTML);
+        document.getElementById('messageContainer').innerHTML = messageTemplate({messages});
+    }).catch(error => {
+        showModal("加载好友列表失败:" + error);
+    });
 }
 
 
@@ -174,7 +177,6 @@ function loadCachedMsgTipsList() {
     const template = Handlebars.compile(source);
 
     const messages = cacheLoadCachedMsgTipsList()
-
     document.getElementById("messageTipsList").innerHTML = template({messages: messages});
 }
 
@@ -191,6 +193,15 @@ function loadCachedFriendList() {
 
     // Replace this with actual data for your friends
     const friends = cacheLoadCachedFriedList();
+    if (!friends){
+        apiLoadFriendIDs(privateKey.address).then(newResult => {
+            document.getElementById("friendList").innerHTML = template({friends: newResult});
+
+        }).catch(error=>{
+            showModal("加载好友列表失败："+error);
+        });
+        return;
+    }
 
     // Render the template with the friend data
     document.getElementById("friendList").innerHTML = template({friends: friends});
@@ -198,7 +209,7 @@ function loadCachedFriendList() {
 
 function fullFillContact(address) {
     document.getElementById('contactContentArea').style.visibility = 'visible';
-    const  contactInfo = loadContactDetails(address);
+    const contactInfo = loadContactDetails(address);
     document.getElementById("contactAvatarImage").src = contactInfo.avatarUrl;
     document.getElementById("contactInfoContainer").innerHTML = `
         <span>昵称：${contactInfo.nickname}</span>
@@ -219,5 +230,5 @@ function startChatWithFriend(friendAddress) {
 }
 
 function deleteFriend(friendAddress) {
-    console.log("start to delete friend:",friendAddress);
+    console.log("start to delete friend:", friendAddress);
 }

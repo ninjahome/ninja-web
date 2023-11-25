@@ -18,20 +18,23 @@ var simpleRouterMap = map[string]string{
 }
 
 func main() {
-	// 设置静态文件服务
 	http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir(staticFileDir))))
 
-	// 设置路由处理函数
 	for route, fileName := range simpleRouterMap {
 		http.HandleFunc(route, simpleRouter(fileName))
 	}
 
-	// 启动Web服务器
-	http.ListenAndServe(":80", nil)
+	panic(http.ListenAndServe(":80", nil))
 }
 
 func simpleRouter(fileName string) func(http.ResponseWriter, *http.Request) {
+
 	return func(writer http.ResponseWriter, request *http.Request) {
+		// 设置允许的跨域域名
+		writer.Header().Set("Access-Control-Allow-Origin", "*")
+		writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		writer.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		// 进行路由处理
 		http.ServeFile(writer, request, filepath.Join(staticFileDir, fileName))
 	}
 }

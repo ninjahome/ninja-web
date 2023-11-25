@@ -63,9 +63,13 @@ document.addEventListener("DOMContentLoaded", function () {
     checkSessionKeyPriKey();
     window.addEventListener('popstate', function () {
         clearSessionStorage();
+    })
+
+    initModal().then(response =>{
+        loadCachedMsgTipsList();
+        loadCachedFriendList();
     });
-    loadCachedMsgTipsList();
-    loadCachedFriendList();
+
     addItemColorChangeAction();
     togglePanels(null, 'messageControlPanel', 'messageContentArea');
 });
@@ -181,30 +185,22 @@ function loadCachedMsgTipsList() {
 }
 
 function clearCachedMsg() {
+}
 
+function renderFriendList(friendsInfos) {
+    const source = document.getElementById("friendListTemplate").innerHTML;
+    const template = Handlebars.compile(source);
+    document.getElementById("friendList").innerHTML = template({friends: friendsInfos});
 }
 
 function loadCachedFriendList() {
-    // Get the Handlebars template source code
-    const source = document.getElementById("friendListTemplate").innerHTML;
-
-    // Compile the template
-    const template = Handlebars.compile(source);
-
-    // Replace this with actual data for your friends
     const friends = cacheLoadCachedFriedList();
-    if (!friends){
-        apiLoadFriendIDs(privateKey.address).then(newResult => {
-            document.getElementById("friendList").innerHTML = template({friends: newResult});
-
-        }).catch(error=>{
-            showModal("加载好友列表失败："+error);
-        });
-        return;
-    }
-
-    // Render the template with the friend data
-    document.getElementById("friendList").innerHTML = template({friends: friends});
+    renderFriendList(friends);
+    apiLoadFriendIDs(privateKey.address).then(newResult => {
+        renderFriendList(newResult);
+    }).catch(error => {
+        showModal("加载好友列表失败：" + error);
+    });
 }
 
 function fullFillContact(address) {

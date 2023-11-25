@@ -16,7 +16,7 @@
     <script src="/assets/js/crypto.js"></script>
     <script src="/assets/js/key.js"></script>
     <script src="/assets/js/wallet.js"></script>
-
+    <script src="/assets/js/modal.js"></script>
 </head>
 
 <body>
@@ -86,22 +86,8 @@
             });
     }
 
-    // 显示模态框
-    function showModal(message) {
-        const modalText = document.getElementById("modalText");
-        modalText.innerHTML = message;
-
-        const modal = document.getElementById("myModal");
-        modal.style.display = "block";
-    }
-
-    // 关闭模态框
-    function closeModal() {
-        const modal = document.getElementById("myModal");
-        modal.style.display = "none";
-    }
-
     document.addEventListener("DOMContentLoaded", function () {
+        initModal();
         initializePage();
     });
 
@@ -159,7 +145,6 @@
         const reader = new FileReader();
     }
 
-
     function saveLoadedWalletStr(walletString) {
         const content = JSON.parse(walletString);
         console.log("wallet:", content, content.address);
@@ -189,7 +174,6 @@
                 showModal('文件解析错误，请确保选择的文件是有效的 JSON 文件。');
             }
         }
-
         reader.readAsText(file);
     }
 </script>

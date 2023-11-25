@@ -73,7 +73,4 @@ const DBKeyAllWallets = '__key__all_wallets__';
 const SessionKeyPriKey = '__key_global_private_key__';
 const SessionCurWallet = '__key_global_current_wallet__';
 
-const CurrentServerUrl = "127.0.0.1:26668";
-// const CurrentServerUrl = "chat.simplenets.org:26668";
-
 const DBKeyAllContactData = '__key__all_contact_data__';

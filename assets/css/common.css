@@ -3,13 +3,13 @@
 .modal-dialog-main {
     display: none;
     position: fixed;
-    z-index: 1;
     left: 0;
     top: 0;
     width: 100%;
     height: 100%;
     overflow: auto;
     background-color: rgba(0, 0, 0, 0.5); /* 半透明背景 */
+    z-index: 1000;
 }
 
 .modal-content {

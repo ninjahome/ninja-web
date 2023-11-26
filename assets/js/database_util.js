@@ -10,8 +10,7 @@ class contactItem{
 }
 
 function cacheLoadCachedFriedList() {
-
-    const storedData =localStorage.getItem(DBKeyAllContactData)
+    const storedData = localStorage.getItem(DBKeyAllContactData)
     if (!storedData){
         return [];
     }
@@ -27,30 +26,20 @@ function cacheLoadCachedFriedList() {
             item.demo
         );
     });
-
-    // const item_1 = new contactItem(
-    //     "NJA1fmxxVFRY2XWvcPU41zfxMrjb2iXDzaRW4jSD1gVCFg",
-    //             "/assets/logo.png",
-    //             "日本聪"
-    // )
-    // const item_2 = new contactItem(
-    //     "NJJ5ryLVoNG9Cm9yaPheMQH4tpUYoGyKYXGWNfFqLTFGLP",
-    //     "/assets/logo.png",
-    //     "中本聪"
-    // )
-    //
-    // const result = [];
-    // result.push(item_1);
-    // result.push(item_2);
-    //
-    // return result;
 }
 
-function  loadContactDetails(address){
+function  cacheLoadContactDetails(address){
 
-    const item = new contactItem(address,
-        "/assets/logo.png","日本聪","老赵","这个是我华为的同事");
-    return item;
+    const storedData = localStorage.getItem(DBKeyContactDetails+address)
+    if (!storedData){
+        return null;
+    }
+
+   return JSON.parse(storedData);
+
+    // const item = new contactItem(address,
+    //     "/assets/logo.png","日本聪","老赵","这个是我华为的同事");
+    // return item;
 }
 
 class messageTipsItem {
@@ -105,7 +94,6 @@ async function cacheLoadCachedMsgListForAddr(address){
     const twoDaysAgo = new Date();
     twoDaysAgo.setDate(currentDate.getDate() - 2);
 
-    const contact = loadContactDetails(address)
     const msg_1 = new messageItem(true, "/assets/logo.png",
         "中本聪", "早上好", twoDaysAgo);
     const msg_2 = new messageItem(false, "/assets/logo.png",

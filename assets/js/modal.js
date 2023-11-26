@@ -26,3 +26,28 @@ async function initModal() {
             console.error('Failed to fetch modal.html:', error);
         });
 }
+
+let callbackFunction;
+function openDialog(callback,message) {
+    callbackFunction = callback;
+    const dialog = document.getElementById('common-ok-dialog');
+    const dialogMessage = document.getElementById('dialogMessage');
+    dialogMessage.innerText = message;
+    dialog.style.display = 'block';
+}
+
+function closeDialog() {
+    const dialog = document.getElementById('common-ok-dialog');
+    dialog.style.display = 'none';
+    callbackFunction = null;
+}
+
+function executeCallback() {
+    if (typeof callbackFunction === 'function') {
+        // 在这里执行回调函数
+        callbackFunction();
+    }
+
+    // 关闭对话框
+    closeDialog();
+}

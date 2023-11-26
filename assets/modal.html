@@ -5,3 +5,15 @@
         <p id="modalText"></p>
     </div>
 </div>
+
+
+<div id="common-ok-dialog" class="modal-dialog-main">
+    <div class="modal-content">
+        <p id="dialogMessage">确定要执行操作吗？</p>
+        <span class="modal-dialog-close" onclick="executeCallback()">&times;</span>
+        <div class="modal-buttons">
+            <button onclick="executeCallback()">确定</button>
+            <button onclick="closeDialog()">取消</button>
+        </div>
+    </div>
+</div>

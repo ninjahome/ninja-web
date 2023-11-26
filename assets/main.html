@@ -8,6 +8,7 @@
     <link rel="stylesheet" type="text/css" href="/assets/css/main.css">
     <script src="https://cdn.jsdelivr.net/npm/handlebars/dist/handlebars.min.js"></script>
     <script src="/assets/js/nacl-fast.min.js"></script>
+    <script src="/assets/js/protobuf.min.js"></script>
     <script src="/assets/js/base58.js"></script>
     <script src="/assets/js/web3.min.js"></script>
     <script src="/assets/js/scrypt-async.min.js"></script>
@@ -65,7 +66,7 @@
             <div id="friendControlPanel">
                 <ul id="friendListTemplate" style="display: none">
                     {{#each friends}}
-                    <li class="friendListItem" onclick="fullFillContact('{{address}}')">
+                    <li class="friendListItem" onclick="fullFillContact(this)">
                         <img src="{{avatarUrl}}" alt="Friend Avatar">
                         <span class="friendNickname">{{nickname}}</span>
                     </li>
@@ -78,6 +79,7 @@
                 <div class="settingsMenuItem" onclick="accountSetting()">账号管理</div>
                 <div class="settingsMenuItem" onclick="clearCachedMsg()">清空聊天</div>
                 <div class="settingsMenuItem" onclick="logout()">退出登录</div>
+                <div class="settingsMenuItem" onclick="clearCallLocalCache()">清空缓存</div>
             </div>
         </div>
 

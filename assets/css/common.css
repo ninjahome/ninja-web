@@ -23,6 +23,10 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     color: #ecf0f1; /* 淡灰色文字，与 index.html 一致 */
     position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
 }
 .modal-dialog-close {
     color: #ecf0f1; /* 淡灰色文字，与 index.html 一致 */
@@ -39,4 +43,25 @@
     color: #c0392b; /* 深红色按钮，与 index.html 一致 */
     text-decoration: none;
     cursor: pointer;
+}
+
+.modal-buttons {
+    margin-top: 20px; /* 设置按钮上方的间距 */
+    display: flex;
+    justify-content: center;
+}
+
+.modal-buttons button {
+    margin: 0 10px; /* 设置按钮之间的间距 */
+    padding: 10px 20px; /* 设置按钮内边距 */
+    background-color: #3498db; /* 蓝色按钮 */
+    color: #ecf0f1; /* 淡灰色文字 */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.modal-buttons button:hover {
+    background-color: #2980b9; /* 鼠标悬停时的蓝色按钮 */
 }

@@ -29,6 +29,10 @@ function logout() {
     quitFromSession();
 }
 
+function clearCallLocalCache(){
+    openDialog(resetCache,"该操作请清空所有数据，包括账号，请确保账号已经保存");
+}
+
 function accountSetting() {
     document.getElementById('accountSettingContentArea').style.visibility = 'visible';
     document.getElementById('avatarImage').src = '/assets/logo.png';
@@ -203,9 +207,9 @@ function loadCachedFriendList() {
     });
 }
 
-function fullFillContact(address) {
+function fullFillContact(contactInfo) {
     document.getElementById('contactContentArea').style.visibility = 'visible';
-    const contactInfo = loadContactDetails(address);
+    // const contactInfo = cacheLoadContactDetails(address);
     document.getElementById("contactAvatarImage").src = contactInfo.avatarUrl;
     document.getElementById("contactInfoContainer").innerHTML = `
         <span>昵称：${contactInfo.nickname}</span>
@@ -216,7 +220,7 @@ function fullFillContact(address) {
 
     const buttonRow = document.querySelector("#contactContentArea .button-row");
     buttonRow.innerHTML = `
-        <button onclick="startChatWithFriend('${address}')">开始聊天</button>
+        <button onclick="startChatWithFriend('${contactInfo.address}')">开始聊天</button>
         <button onclick="deleteFriend('${address}')">删除好友</button>
     `;
 }

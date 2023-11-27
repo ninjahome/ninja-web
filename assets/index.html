@@ -13,6 +13,7 @@
     <script src="/assets/js/web3.min.js"></script>
     <script src="/assets/js/scrypt-async.min.js"></script>
     <script src="/assets/js/utils.js"></script>
+    <script src="/assets/js/database_util.js"></script>
     <script src="/assets/js/crypto.js"></script>
     <script src="/assets/js/key.js"></script>
     <script src="/assets/js/wallet.js"></script>
@@ -75,6 +76,7 @@
                 storeDataToSessionStorage(SessionKeyPriKey, result);
                 // 例如，简单地输出钱包地址和密码
                 console.log("Wallet unlock success : " + walletAddr);
+                initCurrentDBKey(walletAddr);
                 window.location.href = "/main";
             })
             .catch((error) => {
@@ -88,6 +90,7 @@
     document.addEventListener("DOMContentLoaded", function () {
         initModal();
         initializePage();
+        setSelectedWallet();
     });
 
     function initializePage() {
@@ -160,7 +163,7 @@
             return;
         }
         addNewKeyItem(content);
-        location.reload(true);
+        location.reload();
     }
 
     function readJsonTxt(file) {
@@ -175,6 +178,23 @@
         }
         reader.readAsText(file);
     }
+
+
+    function setSelectedWallet() {
+        const lastUsedAddr = getDataFromLocalStorage(DBKeyLastUsedWallet)
+        if (!lastUsedAddr){
+            return;
+        }
+        const selectElement = document.getElementById('walletAddr');
+        // 遍历选项，找到匹配的值并设置 selectedIndex
+        for (let i = 0; i < selectElement.options.length; i++) {
+            if (selectElement.options[i].value === lastUsedAddr) {
+                selectElement.selectedIndex = i;
+                break;
+            }
+        }
+    }
+
 </script>
 </body>
 </html>

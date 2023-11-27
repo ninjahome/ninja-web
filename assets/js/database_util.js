@@ -1,46 +1,124 @@
 
-class contactItem{
-    constructor(address, avatarUrl,nickname,alias, demo) {
+function initCurrentDBKey(address) {
+    storeDataToLocalStorage(DBKeyLastUsedWallet, address);
+}
+
+function getGlobalCurrentAddr(){
+    return getDataFromLocalStorage(DBKeyLastUsedWallet);
+}
+
+/*****************************************************************************************
+ *
+ *                               account meta
+ *
+ * *****************************************************************************************/
+class accountMeta {
+    constructor(nonce, address, name, avatarUrl, balance, updateTime) {
+        this.nonce = nonce;
         this.address = address;
+        this.name = name;
         this.avatarUrl = avatarUrl;
-        this.nickname = nickname;
+        this.balance = balance;
+        this.updateTime = updateTime;
+    }
+
+    static fromSrvJson(jsonObj) {
+        return new accountMeta(
+            jsonObj.nonce,
+            jsonObj.addr,
+            jsonObj.name,
+            "",
+            jsonObj.balance,
+            jsonObj.touch_time,
+        )
+    }
+
+    syncToDB() {
+        storeDataToLocalStorage(metaDataKey(this.address), this);
+    }
+
+    static fromJson(json) {
+        return new accountMeta(json.nonce, json.address, json.name, json.avatarUrl, json.balance, json.updateTime);
+    }
+}
+
+function metaDataKey(address) {
+    return DBKeyMetaDetails + address;
+}
+
+function cacheLoadMetaInfo(address) {
+    const  key = metaDataKey(address);
+    let meta = getDataFromLocalStorage(key);
+    if (!meta){
+        return null;
+    }
+    return accountMeta.fromJson(meta);
+}
+
+// return getDataFromLocalStorage(metaDataKey(address))
+
+/*****************************************************************************************
+ *
+ *                               contract
+ *
+ * *****************************************************************************************/
+
+class contactItem {
+    constructor(address, meta, alias, demo) {
+        this.address = address;
+        this.meta = meta;
         this.alias = alias;
         this.demo = demo;
     }
-}
 
-function cacheLoadCachedFriedList() {
-    const storedData = localStorage.getItem(DBKeyAllContactData)
-    if (!storedData){
-        return [];
+    syncToDB() {
+        storeDataToLocalStorage(contactKey(this.address), this);
     }
 
-    const parsedData = JSON.parse(storedData);
-    // 将数组中的每个元素实例化为 messageTipsItem 对象
-    return parsedData.map(item => {
-        return new contactItem(
-            item.address,
-            item.avatarUrl,
-            item.nickname,
-            item.alias,
-            item.demo
-        );
-    });
+    static fromJson(json) {
+        return new contactItem(json.address,
+            json.meta,
+            json.alias,
+            json.demo);
+    }
 }
 
-function  cacheLoadContactDetails(address){
+function contactKey(address) {
+    return DBKeyContactDetails + getGlobalCurrentAddr()+ "__" + address;
+}
 
-    const storedData = localStorage.getItem(DBKeyContactDetails+address)
-    if (!storedData){
+function cacheLoadContactInfo(address) {
+    const  key = contactKey(address);
+    let contactDetails = getDataFromLocalStorage(key);
+    if (!contactDetails){
         return null;
     }
 
-   return JSON.parse(storedData);
-
-    // const item = new contactItem(address,
-    //     "/assets/logo.png","日本聪","老赵","这个是我华为的同事");
-    // return item;
+    return contactItem.fromJson(contactDetails);
 }
+
+function contactListKey() {
+    return DBKeyAllContactData + getGlobalCurrentAddr();
+}
+
+function cacheSetContractList(friendsList) {
+    const string = JSON.stringify(friendsList)
+    localStorage.setItem(contactListKey(), string)
+}
+
+function cacheLoadContractList() {
+    const storedData = localStorage.getItem(contactListKey())
+    if (!storedData) {
+        return [];
+    }
+    return JSON.parse(storedData);
+}
+
+/*****************************************************************************************
+ *
+ *                               message logic
+ *
+ * *****************************************************************************************/
 
 class messageTipsItem {
     constructor(address, avatarUrl, nickname, time, description) {
@@ -76,17 +154,17 @@ function cacheLoadCachedMsgTipsList() {
     return result
 }
 
-class messageItem{
+class messageItem {
     constructor(isSelf, avatarUrl, nickname, msgPayload, time) {
         this.isSelf = isSelf;
         this.avatarUrl = avatarUrl;
-        this.nickname=nickname;
+        this.nickname = nickname;
         this.msgPayload = msgPayload;
         this.time = time;
     }
 }
 
-async function cacheLoadCachedMsgListForAddr(address){
+async function cacheLoadCachedMsgListForAddr(address) {
 
     const result = [];
 

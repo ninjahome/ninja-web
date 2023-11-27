@@ -29,8 +29,8 @@ function logout() {
     quitFromSession();
 }
 
-function clearCallLocalCache(){
-    openDialog(resetCache,"该操作请清空所有数据，包括账号，请确保账号已经保存");
+function clearCallLocalCache() {
+    openDialog(resetCache, "该操作请清空所有数据，包括账号，请确保账号已经保存");
 }
 
 function accountSetting() {
@@ -69,7 +69,7 @@ document.addEventListener("DOMContentLoaded", function () {
         clearSessionStorage();
     })
 
-    initModal().then(response =>{
+    initModal().then(response => {
         loadCachedMsgTipsList();
         loadCachedFriendList();
     });
@@ -99,6 +99,7 @@ function addItemColorChangeAction() {
 function checkSessionKeyPriKey() {
     privateKey = getDataFromSessionStorage(SessionKeyPriKey);
 
+    console.log("private key is null=>", (!privateKey))
     if (!privateKey) {
         window.location.href = "/";
     }
@@ -198,12 +199,15 @@ function renderFriendList(friendsInfos) {
 }
 
 function loadCachedFriendList() {
-    const friends = cacheLoadCachedFriedList();
-    renderFriendList(friends);
-    apiLoadFriendIDs(privateKey.address).then(newResult => {
+
+    let friends = cacheLoadContractList();
+    if (friends) {
+        renderFriendList(friends);
+    }
+    apiLoadContactListFromServer(privateKey.address).then(newResult => {
         renderFriendList(newResult);
     }).catch(error => {
-        showModal("加载好友列表失败：" + error);
+        console.log("加载好友列表失败：" + error);
     });
 }
 
@@ -220,15 +224,15 @@ function fullFillContact(contactInfo) {
 
     const buttonRow = document.querySelector("#contactContentArea .button-row");
     buttonRow.innerHTML = `
-        <button onclick="startChatWithFriend('${contactInfo.address}')">开始聊天</button>
-        <button onclick="deleteFriend('${address}')">删除好友</button>
+        <button onclick="startChatWithFriend('${contactInfo}')">开始聊天</button>
+        <button onclick="deleteFriend('${contactInfo}')">删除好友</button>
     `;
 }
 
-function startChatWithFriend(friendAddress) {
-    console.log("start to chat with friend:", friendAddress);
+function startChatWithFriend(contact) {
+    console.log("start to chat with friend:", contact);
 }
 
-function deleteFriend(friendAddress) {
-    console.log("start to delete friend:", friendAddress);
+function deleteFriend(contact) {
+    console.log("start to delete friend:", contact);
 }

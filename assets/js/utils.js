@@ -41,9 +41,8 @@ function getDataFromSessionStorage(key) {
     return storedValue ? JSON.parse(storedValue) : null;
 }
 
-function resetCache(){
-    localStorage.clear();
-    window.location.href = "/";
+function removeDataFromSessionStorage(key){
+    sessionStorage.removeItem(key)
 }
 
 function quitFromSession(){
@@ -51,6 +50,20 @@ function quitFromSession(){
     window.location.href = "/";
 }
 
+
+function storeDataToLocalStorage(key, value){
+    localStorage.setItem(key, JSON.stringify(value));
+}
+
+function  getDataFromLocalStorage(key){
+    const storedValue = localStorage.getItem(key);
+    return storedValue ? JSON.parse(storedValue) : null;
+}
+
+function resetCache(){
+    localStorage.clear();
+    window.location.href = "/";
+}
 function saveDataToDisk(data, fileName){
     const blob = new Blob([data], { type: 'application/json' });
     const a = document.createElement('a');
@@ -69,11 +82,16 @@ const ScryptR = 8;
 const ScryptDKLen = 32;
 const SubAddrPrefix = "NJ";
 const WalletVer = 1;
+
 const DBKeyWalletAddr = '__key__address';
 const DBKeyAllWallets = '__key__all_wallets__';
+const DBKeyLastUsedWallet = '__key_last_used_address__';
+
 const SessionKeyPriKey = '__key_global_private_key__';
 const SessionCurWallet = '__key_global_current_wallet__';
 
 const DBKeyAllContactData = '__key__all_contact_data__';
 const DBKeyContactDetails = '__key__contact_details__';
+const DBKeyMetaDetails = '__key__meta_details__';
+
 const DefaultAvatarUrl = "/assets/logo.png";

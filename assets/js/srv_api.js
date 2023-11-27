@@ -3,7 +3,7 @@ const chainData_api_account_meta = "/query/account/accSimpleMeta";
 
 const CurrentServerUrl = "127.0.0.1:26668";
 // const CurrentServerUrl = "chat.simplenets.org:26668";
-
+const DefaultHttpTimeOut = 60_000//10_000 //10 seconds
 
 const protoDefinition = `
             syntax = "proto3";
@@ -21,7 +21,7 @@ const protoDefinition = `
             }
         `;
 
-async function httpRequest(url, requestData, timeout = 10000) {
+async function httpRequest(url, requestData, needRawData = false, timeout = DefaultHttpTimeOut) {
     const apiUrl = 'http://' + CurrentServerUrl + url;
 
     const root = protobuf.parse(protoDefinition).root;
@@ -58,7 +58,7 @@ async function httpRequest(url, requestData, timeout = 10000) {
         if (!response.ok) {
             const data = await response.text();
             if (data.startsWith("not found")) {
-                console.log("========>>>didn't find any data from server");
+                console.log("httpRequest:result not found");
                 return null;
             }
             throw new Error(`HTTP error: ${response.status}`);
@@ -68,11 +68,14 @@ async function httpRequest(url, requestData, timeout = 10000) {
         const decodedApiResponse = ApiResponse.decode(new Uint8Array(arrayBuffer));
 
         const responseData = ApiResponse.toObject(decodedApiResponse);
+        if (needRawData){
+            return responseData.chainData;
+        }
 
         const textDecoder = new TextDecoder('utf-8');
         const jsonString = textDecoder.decode(responseData.chainData);
 
-        console.log("jsonString===>>>",jsonString)
+        console.log("httpRequest result:", jsonString)
 
         return JSON.parse(jsonString);
     } finally {
@@ -80,7 +83,16 @@ async function httpRequest(url, requestData, timeout = 10000) {
     }
 }
 
-async function apiGetAccountMetaWithoutAvatar(address) {
+async  function apiGetMetaAvatar(address){
+    const textEncoder = new TextEncoder();
+    const param = textEncoder.encode(address);
+
+    const avatarData = await httpRequest(chainData_api_account_meta, param, true);
+    console.log(avatarData);
+    return avatarData;
+}
+
+async function apiGetAccountMeta(address) {
     const textEncoder = new TextEncoder();
     const param = textEncoder.encode(address);
 
@@ -88,48 +100,71 @@ async function apiGetAccountMetaWithoutAvatar(address) {
     if (!jsonObj) {
         return null;
     }
-    return jsonObj;
+    const meta = accountMeta.fromSrvJson(jsonObj)
+    const avatar = apiGetMetaAvatar(address);
+    meta.syncToDB();
+    return meta;
 }
 
-async function apiLoadFriendIDs(address) {
+async function queryMetaInfos(address) {
+    let meta = cacheLoadMetaInfo(address);
+    if (!meta) {
+        return await apiGetAccountMeta(address);
+    }
+    return meta;
+}
+
+async function apiLoadContactListFromServer(address) {
 
     const textEncoder = new TextEncoder();
     const param = textEncoder.encode(address);
 
     const jsonData = await httpRequest(chainData_api_allFriendIDs, param);
     if (!jsonData) {
+        console.log("no friends data got from http server:", address)
         return [];
     }
 
     const friendsOfContact = jsonData.demo;
     if (friendsOfContact.length === 0) {
+        console.log("no friends for this account:", address)
         return []
     }
-    console.log(friendsOfContact)
+
     const refreshedContact = [];
     for (const key in friendsOfContact) {
-        if (!friendsOfContact.hasOwnProperty(key)) {
-            continue;
-        }
+
         const value = friendsOfContact[key];
-        console.log(`Key: ${key}, Value: ${value}, alias:${value.alias}`);
-        let contactDetails = cacheLoadContactDetails(key);
-        if (!contactDetails) {
-            contactDetails = apiGetAccountMetaWithoutAvatar(key);
-            if (!contactDetails) {
-                console.log("failed to load account info for key:=>", key)
-                contactDetails = new contactItem(
-                    key,
-                    DefaultAvatarUrl,
-                    "",
-                    value.alias,
-                    value.demo
-                );
-            }
+        console.log(`friend relation data => Key: ${key}, Value: ${value}, alias:${value.alias}`);
+
+        let contactDetails = cacheLoadContactInfo(key);
+        if (contactDetails) {
+
+            contactDetails.alias = value.alias;
+            contactDetails.demo = value.demo;
+
+            contactDetails.syncToDB();
 
             refreshedContact.push(contactDetails);
+            continue;
         }
+
+        let meta = await queryMetaInfos(key);
+        if (!meta) {
+            console.log("failed to load account meta for key:=>", key)
+            meta = new accountMeta("-1", key, "", DefaultAvatarUrl, "0", "0");
+        }
+
+        contactDetails = new contactItem(
+            key,
+            meta,
+            value.alias,
+            value.demo
+        );
+
+        contactDetails.syncToDB();
+        refreshedContact.push(contactDetails);
     }
-    localStorage.setItem(DBKeyAllContactData, JSON.stringify(refreshedContact)) //.getItem(DBKeyAllContactData)
+    cacheSetContractList(refreshedContact);
     return refreshedContact;
 }

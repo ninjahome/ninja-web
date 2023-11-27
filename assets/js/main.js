@@ -135,12 +135,13 @@ function clearCachedMsg() {
 
 function loadCombinedContacts(force) {
     initAllContactWithDetails(force).then(friends =>{
+        const valuesArray = Array.from(friends.values());
         const source = document.getElementById("friendListTemplate").innerHTML;
         const template = Handlebars.compile(source);
-        document.getElementById("friendList").innerHTML = template({friends: friends});
+        document.getElementById("friendList").innerHTML = template({friends: valuesArray});
 
     }) .catch(error => {
-        showError("加载好友列表失败：" + error);
+        showModal("加载好友列表失败：" + error);
     });
 }
 

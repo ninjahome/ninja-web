@@ -1,11 +1,12 @@
 let __globalCurWalletAddr = null;
 let __globalAllCombinedContact = new Map();
+
 function initCurrentDBKey(address) {
     storeDataToLocalStorage(DBKeyLastUsedWallet, address);
 }
 
-function getGlobalCurrentAddr(){
-    if (!__globalCurWalletAddr){
+function getGlobalCurrentAddr() {
+    if (!__globalCurWalletAddr) {
         __globalCurWalletAddr = getDataFromLocalStorage(DBKeyLastUsedWallet);
     }
     return __globalCurWalletAddr;
@@ -17,11 +18,11 @@ function getGlobalCurrentAddr(){
  *
  * *****************************************************************************************/
 class accountMeta {
-    constructor(nonce, address, name, avatarUrl, balance, updateTime) {
+    constructor(nonce, address, name, avatarBase64, balance, updateTime) {
         this.nonce = nonce;
         this.address = address;
         this.name = name;
-        this.avatarUrl = avatarUrl;
+        this.avatarBase64 = avatarBase64;
         this.balance = balance;
         this.updateTime = updateTime;
     }
@@ -31,7 +32,7 @@ class accountMeta {
             jsonObj.nonce,
             jsonObj.addr,
             jsonObj.name,
-            "",
+            null,
             jsonObj.balance,
             jsonObj.touch_time,
         )
@@ -45,52 +46,53 @@ class accountMeta {
         return new accountMeta(json.nonce,
             json.address,
             json.name,
-            json.avatarUrl,
+            json.avatarBase64,
             json.balance,
             json.updateTime);
     }
 
-    static defaultMeta(address){
+    static defaultMeta(address) {
         return new accountMeta(-1,
             address,
             "",
-            "/assets/logo.png",
+            null,// ,
             0,
             0);
     }
 
-    async queryAvatarData(){
-        const blob = await apiGetMetaAvatar(this.address);
-        if (!blob){
-            console.log("query avatar raw data failed:",this.address);
+    async queryAvatarData() {
+        const avatarBase64 = await apiGetMetaAvatar(this.address);
+        if (!avatarBase64) {
+            console.log("query avatar raw data failed:", this.address);
             return null;
         }
-        const imageUrl = URL.createObjectURL(blob);
 
-        console.log("imageUrl=>",imageUrl)
+        console.log("avatarBase64:=>", avatarBase64)
+        const isDataUri = avatarBase64 && avatarBase64.startsWith('data:application/octet-stream;base64,');
+        const cleanedBase64 = isDataUri ? avatarBase64.slice('data:application/octet-stream;base64,'.length) : avatarBase64;
 
-        storeDataToLocalStorage(metaAvatarUrlKey(this.address), imageUrl);
-        this.avatarUrl = imageUrl;
-        storeDataToLocalStorage(metaAvatarBlobKey(this.address),blob);
-
-        return imageUrl;
+        this.avatarBase64 = cleanedBase64;
+        storeDataToLocalStorage(metaAvatarBlobKey(this.address), cleanedBase64);
+        return cleanedBase64;
     }
 }
 
 function metaAvatarUrlKey(address) {
     return DBKeyMetaAvatarUrl + address;
 }
+
 function metaAvatarBlobKey(address) {
     return DBKeyMetaAvatarBlob + address;
 }
+
 function metaDataKey(address) {
     return DBKeyMetaDetails + address;
 }
 
 function cacheLoadMeta(address) {
-    const  key = metaDataKey(address);
+    const key = metaDataKey(address);
     let meta = getDataFromLocalStorage(key);
-    if (!meta){
+    if (!meta) {
         return null;
     }
     return accountMeta.fromLocalJson(meta);
@@ -129,7 +131,7 @@ function contactListKey() {
  *                               contract
  *
  * *****************************************************************************************/
-class combinedContact{
+class combinedContact {
     constructor(meta, contact) {
         this.meta = meta;
         this.contact = contact;
@@ -146,11 +148,11 @@ async function initAllContactWithDetails(forceReload = false) {
     let contactList;
     const storedData = localStorage.getItem(contactListKey())
     if (forceReload || !storedData) {
-        contactList = apiLoadContactListFromServer();
-        if (!contactList){
+        contactList = await apiLoadContactListFromServer(getGlobalCurrentAddr());
+        if (contactList) {
             localStorage.setItem(contactListKey(), JSON.stringify(contactList))
         }
-    }else{
+    } else {
         contactList = JSON.parse(storedData);
     }
 
@@ -163,19 +165,19 @@ async function initAllContactWithDetails(forceReload = false) {
         const address = contact.address
         let meta = cacheLoadMeta(address);
         if (meta) {
-            if (!meta.avatarUrl){
-                meta.avatarUrl = await meta.queryAvatarData();
+            if (!meta.avatarBase64) {
+                meta.avatarBase64 = await meta.queryAvatarData();
                 meta.syncToDB();
             }
             __globalAllCombinedContact.set(address, new combinedContact(meta, contact));
             continue;
         }
 
-        meta = apiGetAccountMeta(address);
+        meta = await apiGetAccountMeta(address);
         if (!meta) {
             meta = accountMeta.defaultMeta(address);
         } else {
-            meta.avatarUrl = await meta.queryAvatarData();
+            meta.avatarBase64 = await meta.queryAvatarData();
         }
         meta.syncToDB();
         __globalAllCombinedContact.set(address, new combinedContact(meta, contact));
@@ -190,9 +192,9 @@ async function initAllContactWithDetails(forceReload = false) {
  * *****************************************************************************************/
 
 class messageTipsItem {
-    constructor(address, avatarUrl, nickname, time, description) {
+    constructor(address, avatarBase64, nickname, time, description) {
         this.address = address;
-        this.avatarUrl = avatarUrl;
+        this.avatarBase64 = avatarBase64;
         this.nickname = nickname;
         this.time = time;
         this.description = description;
@@ -207,13 +209,13 @@ function cacheLoadCachedMsgTipsList() {
     twoDaysAgo.setDate(currentDate.getDate() - 2);
 
     const item_1 = new messageTipsItem("NJA1fmxxVFRY2XWvcPU41zfxMrjb2iXDzaRW4jSD1gVCFg",
-        "/assets/logo.png", "日本聪",
+        null, "日本聪",
         currentDate, "文本消息");
     const item_2 = new messageTipsItem("NJJ5ryLVoNG9Cm9yaPheMQH4tpUYoGyKYXGWNfFqLTFGLP",
-        "/assets/logo.png", "中本聪",
+        null, "中本聪",
         currentDate, "文本消息");
     const item_3 = new messageTipsItem("NJA1fmxxVFRY2XWvcPU41zfxMrjb2iXDzaRW4jSD1gVCFg",
-        "/assets/logo.png", "V神",
+        null, "V神",
         twoDaysAgo, "文本消息");
 
     result.push(item_1);
@@ -224,9 +226,9 @@ function cacheLoadCachedMsgTipsList() {
 }
 
 class messageItem {
-    constructor(isSelf, avatarUrl, nickname, msgPayload, time) {
+    constructor(isSelf, avatarBase64, nickname, msgPayload, time) {
         this.isSelf = isSelf;
-        this.avatarUrl = avatarUrl;
+        this.avatarBase64 = avatarBase64;
         this.nickname = nickname;
         this.msgPayload = msgPayload;
         this.time = time;
@@ -241,15 +243,15 @@ async function cacheLoadCachedMsgListForAddr(address) {
     const twoDaysAgo = new Date();
     twoDaysAgo.setDate(currentDate.getDate() - 2);
 
-    const msg_1 = new messageItem(true, "/assets/logo.png",
+    const msg_1 = new messageItem(true, null,
         "中本聪", "早上好", twoDaysAgo);
-    const msg_2 = new messageItem(false, "/assets/logo.png",
+    const msg_2 = new messageItem(false, null,
         "日本聪", "您好！很开心和您聊天😊", twoDaysAgo);
 
-    const msg_3 = new messageItem(true, "/assets/logo.png",
+    const msg_3 = new messageItem(true, null,
         "中本聪", "最近项目的进展咋样？", currentDate);
 
-    const msg_4 = new messageItem(false, "/assets/logo.png",
+    const msg_4 = new messageItem(false, null,
         "日本聪", "项目进展顺利，我们在使用新的技术编程", currentDate);
 
     result.push(msg_1);

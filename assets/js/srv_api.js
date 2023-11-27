@@ -84,6 +84,25 @@ async function httpRequest(url, requestData, needRawData = false, timeout = Defa
     }
 }
 
+function readBinaryDataAsBase64(binaryData) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+
+        reader.onload = function () {
+            // 读取完成后，将base64数据传递给resolve
+            resolve(reader.result);
+        };
+
+        reader.onerror = function (error) {
+            // 如果发生错误，将错误信息传递给reject
+            reject(error);
+        };
+
+        // 将二进制数据读取为DataURL
+        reader.readAsDataURL(binaryData);
+    });
+}
+
 async  function apiGetMetaAvatar(address){
     const textEncoder = new TextEncoder();
     const param = textEncoder.encode(address);
@@ -92,8 +111,8 @@ async  function apiGetMetaAvatar(address){
     if (!avatarData){
         return  null;
     }
-    // console.log("img hex:=>",uint8ArrayToHexString(avatarData));
-    return new Blob([avatarData]);
+    const blob = new Blob([avatarData]);
+    return await readBinaryDataAsBase64(blob);
 }
 
 async function apiGetAccountMeta(address) {

@@ -49,7 +49,7 @@
                 <ul id="messageTipsListTemplate" style="display: none">
                     {{#each messages}}
                     <li class="messageTipsItem" onclick="loadCachedMsgListForAddr('{{address}}')">
-                        <img src="{{avatarUrl}}" alt="Avatar">
+                        <img src="{{#if avatarBase64}}data:image/png;base64,{{avatarBase64}}{{else}}/assests/logo.png{{/if}}" alt="Avatar">
                         <div class="info-container">
                             <div class="nickname-time">
                                 <span class="nickname">{{nickname}}</span>
@@ -67,8 +67,9 @@
                 <ul id="friendListTemplate" style="display: none">
                     {{#each friends}}
                     <li class="friendListItem" onclick="fullFillContact(this)">
-                        <img src="{{meta.avatarUrl}}" alt="Friend Avatar">
-                        <span class="friendNickname">{{alias}} {{meta.avatarUrl}}</span>
+<!--                        <img src="{{meta.avatarUrl}}" alt="Friend Avatar">-->
+                        <img src="{{#if meta.avatarBase64}}data:image/png;base64,{{meta.avatarBase64}}{{else}}/assests/logo.png{{/if}}" alt="Avatar">
+                        <span class="friendNickname">{{contact.alias}} </span>
                         <span class="friendNickname">{{meta.name}} {{meta.address}}</span>
                     </li>
                     {{/each}}

@@ -1,10 +1,14 @@
-
+let __globalCurWalletAddr = null;
+let __globalAllCombinedContact = new Map();
 function initCurrentDBKey(address) {
     storeDataToLocalStorage(DBKeyLastUsedWallet, address);
 }
 
 function getGlobalCurrentAddr(){
-    return getDataFromLocalStorage(DBKeyLastUsedWallet);
+    if (!__globalCurWalletAddr){
+        __globalCurWalletAddr = getDataFromLocalStorage(DBKeyLastUsedWallet);
+    }
+    return __globalCurWalletAddr;
 }
 
 /*****************************************************************************************
@@ -37,22 +41,59 @@ class accountMeta {
         storeDataToLocalStorage(metaDataKey(this.address), this);
     }
 
-    static fromJson(json) {
-        return new accountMeta(json.nonce, json.address, json.name, json.avatarUrl, json.balance, json.updateTime);
+    static fromLocalJson(json) {
+        return new accountMeta(json.nonce,
+            json.address,
+            json.name,
+            json.avatarUrl,
+            json.balance,
+            json.updateTime);
+    }
+
+    static defaultMeta(address){
+        return new accountMeta(-1,
+            address,
+            "",
+            "/assets/logo.png",
+            0,
+            0);
+    }
+
+    async queryAvatarData(){
+        const blob = await apiGetMetaAvatar(this.address);
+        if (!blob){
+            console.log("query avatar raw data failed:",this.address);
+            return null;
+        }
+        const imageUrl = URL.createObjectURL(blob);
+
+        console.log("imageUrl=>",imageUrl)
+
+        storeDataToLocalStorage(metaAvatarUrlKey(this.address), imageUrl);
+        this.avatarUrl = imageUrl;
+        storeDataToLocalStorage(metaAvatarBlobKey(this.address),blob);
+
+        return imageUrl;
     }
 }
 
+function metaAvatarUrlKey(address) {
+    return DBKeyMetaAvatarUrl + address;
+}
+function metaAvatarBlobKey(address) {
+    return DBKeyMetaAvatarBlob + address;
+}
 function metaDataKey(address) {
     return DBKeyMetaDetails + address;
 }
 
-function cacheLoadMetaInfo(address) {
+function cacheLoadMeta(address) {
     const  key = metaDataKey(address);
     let meta = getDataFromLocalStorage(key);
     if (!meta){
         return null;
     }
-    return accountMeta.fromJson(meta);
+    return accountMeta.fromLocalJson(meta);
 }
 
 // return getDataFromLocalStorage(metaDataKey(address))
@@ -64,54 +105,82 @@ function cacheLoadMetaInfo(address) {
  * *****************************************************************************************/
 
 class contactItem {
-    constructor(address, meta, alias, demo) {
+    constructor(address, alias, demo) {
         this.address = address;
-        this.meta = meta;
         this.alias = alias;
         this.demo = demo;
     }
 
-    syncToDB() {
-        storeDataToLocalStorage(contactKey(this.address), this);
-    }
 
     static fromJson(json) {
         return new contactItem(json.address,
-            json.meta,
             json.alias,
             json.demo);
     }
-}
-
-function contactKey(address) {
-    return DBKeyContactDetails + getGlobalCurrentAddr()+ "__" + address;
-}
-
-function cacheLoadContactInfo(address) {
-    const  key = contactKey(address);
-    let contactDetails = getDataFromLocalStorage(key);
-    if (!contactDetails){
-        return null;
-    }
-
-    return contactItem.fromJson(contactDetails);
 }
 
 function contactListKey() {
     return DBKeyAllContactData + getGlobalCurrentAddr();
 }
 
-function cacheSetContractList(friendsList) {
-    const string = JSON.stringify(friendsList)
-    localStorage.setItem(contactListKey(), string)
+
+/*****************************************************************************************
+ *
+ *                               contract
+ *
+ * *****************************************************************************************/
+class combinedContact{
+    constructor(meta, contact) {
+        this.meta = meta;
+        this.contact = contact;
+    }
 }
 
-function cacheLoadContractList() {
-    const storedData = localStorage.getItem(contactListKey())
-    if (!storedData) {
-        return [];
+async function initAllContactWithDetails(forceReload = false) {
+
+    if (__globalAllCombinedContact.size > 0 && !forceReload) {
+        return __globalAllCombinedContact;
     }
-    return JSON.parse(storedData);
+
+    __globalAllCombinedContact = new Map();
+    let contactList;
+    const storedData = localStorage.getItem(contactListKey())
+    if (forceReload || !storedData) {
+        contactList = apiLoadContactListFromServer();
+        if (!contactList){
+            localStorage.setItem(contactListKey(), JSON.stringify(contactList))
+        }
+    }else{
+        contactList = JSON.parse(storedData);
+    }
+
+    if (!contactList) {
+        return __globalAllCombinedContact;
+    }
+
+    for (const contactData of contactList) {
+        const contact = contactItem.fromJson(contactData)
+        const address = contact.address
+        let meta = cacheLoadMeta(address);
+        if (meta) {
+            if (!meta.avatarUrl){
+                meta.avatarUrl = await meta.queryAvatarData();
+                meta.syncToDB();
+            }
+            __globalAllCombinedContact.set(address, new combinedContact(meta, contact));
+            continue;
+        }
+
+        meta = apiGetAccountMeta(address);
+        if (!meta) {
+            meta = accountMeta.defaultMeta(address);
+        } else {
+            meta.avatarUrl = await meta.queryAvatarData();
+        }
+        meta.syncToDB();
+        __globalAllCombinedContact.set(address, new combinedContact(meta, contact));
+    }
+    return __globalAllCombinedContact;
 }
 
 /*****************************************************************************************

@@ -1,5 +1,6 @@
 const chainData_api_allFriendIDs = "/query/friend/List";
 const chainData_api_account_meta = "/query/account/accSimpleMeta";
+const chainData_api_account_avatar = "/query/account/accAvatar";
 
 const CurrentServerUrl = "127.0.0.1:26668";
 // const CurrentServerUrl = "chat.simplenets.org:26668";
@@ -87,9 +88,12 @@ async  function apiGetMetaAvatar(address){
     const textEncoder = new TextEncoder();
     const param = textEncoder.encode(address);
 
-    const avatarData = await httpRequest(chainData_api_account_meta, param, true);
-    console.log(avatarData);
-    return avatarData;
+    const avatarData = await httpRequest(chainData_api_account_avatar, param, true);
+    if (!avatarData){
+        return  null;
+    }
+    // console.log("img hex:=>",uint8ArrayToHexString(avatarData));
+    return new Blob([avatarData]);
 }
 
 async function apiGetAccountMeta(address) {
@@ -100,19 +104,9 @@ async function apiGetAccountMeta(address) {
     if (!jsonObj) {
         return null;
     }
-    const meta = accountMeta.fromSrvJson(jsonObj)
-    const avatar = apiGetMetaAvatar(address);
-    meta.syncToDB();
-    return meta;
+    return accountMeta.fromSrvJson(jsonObj);
 }
 
-async function queryMetaInfos(address) {
-    let meta = cacheLoadMetaInfo(address);
-    if (!meta) {
-        return await apiGetAccountMeta(address);
-    }
-    return meta;
-}
 
 async function apiLoadContactListFromServer(address) {
 
@@ -133,38 +127,11 @@ async function apiLoadContactListFromServer(address) {
 
     const refreshedContact = [];
     for (const key in friendsOfContact) {
-
         const value = friendsOfContact[key];
-        console.log(`friend relation data => Key: ${key}, Value: ${value}, alias:${value.alias}`);
-
-        let contactDetails = cacheLoadContactInfo(key);
-        if (contactDetails) {
-
-            contactDetails.alias = value.alias;
-            contactDetails.demo = value.demo;
-
-            contactDetails.syncToDB();
-
-            refreshedContact.push(contactDetails);
-            continue;
-        }
-
-        let meta = await queryMetaInfos(key);
-        if (!meta) {
-            console.log("failed to load account meta for key:=>", key)
-            meta = new accountMeta("-1", key, "", DefaultAvatarUrl, "0", "0");
-        }
-
-        contactDetails = new contactItem(
-            key,
-            meta,
-            value.alias,
-            value.demo
-        );
-
-        contactDetails.syncToDB();
-        refreshedContact.push(contactDetails);
+        console.log(`friend relation data => Key: ${key}, Value: ${value}, alias:${value.alias} remark:${value.remark}`);
+        const item = new contactItem(key, value.alias, value.remark)
+        refreshedContact.push(item);
     }
-    cacheSetContractList(refreshedContact);
+
     return refreshedContact;
 }

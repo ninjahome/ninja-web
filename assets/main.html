@@ -67,8 +67,9 @@
                 <ul id="friendListTemplate" style="display: none">
                     {{#each friends}}
                     <li class="friendListItem" onclick="fullFillContact(this)">
-                        <img src="{{avatarUrl}}" alt="Friend Avatar">
-                        <span class="friendNickname">{{nickname}}</span>
+                        <img src="{{meta.avatarUrl}}" alt="Friend Avatar">
+                        <span class="friendNickname">{{alias}} {{meta.avatarUrl}}</span>
+                        <span class="friendNickname">{{meta.name}} {{meta.address}}</span>
                     </li>
                     {{/each}}
                 </ul>
@@ -77,6 +78,7 @@
 
             <div id="settingsMenu">
                 <div class="settingsMenuItem" onclick="accountSetting()">账号管理</div>
+                <div class="settingsMenuItem" onclick="loadCombinedContacts(true)">更新通讯录</div>
                 <div class="settingsMenuItem" onclick="clearCachedMsg()">清空聊天</div>
                 <div class="settingsMenuItem" onclick="clearCallLocalCache()">清空缓存</div>
                 <div class="settingsMenuItem" onclick="logout()">退出登录</div>
@@ -149,31 +151,13 @@
                 </div>
 
                 <div class="button-row">
-                    <button onclick="openExportDialog('export')">导出账号</button>
-                    <button onclick="openExportDialog('delete')">删除账号</button>
+                    <button onclick="openPasswordDialog(exportWallet)">导出账号</button>
+                    <button onclick="openPasswordDialog(removeWallet)">删除账号</button>
                 </div>
             </div>
         </div>
 
     </section>
-
-    <div id="passwordDialog" class="modal">
-        <div class="modal-content">
-            <input type="hidden" id="operationType" value="">
-
-            <p>请输入密码</p>
-            <div class="input-container">
-                <label for="passwordInput">
-                    <input type="password" id="passwordInput" placeholder="密码">
-                </label>
-            </div>
-            <p id="errorText" class="error-text">错误信息将在此显示</p>
-            <div class="button-container">
-                <button id="confirmButton" onclick="validatePassword()">确认</button>
-                <button id="cancelButton" onclick="closeExportDialog()">取消</button>
-            </div>
-        </div>
-    </div>
 
 </div>
 </body>

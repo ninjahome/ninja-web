@@ -91,7 +91,10 @@ const SessionKeyPriKey = '__key_global_private_key__';
 const SessionCurWallet = '__key_global_current_wallet__';
 
 const DBKeyAllContactData = '__key__all_contact_data__';
-const DBKeyContactDetails = '__key__contact_details__';
 const DBKeyMetaDetails = '__key__meta_details__';
+const DBKeyMetaAvatarUrl = '__key__meta_avatar_url__';
+const DBKeyMetaAvatarBlob = '__key__meta_avatar_blob__';
+// const DBKeyAllCombinedContact = '__key__all_combined_contact__';
+
 
 const DefaultAvatarUrl = "/assets/logo.png";

@@ -10,10 +10,28 @@
 <div id="common-ok-dialog" class="modal-dialog-main">
     <div class="modal-content">
         <p id="dialogMessage">确定要执行操作吗？</p>
-        <span class="modal-dialog-close" onclick="executeCallback()">&times;</span>
+        <span class="modal-dialog-close" onclick="closeDialog()">&times;</span>
         <div class="modal-buttons">
             <button onclick="executeCallback()">确定</button>
             <button onclick="closeDialog()">取消</button>
+        </div>
+    </div>
+</div>
+
+
+
+<div id="passwordDialog" class="modal">
+    <div class="modal-content">
+        <p>请输入密码</p>
+        <div class="input-container">
+            <label for="passwordInput">
+                <input type="password" id="passwordInput" placeholder="密码">
+            </label>
+        </div>
+        <p id="errorText" class="error-text">错误信息将在此显示</p>
+        <div class="button-container">
+            <button id="confirmButton" onclick="openCurrentWallet()">确认</button>
+            <button id="cancelButton" onclick="closePasswordDialog()">取消</button>
         </div>
     </div>
 </div>

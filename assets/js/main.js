@@ -71,7 +71,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     initModal().then(response => {
         loadCachedMsgTipsList();
-        loadCachedFriendList();
+        loadCombinedContacts(false);
     });
 
     addItemColorChangeAction();
@@ -111,64 +111,6 @@ function clearSessionStorage() {
     privateKey = null;
 }
 
-function openExportDialog(opType) {
-    clearErrorText();
-    document.getElementById('passwordInput').value = '';
-    document.getElementById('operationType').value = opType;
-    document.getElementById('passwordDialog').style.display = 'block';
-}
-
-function closeExportDialog() {
-    document.getElementById('passwordDialog').style.display = 'none';
-    document.getElementById('operationType').value = '';
-    document.getElementById('passwordInput').value = '';
-    clearErrorText();
-}
-
-function validatePassword() {
-    const password = document.getElementById('passwordInput').value;
-    const operationType = document.getElementById('operationType').value;
-
-    if (password.length === 0) {
-        showError('密码不能为空');
-        return;
-    }
-
-    const keyString = localStorage.getItem(DBKeyWalletAddr + privateKey.address);
-    if (!keyString) {
-        showError('加载钱包信息失败：' + privateKey.address);
-        return
-    }
-
-    getEncryptedKeyJSON(keyString, password).then(() => {
-        clearErrorText();
-
-        if (operationType === 'export') {
-            saveDataToDisk(keyString, 'ninja_wallet.json');
-        } else if (operationType === 'delete') {
-            removeKeyItem(privateKey.address);
-            window.location.href = '/';
-        }
-
-        closeExportDialog();
-
-    }).catch((error) => {
-        showError('密码错误，请重新输入:' + error);
-    });
-}
-
-function showError(message) {
-    const errorText = document.getElementById('errorText');
-    errorText.innerText = message;
-    errorText.style.display = 'block';
-}
-
-function clearErrorText() {
-    const errorText = document.getElementById('errorText');
-    errorText.innerText = ''; // 清空错误信息
-    errorText.style.display = 'none'; // 隐藏错误提示
-}
-
 function loadCachedMsgListForAddr(address) {
 
     cacheLoadCachedMsgListForAddr(address).then(messages => {
@@ -178,7 +120,6 @@ function loadCachedMsgListForAddr(address) {
         showModal("加载好友列表失败:" + error);
     });
 }
-
 
 function loadCachedMsgTipsList() {
     const source = document.getElementById("messageTipsListTemplate").innerHTML;
@@ -192,28 +133,19 @@ function loadCachedMsgTipsList() {
 function clearCachedMsg() {
 }
 
-function renderFriendList(friendsInfos) {
-    const source = document.getElementById("friendListTemplate").innerHTML;
-    const template = Handlebars.compile(source);
-    document.getElementById("friendList").innerHTML = template({friends: friendsInfos});
-}
+function loadCombinedContacts(force) {
+    initAllContactWithDetails(force).then(friends =>{
+        const source = document.getElementById("friendListTemplate").innerHTML;
+        const template = Handlebars.compile(source);
+        document.getElementById("friendList").innerHTML = template({friends: friends});
 
-function loadCachedFriendList() {
-
-    let friends = cacheLoadContractList();
-    if (friends) {
-        renderFriendList(friends);
-    }
-    apiLoadContactListFromServer(privateKey.address).then(newResult => {
-        renderFriendList(newResult);
-    }).catch(error => {
-        console.log("加载好友列表失败：" + error);
+    }) .catch(error => {
+        showError("加载好友列表失败：" + error);
     });
 }
 
 function fullFillContact(contactInfo) {
     document.getElementById('contactContentArea').style.visibility = 'visible';
-    // const contactInfo = cacheLoadContactDetails(address);
     document.getElementById("contactAvatarImage").src = contactInfo.avatarUrl;
     document.getElementById("contactInfoContainer").innerHTML = `
         <span>昵称：${contactInfo.nickname}</span>
@@ -235,4 +167,13 @@ function startChatWithFriend(contact) {
 
 function deleteFriend(contact) {
     console.log("start to delete friend:", contact);
+}
+
+function exportWallet(keyString, password){
+    saveDataToDisk(keyString, 'ninja_wallet.json');
+}
+
+function removeWallet(keyString, password){
+    removeKeyItem(privateKey.address);
+    window.location.href = '/';
 }

@@ -98,8 +98,6 @@ function addItemColorChangeAction() {
 
 function checkSessionKeyPriKey() {
     privateKey = getDataFromSessionStorage(SessionKeyPriKey);
-
-    console.log("private key is null=>", (!privateKey))
     if (!privateKey) {
         window.location.href = "/";
     }

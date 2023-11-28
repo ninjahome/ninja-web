@@ -46,7 +46,7 @@
 
         <div id="switchingArea">
             <div id="messageControlPanel">
-                <ul id="messageTipsListTemplate" style="display: none">
+                <script id="messageTipsListTemplate" type="text/x-handlebars-template">
                     {{#each messages}}
                     <li class="messageTipsItem" onclick="loadCachedMsgListForAddr('{{address}}')">
                         {{#if avatarBase64}}
@@ -63,12 +63,12 @@
                         </div>
                     </li>
                     {{/each}}
-                </ul>
+                </script>
                 <ul id="messageTipsList"></ul>
             </div>
 
             <div id="friendControlPanel">
-                <ul id="friendListTemplate" style="display: none">
+                <script id="friendListTemplate" type="text/x-handlebars-template">
                     {{#each friends}}
                     <li class="friendListItem" onclick="fullFillContact('{{contact.address}}')">
                         {{#if meta.avatarBase64}}
@@ -83,7 +83,7 @@
                         {{/if}}
                     </li>
                     {{/each}}
-                </ul>
+                </script>
                 <ul id="friendList"></ul>
             </div>
 
@@ -100,7 +100,6 @@
 
     <section id="content">
         <div id="messageContentArea">
-
             <script id="messageTemplate" type="text/x-handlebars-template">
                 {{#each messages}}
                 <div class="messageItem {{#if isSelf}}self{{else}}other{{/if}}">
@@ -129,13 +128,13 @@
                     <button class="toolButton"><img src="/assets/read_pack_icon.png" alt="红包"></button>
                     <button class="toolButton"><img src="/assets/contact_info_icon.png" alt="联系人"></button>
                     <button class="toolButton"><img src="/assets/phone_icon.png" alt="图片"></button>
-                    <!--                    <button class="toolButton"><img src="/assets/logo.png" alt="Tool 4"></button>-->
                 </div>
                 <label for="messageInput">
                     <textarea id="messageInput" placeholder="输入消息"></textarea>
                 </label>
             </div>
         </div>
+
         <div id="contactContentAreaBackGrd">
             <div id="contactContentArea">
                 <img id="contactAvatarImage" src="/assets/logo.png" alt="Avatar Image">

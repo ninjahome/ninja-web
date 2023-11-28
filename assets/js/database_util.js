@@ -28,14 +28,7 @@ class accountMeta {
     }
 
     static fromSrvJson(jsonObj) {
-        return new accountMeta(
-            jsonObj.nonce,
-            jsonObj.addr,
-            jsonObj.name,
-            null,
-            jsonObj.balance,
-            jsonObj.touch_time,
-        )
+        return new accountMeta(jsonObj.nonce, jsonObj.addr, jsonObj.name, null, jsonObj.balance, jsonObj.touch_time,)
     }
 
     syncToDB() {
@@ -43,21 +36,12 @@ class accountMeta {
     }
 
     static fromLocalJson(json) {
-        return new accountMeta(json.nonce,
-            json.address,
-            json.name,
-            json.avatarBase64,
-            json.balance,
-            json.updateTime);
+        return new accountMeta(json.nonce, json.address, json.name, json.avatarBase64, json.balance, json.updateTime);
     }
 
     static defaultMeta(address) {
-        return new accountMeta(-1,
-            address,
-            "",
-            null,// ,
-            0,
-            0);
+        return new accountMeta(-1, address, "", null,// ,
+            0, 0);
     }
 
     async queryAvatarData() {
@@ -67,7 +51,7 @@ class accountMeta {
             return null;
         }
 
-        console.log("avatarBase64:=>", avatarBase64)
+        // console.log("avatarBase64:=>", avatarBase64)
         const isDataUri = avatarBase64 && avatarBase64.startsWith('data:application/octet-stream;base64,');
         const cleanedBase64 = isDataUri ? avatarBase64.slice('data:application/octet-stream;base64,'.length) : avatarBase64;
 
@@ -107,17 +91,15 @@ function cacheLoadMeta(address) {
  * *****************************************************************************************/
 
 class contactItem {
-    constructor(address, alias, demo) {
+    constructor(address, alias, remark) {
         this.address = address;
         this.alias = alias;
-        this.demo = demo;
+        this.remark = remark;
     }
 
 
     static fromJson(json) {
-        return new contactItem(json.address,
-            json.alias,
-            json.demo);
+        return new contactItem(json.address, json.alias, json.remark);
     }
 }
 
@@ -136,6 +118,10 @@ class combinedContact {
         this.meta = meta;
         this.contact = contact;
     }
+}
+
+function getCombinedContactByAddress(address) {
+    return __globalAllCombinedContact.get(address)
 }
 
 async function initAllContactWithDetails(forceReload = false) {
@@ -165,10 +151,6 @@ async function initAllContactWithDetails(forceReload = false) {
         const address = contact.address
         let meta = cacheLoadMeta(address);
         if (meta) {
-            if (!meta.avatarBase64) {
-                meta.avatarBase64 = await meta.queryAvatarData();
-                meta.syncToDB();
-            }
             __globalAllCombinedContact.set(address, new combinedContact(meta, contact));
             continue;
         }
@@ -208,15 +190,9 @@ function cacheLoadCachedMsgTipsList() {
     const twoDaysAgo = new Date();
     twoDaysAgo.setDate(currentDate.getDate() - 2);
 
-    const item_1 = new messageTipsItem("NJA1fmxxVFRY2XWvcPU41zfxMrjb2iXDzaRW4jSD1gVCFg",
-        null, "日本聪",
-        currentDate, "文本消息");
-    const item_2 = new messageTipsItem("NJJ5ryLVoNG9Cm9yaPheMQH4tpUYoGyKYXGWNfFqLTFGLP",
-        null, "中本聪",
-        currentDate, "文本消息");
-    const item_3 = new messageTipsItem("NJA1fmxxVFRY2XWvcPU41zfxMrjb2iXDzaRW4jSD1gVCFg",
-        null, "V神",
-        twoDaysAgo, "文本消息");
+    const item_1 = new messageTipsItem("NJA1fmxxVFRY2XWvcPU41zfxMrjb2iXDzaRW4jSD1gVCFg", null, "日本聪", currentDate, "文本消息");
+    const item_2 = new messageTipsItem("NJJ5ryLVoNG9Cm9yaPheMQH4tpUYoGyKYXGWNfFqLTFGLP", null, "中本聪", currentDate, "文本消息");
+    const item_3 = new messageTipsItem("NJA1fmxxVFRY2XWvcPU41zfxMrjb2iXDzaRW4jSD1gVCFg", null, "V神", twoDaysAgo, "文本消息");
 
     result.push(item_1);
     result.push(item_2);
@@ -243,16 +219,12 @@ async function cacheLoadCachedMsgListForAddr(address) {
     const twoDaysAgo = new Date();
     twoDaysAgo.setDate(currentDate.getDate() - 2);
 
-    const msg_1 = new messageItem(true, null,
-        "中本聪", "早上好", twoDaysAgo);
-    const msg_2 = new messageItem(false, null,
-        "日本聪", "您好！很开心和您聊天😊", twoDaysAgo);
+    const msg_1 = new messageItem(true, null, "中本聪", "早上好", twoDaysAgo);
+    const msg_2 = new messageItem(false, null, "日本聪", "您好！很开心和您聊天😊", twoDaysAgo);
 
-    const msg_3 = new messageItem(true, null,
-        "中本聪", "最近项目的进展咋样？", currentDate);
+    const msg_3 = new messageItem(true, null, "中本聪", "最近项目的进展咋样？", currentDate);
 
-    const msg_4 = new messageItem(false, null,
-        "日本聪", "项目进展顺利，我们在使用新的技术编程", currentDate);
+    const msg_4 = new messageItem(false, null, "日本聪", "项目进展顺利，我们在使用新的技术编程", currentDate);
 
     result.push(msg_1);
     result.push(msg_2);

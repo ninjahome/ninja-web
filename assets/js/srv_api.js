@@ -108,7 +108,7 @@ async  function apiGetMetaAvatar(address){
     const param = textEncoder.encode(address);
 
     const avatarData = await httpRequest(chainData_api_account_avatar, param, true);
-    if (!avatarData){
+    if (!avatarData || avatarData.length === 0){
         return  null;
     }
     const blob = new Blob([avatarData]);

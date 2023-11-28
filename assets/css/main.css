@@ -448,8 +448,8 @@ body {
 
 #contactContentArea {
     position: absolute;
-    width: 520px;
-    height: 520px;
+    width: 480px;
+    height: 640px;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
@@ -473,19 +473,20 @@ body {
 
 #contactContentArea .contactInfoContainer {
     color: #fff;
-    margin-bottom: 25px;
+    margin-bottom: 10px;
 }
 
 #contactContentArea span {
     flex: 1;
     text-align: right;
+    white-space: nowrap;
 }
 
 #contactContentArea p {
     display: flex;
     justify-content: space-between;
     margin-top: 20px;
-    padding: 4px 5px;
+    padding: 8px 8px;
 }
 
 #contactContentArea p:nth-child(odd) {

@@ -131,34 +131,50 @@ function loadCachedMsgTipsList() {
 }
 
 function clearCachedMsg() {
+    window.location.reload();
 }
 
 function loadCombinedContacts(force) {
-    initAllContactWithDetails(force).then(friends =>{
+    initAllContactWithDetails(force).then(friends => {
         const valuesArray = Array.from(friends.values());
         const source = document.getElementById("friendListTemplate").innerHTML;
         const template = Handlebars.compile(source);
         document.getElementById("friendList").innerHTML = template({friends: valuesArray});
 
-    }) .catch(error => {
+    }).catch(error => {
         showModal("加载好友列表失败：" + error);
     });
 }
 
-function fullFillContact(contactInfo) {
+function fullFillContact(address) {
+    const contactInfo = getCombinedContactByAddress(address)
+    if (!contactInfo) {
+        return;
+    }
+
     document.getElementById('contactContentArea').style.visibility = 'visible';
-    document.getElementById("contactAvatarImage").src = contactInfo.avatarUrl;
+    if (contactInfo.meta.avatarBase64) {
+        document.getElementById("contactAvatarImage").src = "data:image/png;base64," + contactInfo.meta.avatarBase64;
+    } else {
+        document.getElementById("contactAvatarImage").src = "/assets/logo.png";
+        contactInfo.meta.queryAvatarData().then(r => {
+            contactInfo.meta.syncToDB();
+        });
+    }
+
+    const expireDays = calculateDays(contactInfo.meta.balance)
     document.getElementById("contactInfoContainer").innerHTML = `
-        <span>昵称：${contactInfo.nickname}</span>
-        <p>地址：${contactInfo.address}</p>
-        <p>别名: ${contactInfo.alias}</p>
-        <p>备注: ${contactInfo.demo}</p>
+        <span>昵称：${contactInfo.meta.name}</span>
+        <p>地址：${contactInfo.meta.address}</p>
+        <p>别名: ${contactInfo.contact.alias}</p>
+        <p>备注: ${contactInfo.contact.remark}</p>
+        <p>余额: ${expireDays} 天</p>
     `;
 
     const buttonRow = document.querySelector("#contactContentArea .button-row");
     buttonRow.innerHTML = `
-        <button onclick="startChatWithFriend('${contactInfo}')">开始聊天</button>
-        <button onclick="deleteFriend('${contactInfo}')">删除好友</button>
+        <button onclick="startChatWithFriend('${contactInfo.meta.address}')">开始聊天</button>
+        <button onclick="deleteFriend('${contactInfo.meta.address}')">删除好友</button>
     `;
 }
 
@@ -170,11 +186,11 @@ function deleteFriend(contact) {
     console.log("start to delete friend:", contact);
 }
 
-function exportWallet(keyString, password){
+function exportWallet(keyString, password) {
     saveDataToDisk(keyString, 'ninja_wallet.json');
 }
 
-function removeWallet(keyString, password){
+function removeWallet(keyString, password) {
     removeKeyItem(privateKey.address);
     window.location.href = '/';
 }

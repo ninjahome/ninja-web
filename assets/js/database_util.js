@@ -169,6 +169,40 @@ async function initAllContactWithDetails(forceReload = false) {
 
 /*****************************************************************************************
  *
+ *                               self details
+ *
+ * *****************************************************************************************/
+class SelfDetails {
+    constructor(meta, ethBalance, usdtBalance) {
+        this.meta = meta;
+        this.ethBalance = ethBalance;
+        this.usdeBalance = usdtBalance;
+    }
+}
+
+function selfDataDBKey() {
+    return DBKeySelfDetails + getGlobalCurrentAddr()
+}
+
+async function loadSelfDetails(force) {
+    const dbKey = selfDataDBKey()
+    const storedData = getDataFromLocalStorage(dbKey);
+    if (!force && storedData) {
+        const meta = accountMeta.fromLocalJson(storedData.meta)
+        return new SelfDetails(meta, 0, 0);
+    }
+
+    const meta = await apiGetAccountMeta(getGlobalCurrentAddr())
+    if (!meta) {
+        return null
+    }
+    const accInfo = new SelfDetails(meta, 0, 0)
+    storeDataToLocalStorage(dbKey, accInfo)
+    return accInfo;
+}
+
+/*****************************************************************************************
+ *
  *                               message logic
  *
  * *****************************************************************************************/

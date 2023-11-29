@@ -72,8 +72,8 @@
         getEncryptedKeyJSON(keyString, password)
             .then((result) => {
                 // 异步操作完成，关闭加载提示界面
-                closeModal();
-                storeDataToSessionStorage(SessionKeyPriKey, result);
+                closeModal()
+                storeDataToSessionStorage(SessionKeyCurWalletObj, result);
                 // 例如，简单地输出钱包地址和密码
                 console.log("Wallet unlock success : " + walletAddr);
                 initCurrentDBKey(walletAddr);

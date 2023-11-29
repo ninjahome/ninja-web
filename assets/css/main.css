@@ -310,8 +310,8 @@ body {
     visibility: hidden;
     display: flex; /* 默认不显示 */
     position: absolute; /* 或其他合适的定位方式 */
-    width: 420px; /* 固定宽度，扩大 40% */
-    height: 560px; /* 固定高度，扩大 40% */
+    width: 560px; /* 固定宽度，扩大 40% */
+    height: 640px; /* 固定高度，扩大 40% */
     top: 20%;
     left: 50%;
     transform: translate(-50%, -20%);

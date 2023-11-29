@@ -59,7 +59,7 @@
 
         try {
             const result = await newWallet(password);
-            storeDataToSessionStorage(SessionCurWallet, result)
+            storeDataToSessionStorage(SessionWalletJsonString, result)
             console.log("new wallet:=>", result)
             closeModal();
             // 提示注册成功

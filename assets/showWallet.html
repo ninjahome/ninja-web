@@ -126,7 +126,7 @@
     }
 
     function alreadySaved() {
-        removeDataFromSessionStorage(SessionCurWallet);
+        removeDataFromSessionStorage(SessionWalletJsonString);
         window.location.href = "/";
     }
 
@@ -140,7 +140,7 @@
 
     window.onload = function () {
         initModal();
-        const data = getDataFromSessionStorage(SessionCurWallet);
+        const data = getDataFromSessionStorage(SessionWalletJsonString);
         console.log("new wallet:=>", data)
         document.getElementById('displayArea').innerText = JSON.stringify(data, null, '\t');
     };

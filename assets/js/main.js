@@ -33,13 +33,31 @@ function clearCallLocalCache() {
     openDialog(resetCache, "该操作请清空所有数据，包括账号，请确保账号已经保存");
 }
 
+
 function accountSetting() {
-    document.getElementById('accountSettingContentArea').style.visibility = 'visible';
-    document.getElementById('avatarImage').src = '/assets/logo.png';
-    document.getElementById('blockchainAddress').innerText = '实际的区块链地址';
-    document.getElementById('nickname').innerText = '实际的昵称';
-    document.getElementById('ethBalance').innerText = '实际的ETH余额'; // 例如：'0.00 ETH'
-    document.getElementById('usdtBalance').innerText = '实际的USDT余额';
+    loadSelfDetails(true).then(result => {
+
+        if (!result) {
+            showModal("无此账号信息");
+            return;
+        }
+
+        document.getElementById('accountSettingContentArea').style.visibility = 'visible';
+        if (result.meta.avatarBase64) {
+            document.getElementById('avatarImage').src = "data:image/png;base64," + result.meta.avatarBase64;
+        } else {
+            document.getElementById('avatarImage').src = '/assets/logo.png';
+        }
+        document.getElementById('blockchainAddress').innerText = curWalletObj.address;
+        document.getElementById('nickname').innerText = result.meta.name;
+        document.getElementById('expireDays').innerText = calculateDays(result.meta.balance);
+        document.getElementById('ethAddress').innerText = curWalletObj.EthAddrStr();
+        document.getElementById('ethBalance').innerText = result.ethBalance +' ETH';
+        document.getElementById('usdtBalance').innerText = result.usdeBalance + ' USDT';
+    }).catch(err => {
+        showModal("查询账号信息失败");
+    });
+
 }
 
 Handlebars.registerHelper('formatTime', function (time) {
@@ -62,7 +80,7 @@ Handlebars.registerHelper('formatTime', function (time) {
 });
 
 
-let privateKey = null;
+let curWalletObj = null;
 document.addEventListener("DOMContentLoaded", function () {
     checkSessionKeyPriKey();
     window.addEventListener('popstate', function () {
@@ -97,20 +115,20 @@ function addItemColorChangeAction() {
 }
 
 function checkSessionKeyPriKey() {
-    privateKey = getDataFromSessionStorage(SessionKeyPriKey);
-    if (!privateKey) {
+    const keyData = getDataFromSessionStorage(SessionKeyCurWalletObj);
+    if (!keyData) {
         window.location.href = "/";
     }
+    curWalletObj = new LightSubKey(keyData.light, keyData.id, keyData.address, Object.values(keyData.privateKey));
 }
 
 // 清空 sessionStorage
 function clearSessionStorage() {
     sessionStorage.clear();
-    privateKey = null;
+    curWalletObj = null;
 }
 
 function loadCachedMsgListForAddr(address) {
-
     cacheLoadCachedMsgListForAddr(address).then(messages => {
         const messageTemplate = Handlebars.compile(document.getElementById('messageTemplate').innerHTML);
         document.getElementById('messageContainer').innerHTML = messageTemplate({messages});
@@ -138,7 +156,9 @@ function loadCombinedContacts(force) {
         const source = document.getElementById("friendListTemplate").innerHTML;
         const template = Handlebars.compile(source);
         document.getElementById("friendList").innerHTML = template({friends: valuesArray});
-
+        if (force) {
+            showModal("好友列表更新成功！");
+        }
     }).catch(error => {
         showModal("加载好友列表失败：" + error);
     });
@@ -189,6 +209,6 @@ function exportWallet(keyString, password) {
 }
 
 function removeWallet(keyString, password) {
-    removeKeyItem(privateKey.address);
+    removeKeyItem(curWalletObj.address);
     window.location.href = '/';
 }

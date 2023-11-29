@@ -102,9 +102,9 @@ function openCurrentWallet() {
         return;
     }
 
-    const keyString = localStorage.getItem(DBKeyWalletAddr + privateKey.address);
+    const keyString = localStorage.getItem(DBKeyWalletAddr + curWalletObj.address);
     if (!keyString) {
-        showError('加载钱包信息失败：' + privateKey.address);
+        showError('加载钱包信息失败：' + curWalletObj.address);
         return
     }
     if (typeof passwordDialogCallBackFunction !== 'function') {

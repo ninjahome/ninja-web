@@ -35,7 +35,7 @@ function clearCallLocalCache() {
 
 
 function accountSetting() {
-    loadSelfDetails(true).then(result => {
+    loadSelfDetails(curWalletObj.EthAddrStr(),true).then(result => {
 
         if (!result) {
             showModal("无此账号信息");
@@ -55,7 +55,8 @@ function accountSetting() {
         document.getElementById('ethBalance').innerText = result.ethBalance +' ETH';
         document.getElementById('usdtBalance').innerText = result.usdeBalance + ' USDT';
     }).catch(err => {
-        showModal("查询账号信息失败");
+        console.log(err)
+        showModal("查询账号信息失败:"+err);
     });
 
 }

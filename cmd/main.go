@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"net/http"
 	"path/filepath"
 )
@@ -17,13 +18,31 @@ var simpleRouterMap = map[string]string{
 	"/showWallet":   "showWallet.html",
 }
 
+type ApiEthBalanceData struct {
+	Address string `json:"address"`
+	Eth     int64  `json:"eth"`
+	Usdt    int64  `json:"usdt"`
+}
+
+func handleBalanceRequest(w http.ResponseWriter, r *http.Request) {
+	accountID := r.URL.Query().Get("accountID")
+
+	balance := &ApiEthBalanceData{
+		Address: accountID,
+		Eth:     0,
+		Usdt:    0,
+	}
+	bts, _ := json.Marshal(balance)
+	_, _ = w.Write(bts)
+}
+
 func main() {
 	http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir(staticFileDir))))
 
 	for route, fileName := range simpleRouterMap {
 		http.HandleFunc(route, simpleRouter(fileName))
 	}
-
+	http.HandleFunc("/balance", handleBalanceRequest)
 	panic(http.ListenAndServe(":80", nil))
 }
 

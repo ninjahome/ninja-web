@@ -184,19 +184,23 @@ function selfDataDBKey() {
     return DBKeySelfDetails + getGlobalCurrentAddr()
 }
 
-async function loadSelfDetails(force) {
+async function loadSelfDetails(ethAddr, force) {
+
     const dbKey = selfDataDBKey()
     const storedData = getDataFromLocalStorage(dbKey);
     if (!force && storedData) {
         const meta = accountMeta.fromLocalJson(storedData.meta)
-        return new SelfDetails(meta, 0, 0);
+        return new SelfDetails(meta, storedData.ethBalance, storedData.usdeBalance);
     }
 
     const meta = await apiGetAccountMeta(getGlobalCurrentAddr())
     if (!meta) {
         return null
     }
-    const accInfo = new SelfDetails(meta, 0, 0)
+    meta.avatarBase64 = await meta.queryAvatarData();
+
+    const eth = await apiWeb3EthBalance(ethAddr);
+    const accInfo = new SelfDetails(meta, eth[0], eth[1])
     storeDataToLocalStorage(dbKey, accInfo)
     return accInfo;
 }

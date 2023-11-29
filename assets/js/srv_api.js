@@ -6,6 +6,11 @@ const CurrentServerUrl = "127.0.0.1:26668";
 // const CurrentServerUrl = "chat.simplenets.org:26668";
 const DefaultHttpTimeOut = 60_000//10_000 //10 seconds
 
+const YOUR_ETHEREUM_NODE_URL = 'https://sepolia.infura.io/v3/a3a5c09826a246d0bfbef8084b81df1f';
+const web3Api = new Web3(new Web3.providers.HttpProvider(YOUR_ETHEREUM_NODE_URL));
+const USDT_CONTRACT_ADDRESS = '0x7243E5de57BD28aE2F2a34394CEd01F90B5577C7';  // USDT 合约地址
+
+
 const protoDefinition = `
             syntax = "proto3";
             
@@ -153,4 +158,26 @@ async function apiLoadContactListFromServer(address) {
     }
 
     return refreshedContact;
+}
+
+async function apiWeb3EthBalance(address){
+    const balance  = await web3Api.eth.getBalance(address)
+    const ethBalance = web3Api.utils.fromWei(balance, 'ether')
+    const usdtContract = new web3Api.eth.Contract([
+        {
+            "constant": true,
+            "inputs": [{ "name": "_owner", "type": "address" }],
+            "name": "balanceOf",
+            "outputs": [{ "name": "balance", "type": "uint256" }],
+            "type": "function"
+        }
+    ], USDT_CONTRACT_ADDRESS);
+
+    // 查询余额
+    const usdtBalance = await usdtContract.methods.balanceOf(address).call();
+    const balanceFloat = parseFloat(usdtBalance.toString()) / 100; // 假设代币有 18 位小数
+// 保留两位小数
+    const roundedBalance = balanceFloat.toFixed(2);
+    console.log(` address ${address}: ${roundedBalance} USDT ${ethBalance} ETH`);
+    return [ethBalance, roundedBalance];
 }

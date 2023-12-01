@@ -1,17 +1,15 @@
-function togglePanels(button, panelToShow, contentToShow) {
+function togglePanels(button, panelToShow) {
     document.getElementById('messageControlPanel').style.display = 'none';
     document.getElementById('friendControlPanel').style.display = 'none';
     document.getElementById('settingsMenu').style.display = 'none';
 
     document.getElementById('messageContentArea').style.display = 'none';
-    document.getElementById('contactContentAreaBackGrd').style.display = 'none';
+    document.getElementById('contactContentArea').style.display = 'none';
     document.getElementById('settingContentArea').style.display = 'none';
 
     document.getElementById('accountSettingContentArea').style.visibility = 'hidden';
-    document.getElementById('contactContentArea').style.visibility = 'hidden';
 
     document.getElementById(panelToShow).style.display = 'block';
-    document.getElementById(contentToShow).style.display = 'block';
     toggleButton(button);
 }
 
@@ -33,9 +31,8 @@ function clearCallLocalCache() {
     openDialog(resetCache, "该操作请清空所有数据，包括账号，请确保账号已经保存");
 }
 
-
 function accountSetting() {
-    loadSelfDetails(curWalletObj.EthAddrStr(),true).then(result => {
+    loadSelfDetails(curWalletObj.EthAddrStr(), true).then(result => {
 
         if (!result) {
             showModal("无此账号信息");
@@ -52,13 +49,12 @@ function accountSetting() {
         document.getElementById('nickname').innerText = result.meta.name;
         document.getElementById('expireDays').innerText = calculateDays(result.meta.balance);
         document.getElementById('ethAddress').innerText = curWalletObj.EthAddrStr();
-        document.getElementById('ethBalance').innerText = result.ethBalance +' ETH';
+        document.getElementById('ethBalance').innerText = result.ethBalance + ' ETH';
         document.getElementById('usdtBalance').innerText = result.usdeBalance + ' USDT';
     }).catch(err => {
         console.log(err)
-        showModal("查询账号信息失败:"+err);
+        showModal("查询账号信息失败:" + err);
     });
-
 }
 
 Handlebars.registerHelper('formatTime', function (time) {
@@ -80,8 +76,30 @@ Handlebars.registerHelper('formatTime', function (time) {
     }
 });
 
+class IMManager {
+    constructor() {
+        this.socket = null;
+    }
+
+    getAddress() {
+    }
+
+    newMsg(data) {
+        console.log("got new mssg");
+    }
+
+    SocketClosed() {
+        showModal("聊天链接断开:");
+    }
+
+    SocketError(err) {
+        showModal("聊天链接异常:" + err);
+    }
+}
 
 let curWalletObj = null;
+let curMsgManager = new IMManager();
+
 document.addEventListener("DOMContentLoaded", function () {
     checkSessionKeyPriKey();
     window.addEventListener('popstate', function () {
@@ -91,28 +109,45 @@ document.addEventListener("DOMContentLoaded", function () {
     initModal().then(response => {
         loadCachedMsgTipsList();
         loadCombinedContacts(false);
+        // curMsgManager.socket = wsOnline(curMsgManager);
+        initMsgSender();
     });
 
-    addItemColorChangeAction();
     togglePanels(null, 'messageControlPanel', 'messageContentArea');
 });
 
-function addItemColorChangeAction() {
-    const messageItems = document.querySelectorAll('.messageTipsItem');
-    messageItems.forEach(item => {
-        item.addEventListener('click', () => {
-            messageItems.forEach(otherItem => otherItem.classList.remove('selected'));
-            item.classList.add('selected');
-        });
+function initMsgSender() {
+    const messageInput = document.getElementById('messageInput');
+    // Event listener for Enter key
+    messageInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault(); // Prevent the newline
+            sendMessage();
+        }
     });
 
-    const friendListItem = document.querySelectorAll('.friendListItem');
-    friendListItem.forEach(item => {
-        item.addEventListener('click', () => {
-            friendListItem.forEach(otherItem => otherItem.classList.remove('selected'));
-            item.classList.add('selected');
-        });
+    // Event listener for Shift+Enter to insert newline
+    messageInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' && event.shiftKey) {
+            // Do nothing or add newline logic
+        }
     });
+}
+
+function sendMessage() {
+    const messageContainer = document.getElementById('messageContainer');
+    const messageInput = document.getElementById('messageInput');
+    const messageText = messageInput.value;
+    if (messageText.trim() !== '') {
+        // Add the message to messageContainer
+        const messageItem = document.createElement('div');
+        messageItem.classList.add('messageItem', 'self'); // Assuming it's a self message
+        messageItem.textContent = messageText;
+        messageContainer.appendChild(messageItem);
+        // curMsgManager.socket.send(messageText);
+        // Clear the input field
+        messageInput.value = '';
+    }
 }
 
 function checkSessionKeyPriKey() {
@@ -129,7 +164,15 @@ function clearSessionStorage() {
     curWalletObj = null;
 }
 
-function loadCachedMsgListForAddr(address) {
+let lastSelectedMsgItem = null;
+function loadCachedMsgListForAddr(item, address) {
+    document.getElementById("messageContentArea").style.display = 'block';
+    if (lastSelectedMsgItem){
+        lastSelectedMsgItem.classList.remove('selected');
+    }
+    item.classList.add('selected');
+    lastSelectedMsgItem = item;
+
     cacheLoadCachedMsgListForAddr(address).then(messages => {
         const messageTemplate = Handlebars.compile(document.getElementById('messageTemplate').innerHTML);
         document.getElementById('messageContainer').innerHTML = messageTemplate({messages});
@@ -165,13 +208,19 @@ function loadCombinedContacts(force) {
     });
 }
 
-function fullFillContact(address) {
+let lastSelectedFriendItem
+function fullFillContact(item, address) {
+    if (lastSelectedFriendItem){
+        lastSelectedFriendItem.classList.remove('selected');
+    }
+    item.classList.add('selected');
+    lastSelectedFriendItem = item;
     const contactInfo = getCombinedContactByAddress(address)
     if (!contactInfo) {
         return;
     }
+    document.getElementById('contactContentArea').style.display = 'block';
 
-    document.getElementById('contactContentArea').style.visibility = 'visible';
     if (contactInfo.meta.avatarBase64) {
         document.getElementById("contactAvatarImage").src = "data:image/png;base64," + contactInfo.meta.avatarBase64;
     } else {

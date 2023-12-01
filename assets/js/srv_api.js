@@ -10,8 +10,7 @@ const YOUR_ETHEREUM_NODE_URL = 'https://sepolia.infura.io/v3/a3a5c09826a246d0bfb
 const web3Api = new Web3(new Web3.providers.HttpProvider(YOUR_ETHEREUM_NODE_URL));
 const USDT_CONTRACT_ADDRESS = '0x7243E5de57BD28aE2F2a34394CEd01F90B5577C7';  // USDT 合约地址
 
-
-const protoDefinition = `
+const httpApiProtoDefinition = `
             syntax = "proto3";
             
             message ApiRequest {
@@ -30,7 +29,7 @@ const protoDefinition = `
 async function httpRequest(url, requestData, needRawData = false, timeout = DefaultHttpTimeOut) {
     const apiUrl = 'http://' + CurrentServerUrl + url;
 
-    const root = protobuf.parse(protoDefinition).root;
+    const root = protobuf.parse(httpApiProtoDefinition).root;
     const ApiRequest = root.lookupType("ApiRequest");
     const ApiResponse = root.lookupType("ApiResponse");
 
@@ -41,11 +40,7 @@ async function httpRequest(url, requestData, needRawData = false, timeout = Defa
     };
     const binaryData = ApiRequest.encode(myObject).finish();
 
-    let nonZeroIndex = 0;
-    while (nonZeroIndex < binaryData.length && binaryData[nonZeroIndex] === 0) {
-        nonZeroIndex++;
-    }
-    const trimmedBinaryData = binaryData.slice(nonZeroIndex);
+    const trimmedBinaryData = trimZeroData(binaryData);
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);

@@ -76,8 +76,20 @@ function saveDataToDisk(data, fileName){
 
 function calculateDays(givenSeconds) {
     const differenceDays = (givenSeconds - Date.now()/1000) / 86400;
+    if (differenceDays <= 0.02){
+        return 0.00
+    }
     return differenceDays.toFixed(2);
 }
+
+function trimZeroData(data){
+    let nonZeroIndex = 0;
+    while (nonZeroIndex < data.length && data[nonZeroIndex] === 0) {
+        nonZeroIndex++;
+    }
+    return  data.slice(nonZeroIndex);
+}
+
 // Constants
 const SubAddressLen = 32;
 const LightScryptN = 4096;

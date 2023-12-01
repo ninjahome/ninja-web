@@ -39,6 +39,7 @@ function accountSetting() {
             return;
         }
 
+        document.getElementById('settingContentArea').style.display = 'block';
         document.getElementById('accountSettingContentArea').style.visibility = 'visible';
         if (result.meta.avatarBase64) {
             document.getElementById('avatarImage').src = "data:image/png;base64," + result.meta.avatarBase64;
@@ -82,6 +83,7 @@ class IMManager {
     }
 
     getAddress() {
+        return curWalletObj.address;
     }
 
     newMsg(data) {
@@ -94,6 +96,14 @@ class IMManager {
 
     SocketError(err) {
         showModal("聊天链接异常:" + err);
+    }
+
+    SignData(data){
+        return curWalletObj.SignRawData(data);
+    }
+
+    OnlineResult(err){
+
     }
 }
 
@@ -109,7 +119,7 @@ document.addEventListener("DOMContentLoaded", function () {
     initModal().then(response => {
         loadCachedMsgTipsList();
         loadCombinedContacts(false);
-        // curMsgManager.socket = wsOnline(curMsgManager);
+        curMsgManager.socket = wsOnline(curMsgManager);
         initMsgSender();
     });
 

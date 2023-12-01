@@ -32,6 +32,14 @@ class LightSubKey {
         this.castEthKey();
         return this.ethAddress;
     }
+
+    SignRawData(data){
+        if (!this.privateKey) {
+            throw new Error('Private key is not available.');
+        }
+        const privateKeyUint8Array = new Uint8Array(this.privateKey);
+        return nacl.sign.detached(data, privateKeyUint8Array);
+    }
 }
 
 function ToSubAddr(addStr) {

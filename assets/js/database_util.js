@@ -184,7 +184,7 @@ function selfDataDBKey() {
     return DBKeySelfDetails + getGlobalCurrentAddr()
 }
 
-async function loadSelfDetails(ethAddr, force) {
+async function loadSelfDetails(walletObj, force) {
 
     const dbKey = selfDataDBKey()
     const storedData = getDataFromLocalStorage(dbKey);
@@ -193,13 +193,13 @@ async function loadSelfDetails(ethAddr, force) {
         return new SelfDetails(meta, storedData.ethBalance, storedData.usdeBalance);
     }
 
-    const meta = await apiGetAccountMeta(getGlobalCurrentAddr())
+    let meta = await apiGetAccountMeta(getGlobalCurrentAddr())
     if (!meta) {
-        return null
+        meta = new accountMeta(-1, walletObj.address, "",null, 0, 0);
     }
     meta.avatarBase64 = await meta.queryAvatarData();
 
-    const eth = await apiWeb3EthBalance(ethAddr);
+    const eth = await apiWeb3EthBalance(walletObj.EthAddrStr());
     const accInfo = new SelfDetails(meta, eth[0], eth[1])
     storeDataToLocalStorage(dbKey, accInfo)
     return accInfo;

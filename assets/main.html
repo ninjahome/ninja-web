@@ -91,7 +91,7 @@
             </div>
 
             <div id="settingsMenu">
-                <div class="settingsMenuItem" onclick="accountSetting()">账号管理</div>
+                <div class="settingsMenuItem" onclick="selfAccountSettings()">账号管理</div>
                 <div class="settingsMenuItem" onclick="loadCombinedContacts(true)">更新通讯录</div>
                 <div class="settingsMenuItem" onclick="clearCachedMsg()">清空聊天</div>
                 <div class="settingsMenuItem" onclick="clearCallLocalCache()">清空账号</div>
@@ -103,6 +103,7 @@
 
     <section id="content">
         <div id="messageContentArea">
+            <p class="blockchain-address">区块链地址: <span id="blockchainAddressOfPeer">Your Address Here</span></p>
             <script id="messageTemplate" type="text/x-handlebars-template">
                 {{#each messages}}
                 <div class="messageItem {{#if isSelf}}self{{else}}other{{/if}}">

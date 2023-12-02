@@ -385,6 +385,24 @@ body {
     background-color: #2980b9; /* 按钮悬停时背景颜色 */
 }
 
+#messageContentArea {
+    /* 其他样式... */
+    position: relative;
+}
+
+.blockchain-address {
+    color: #3498db; /* 设置区块链地址文字颜色 */
+    font-size: 16px; /* 设置区块链地址文字大小 */
+    font-weight: bold; /* 设置区块链地址文字加粗 */
+    margin-bottom: 10px; /* 设置区块链地址与其他内容的间距 */
+}
+
+#blockchainAddressOfPeer {
+    color: #2ecc71; /* 设置区块链地址值文字颜色 */
+    font-size: 16px; /* 设置区块链地址值文字大小 */
+    /* 其他样式... */
+}
+
 #messageContainer {
     border: 1px solid #666;
     padding: 10px;

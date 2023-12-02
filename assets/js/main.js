@@ -31,13 +31,9 @@ function clearCallLocalCache() {
     openDialog(resetCache, "该操作请清空所有数据，包括账号，请确保账号已经保存");
 }
 
-function accountSetting() {
-    loadSelfDetails(curWalletObj.EthAddrStr(), true).then(result => {
-
-        if (!result) {
-            showModal("无此账号信息");
-            return;
-        }
+let selfAccountInfo = null;
+function selfAccountSettings() {
+    loadSelfDetails(curWalletObj, true).then(result => {
 
         document.getElementById('settingContentArea').style.display = 'block';
         document.getElementById('accountSettingContentArea').style.visibility = 'visible';
@@ -48,10 +44,11 @@ function accountSetting() {
         }
         document.getElementById('blockchainAddress').innerText = curWalletObj.address;
         document.getElementById('nickname').innerText = result.meta.name;
-        document.getElementById('expireDays').innerText = calculateDays(result.meta.balance);
+        document.getElementById('expireDays').innerText = calculateDays(result.meta.balance) + ' 天';
         document.getElementById('ethAddress').innerText = curWalletObj.EthAddrStr();
         document.getElementById('ethBalance').innerText = result.ethBalance + ' ETH';
         document.getElementById('usdtBalance').innerText = result.usdeBalance + ' USDT';
+        selfAccountInfo = result;
     }).catch(err => {
         console.log(err)
         showModal("查询账号信息失败:" + err);
@@ -64,13 +61,11 @@ Handlebars.registerHelper('formatTime', function (time) {
     const timeDiff = currentDate - messageDate;
 
     if (timeDiff > 24 * 60 * 60 * 1000) {
-        // If the time difference is more than 24 hours, use DD/MM/YY format
         const day = messageDate.getDate();
         const month = messageDate.getMonth() + 1; // Month is zero-based
         const year = messageDate.getFullYear().toString().slice(-2); // Get last two digits of the year
         return `${String(day).padStart(2, '0')}/${String(month).padStart(2, '0')}/${year}`;
     } else {
-        // Otherwise, use MM:SS format
         const minutes = messageDate.getUTCMinutes();
         const hours = messageDate.getHours();
         return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
@@ -86,7 +81,7 @@ class IMManager {
         return curWalletObj.address;
     }
 
-    newMsg(data) {
+    newPeerMsg(data) {
         console.log("got new mssg");
     }
 
@@ -113,7 +108,6 @@ class IMManager {
 
 let curWalletObj = null;
 let curMsgManager = new IMManager();
-
 document.addEventListener("DOMContentLoaded", function () {
     checkSessionKeyPriKey();
     window.addEventListener('popstate', function () {
@@ -136,7 +130,9 @@ function initMsgSender() {
     messageInput.addEventListener('keydown', (event) => {
         if (event.key === 'Enter' && !event.shiftKey) {
             event.preventDefault(); // Prevent the newline
-            sendMessage();
+            sendMessage().then(r => {
+                console.log("send message success");
+            });
         }
     });
 
@@ -148,21 +144,25 @@ function initMsgSender() {
     });
 }
 
-function sendMessage() {
+async function sendMessage() {
     const messageContainer = document.getElementById('messageContainer');
     const messageInput = document.getElementById('messageInput');
     const messageText = messageInput.value;
     if (messageText.trim() === '') {
         return;
     }
+    if (!selfAccountInfo) {
+        selfAccountInfo = await loadSelfDetails(curWalletObj, true);
+    }
 
-    const message = new messageItem(true, null, "wo", messageText, new Date());
+    const message = new messageItem(true, selfAccountInfo.meta.avatarBase64,
+        selfAccountInfo.meta.name, messageText, new Date());
 
     const divItem = document.createElement('div');
     divItem.classList.add('messageItem', 'self');
 
     const messageTemplate = Handlebars.compile(document.getElementById('messageTemplate').innerHTML);
-    divItem.innerHTML = messageTemplate({ messages: [message] });
+    divItem.innerHTML = messageTemplate({messages: [message]});
 
     messageContainer.appendChild(divItem);
     messageInput.value = '';
@@ -174,6 +174,10 @@ function checkSessionKeyPriKey() {
         window.location.href = "/";
     }
     curWalletObj = new LightSubKey(keyData.light, keyData.id, keyData.address, Object.values(keyData.privateKey));
+    loadSelfDetails(curWalletObj, true).then(r=>{
+        console.log("load self contact detail success");
+        selfAccountInfo = r;
+    });
 }
 
 // 清空 sessionStorage
@@ -183,7 +187,6 @@ function clearSessionStorage() {
 }
 
 let lastSelectedMsgItem = null;
-
 function loadCachedMsgListForAddr(item, address) {
     document.getElementById("messageContentArea").style.display = 'block';
     if (lastSelectedMsgItem) {
@@ -228,7 +231,6 @@ function loadCombinedContacts(force) {
 }
 
 let lastSelectedFriendItem
-
 function fullFillContact(item, address) {
     if (lastSelectedFriendItem) {
         lastSelectedFriendItem.classList.remove('selected');

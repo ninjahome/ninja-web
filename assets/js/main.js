@@ -122,7 +122,33 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     togglePanels(null, 'messageControlPanel', 'messageContentArea');
+    document.getElementById('msgSearchInput').addEventListener('keyup', function(event) {
+        if (event.key === 'Enter') {
+            // 用户按下回车键
+            handleEnterKeyPress();
+        }
+    });
 });
+
+function handleEnterKeyPress() {
+    const msgSearchInput = document.getElementById('msgSearchInput');
+    const blockchainAddress = msgSearchInput.value.trim();
+
+    if (isBlockchainAddress(blockchainAddress)) {
+        // 处理区块链地址逻辑，例如输出到控制台
+        console.log('用户输入的区块链地址:', blockchainAddress);
+    } else {
+        console.log('用户输入的不是有效的区块链地址');
+    }
+
+    msgSearchInput.value = '';
+}
+function isBlockchainAddress(address) {
+    // 此处可以添加你验证区块链地址的逻辑，确保输入的是一个有效的区块链地址
+    // 返回 true 表示是有效的区块链地址，返回 false 表示不是
+    // 示例逻辑：假设区块链地址必须包含 0x 前缀
+    return address.toLowerCase().startsWith('NJ');
+}
 
 function initMsgSender() {
     const messageInput = document.getElementById('messageInput');
@@ -242,6 +268,7 @@ function fullFillContact(item, address) {
         return;
     }
     document.getElementById('contactContentArea').style.display = 'block';
+    document.getElementById('contactContentArea').style.visibility = 'visible';
 
     if (contactInfo.meta.avatarBase64) {
         document.getElementById("contactAvatarImage").src = "data:image/png;base64," + contactInfo.meta.avatarBase64;

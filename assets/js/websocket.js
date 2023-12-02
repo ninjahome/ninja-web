@@ -101,24 +101,19 @@ async function wsOnline(callback) {
     const socket = new WebSocket(WebSocketUrl);
 
     socket.onopen = (event) => {
-        console.log('WebSocket connection opened:', event);
-
         online(callback, socket);
     };
 
     socket.onmessage = (event) => {
-        console.log('Received message:', event.data);
         processIM(callback,event.data);
     };
 
     socket.onclose = (event) => {
-        // 处理连接关闭事件
         console.log('WebSocket connection closed:', event);
         callback.SocketClosed(event);
     };
 
     socket.onerror = (event) => {
-        // 处理WebSocket错误事件
         console.error('WebSocket error:', event);
         const errorMessage = event.data || '未提供详细错误信息';
         callback.SocketError(errorMessage);
@@ -160,21 +155,15 @@ async function processIM(callback, data) {
     const response = new Response(data);
     const arrayBuffer = await response.arrayBuffer();
     const websocketMsg = WsMsg.decode(new Uint8Array(arrayBuffer));
-// 将 WsMsg 对象转换为 JavaScript 对象
+
     const responseData = WsMsg.toObject(websocketMsg);
-    console.log("type=>",pbsRootObj.lookupEnum("WsMsgType").values.OnlineACK);
-    console.log("responseData.type value:", responseData.typ);
-    // 读取 payload
     switch (responseData.typ) {
         case pbsRootObj.lookupEnum("WsMsgType").values.Online:
             const onlinePayload = responseData.online;
             console.log("Received WSOnline payload:", onlinePayload);
-            // 处理 WSOnline 对象
             break;
         case pbsRootObj.lookupEnum("WsMsgType").values.OnlineACK:
             const olAckPayload = responseData.olAck;
-            console.log("Received WSOnlineAck payload:", olAckPayload);
-            // 处理 WSOnlineAck 对象
             if (olAckPayload.Success){
                 callback.OnlineResult(null);
             }else{
@@ -184,12 +173,10 @@ async function processIM(callback, data) {
         case pbsRootObj.lookupEnum("WsMsgType").values.IMData:
             const msgPayload = responseData.msg;
             console.log("Received WSCryptoMsg payload:", msgPayload);
-            // 处理 WSCryptoMsg 对象
             break;
         case pbsRootObj.lookupEnum("WsMsgType").values.PullUnread:
             const unreadPayload = responseData.unread;
             console.log("Received WSPullUnread payload:", unreadPayload);
-            // 处理 WSPullUnread 对象
             break;
         case pbsRootObj.lookupEnum("WsMsgType").values.Offline:
             // 处理 Offline 类型
@@ -197,11 +184,9 @@ async function processIM(callback, data) {
         case pbsRootObj.lookupEnum("WsMsgType").values.WsMsgAck:
             const msgAckPayload = responseData.msgAck;
             console.log("Received WSMsgAck payload:", msgAckPayload);
-            // 处理 WSMsgAck 对象
             break;
         default:
             console.log("Unknown payload type:", responseData.type);
-            // 处理未知类型
             break;
     }
 }

@@ -98,12 +98,16 @@ class IMManager {
         showModal("聊天链接异常:" + err);
     }
 
-    SignData(data){
+    SignData(data) {
         return curWalletObj.SignRawData(data);
     }
 
-    OnlineResult(err){
-
+    OnlineResult(err) {
+        if (!err) {
+            console.log("online success!");
+            return;
+        }
+        showModal("online failed");
     }
 }
 
@@ -148,16 +152,20 @@ function sendMessage() {
     const messageContainer = document.getElementById('messageContainer');
     const messageInput = document.getElementById('messageInput');
     const messageText = messageInput.value;
-    if (messageText.trim() !== '') {
-        // Add the message to messageContainer
-        const messageItem = document.createElement('div');
-        messageItem.classList.add('messageItem', 'self'); // Assuming it's a self message
-        messageItem.textContent = messageText;
-        messageContainer.appendChild(messageItem);
-        // curMsgManager.socket.send(messageText);
-        // Clear the input field
-        messageInput.value = '';
+    if (messageText.trim() === '') {
+        return;
     }
+
+    const message = new messageItem(true, null, "wo", messageText, new Date());
+
+    const divItem = document.createElement('div');
+    divItem.classList.add('messageItem', 'self');
+
+    const messageTemplate = Handlebars.compile(document.getElementById('messageTemplate').innerHTML);
+    divItem.innerHTML = messageTemplate({ messages: [message] });
+
+    messageContainer.appendChild(divItem);
+    messageInput.value = '';
 }
 
 function checkSessionKeyPriKey() {
@@ -175,9 +183,10 @@ function clearSessionStorage() {
 }
 
 let lastSelectedMsgItem = null;
+
 function loadCachedMsgListForAddr(item, address) {
     document.getElementById("messageContentArea").style.display = 'block';
-    if (lastSelectedMsgItem){
+    if (lastSelectedMsgItem) {
         lastSelectedMsgItem.classList.remove('selected');
     }
     item.classList.add('selected');
@@ -219,8 +228,9 @@ function loadCombinedContacts(force) {
 }
 
 let lastSelectedFriendItem
+
 function fullFillContact(item, address) {
-    if (lastSelectedFriendItem){
+    if (lastSelectedFriendItem) {
         lastSelectedFriendItem.classList.remove('selected');
     }
     item.classList.add('selected');

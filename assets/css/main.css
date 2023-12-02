@@ -415,6 +415,7 @@ body {
     max-width: 70%; /* 调整消息内容最大宽度 */
     padding: 10px;
     border-radius: 10px;
+    min-width: 100px;
 }
 
 .messageItem.self {

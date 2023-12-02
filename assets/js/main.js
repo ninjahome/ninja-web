@@ -72,8 +72,8 @@ Handlebars.registerHelper('formatTime', function (time) {
     } else {
         // Otherwise, use MM:SS format
         const minutes = messageDate.getUTCMinutes();
-        const seconds = messageDate.getSeconds();
-        return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        const hours = messageDate.getHours();
+        return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
     }
 });
 

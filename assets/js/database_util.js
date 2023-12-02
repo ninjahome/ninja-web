@@ -262,7 +262,7 @@ async function cacheLoadCachedMsgListForAddr(address) {
 
     const msg_3 = new messageItem(true, null, "中本聪", "最近项目的进展咋样？", currentDate);
 
-    const msg_4 = new messageItem(false, null, "日本聪", "项目进展顺利，我们在使用新的技术编程", currentDate);
+    const msg_4 = new messageItem(false, null, "日本聪", "项目进展顺利项目进展顺利项目进展顺利项目进展顺利项目进展顺利项目进展顺利项目进展顺利，我们在使用新的技术编程", currentDate);
 
     result.push(msg_1);
     result.push(msg_2);

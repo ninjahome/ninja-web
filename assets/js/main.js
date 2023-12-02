@@ -32,6 +32,7 @@ function clearCallLocalCache() {
 }
 
 let selfAccountInfo = null;
+
 function selfAccountSettings() {
     loadSelfDetails(curWalletObj, true).then(result => {
 
@@ -122,31 +123,27 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     togglePanels(null, 'messageControlPanel', 'messageContentArea');
-    document.getElementById('msgSearchInput').addEventListener('keyup', function(event) {
+    document.getElementById('msgSearchInput').addEventListener('keyup', function (event) {
         if (event.key === 'Enter') {
-            // 用户按下回车键
-            handleEnterKeyPress();
+            searchAccountMetaByAddress();
         }
     });
 });
 
-function handleEnterKeyPress() {
+function searchAccountMetaByAddress() {
     const msgSearchInput = document.getElementById('msgSearchInput');
     const blockchainAddress = msgSearchInput.value.trim();
 
     if (isBlockchainAddress(blockchainAddress)) {
-        // 处理区块链地址逻辑，例如输出到控制台
         console.log('用户输入的区块链地址:', blockchainAddress);
     } else {
-        console.log('用户输入的不是有效的区块链地址');
+        showModal("不是有效的区块链地址")
     }
 
     msgSearchInput.value = '';
 }
+
 function isBlockchainAddress(address) {
-    // 此处可以添加你验证区块链地址的逻辑，确保输入的是一个有效的区块链地址
-    // 返回 true 表示是有效的区块链地址，返回 false 表示不是
-    // 示例逻辑：假设区块链地址必须包含 0x 前缀
     return address.toLowerCase().startsWith('NJ');
 }
 
@@ -200,7 +197,7 @@ function checkSessionKeyPriKey() {
         window.location.href = "/";
     }
     curWalletObj = new LightSubKey(keyData.light, keyData.id, keyData.address, Object.values(keyData.privateKey));
-    loadSelfDetails(curWalletObj, true).then(r=>{
+    loadSelfDetails(curWalletObj, true).then(r => {
         console.log("load self contact detail success");
         selfAccountInfo = r;
     });
@@ -213,6 +210,7 @@ function clearSessionStorage() {
 }
 
 let lastSelectedMsgItem = null;
+
 function loadCachedMsgListForAddr(item, address) {
     document.getElementById("messageContentArea").style.display = 'block';
     if (lastSelectedMsgItem) {
@@ -257,6 +255,7 @@ function loadCombinedContacts(force) {
 }
 
 let lastSelectedFriendItem
+
 function fullFillContact(item, address) {
     if (lastSelectedFriendItem) {
         lastSelectedFriendItem.classList.remove('selected');
@@ -267,8 +266,7 @@ function fullFillContact(item, address) {
     if (!contactInfo) {
         return;
     }
-    document.getElementById('contactContentArea').style.display = 'block';
-    document.getElementById('contactContentArea').style.visibility = 'visible';
+    document.getElementById('contactContentArea').style.display = 'flex';
 
     if (contactInfo.meta.avatarBase64) {
         document.getElementById("contactAvatarImage").src = "data:image/png;base64," + contactInfo.meta.avatarBase64;

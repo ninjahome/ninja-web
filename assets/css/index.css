@@ -16,6 +16,7 @@ body {
 img {
     width: 100px; /* 图片宽度 */
     height: 100px; /* 图片高度 */
+    border-radius: 50%;
     margin-bottom: 20px; /* 图片与下方元素的距离 */
 }
 

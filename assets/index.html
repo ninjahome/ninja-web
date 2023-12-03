@@ -29,7 +29,7 @@
     </div>
 </div>
 
-<img src="/assets/logo.png" alt="Logo">
+<img src="/assets/logo.png" alt="Logo" id="userAvatarImg">
 <form id="loginForm" action="/login" method="post">
     <label for="walletAddr">选择登录钱包:</label>
     <select id="walletAddr" name="walletAddr">
@@ -190,9 +190,19 @@
         for (let i = 0; i < selectElement.options.length; i++) {
             if (selectElement.options[i].value === lastUsedAddr) {
                 selectElement.selectedIndex = i;
+                setAvatarByAddress(lastUsedAddr);
                 break;
             }
         }
+    }
+
+    function setAvatarByAddress(address){
+        const selectElement = document.getElementById('userAvatarImg');
+        let avatarData = getDataFromLocalStorage(metaAvatarBlobKey(address));
+        if (!avatarData){
+            return;
+        }
+        selectElement.src = 'data:image/png;base64,'+avatarData;
     }
 
 </script>

@@ -135,9 +135,9 @@ function searchAccountMetaByAddress() {
     const blockchainAddress = msgSearchInput.value.trim();
 
     if (isBlockchainAddress(blockchainAddress)) {
-        console.log('用户输入的区块链地址:', blockchainAddress);
+        console.log('用户输入的地址:', blockchainAddress);
     } else {
-        showModal("不是有效的区块链地址")
+        showModal("不是有效的Ninja地址")
     }
 
     msgSearchInput.value = '';
@@ -255,7 +255,6 @@ function loadCombinedContacts(force) {
 }
 
 let lastSelectedFriendItem
-
 function fullFillContact(item, address) {
     if (lastSelectedFriendItem) {
         lastSelectedFriendItem.classList.remove('selected');

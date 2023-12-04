@@ -198,11 +198,11 @@
 
     function setAvatarByAddress(address){
         const selectElement = document.getElementById('userAvatarImg');
-        let avatarData = getDataFromLocalStorage(metaAvatarBlobKey(address));
-        if (!avatarData){
+        let meta = cacheLoadMeta(address)
+        if (!meta || !meta.avatarBase64){
             return;
         }
-        selectElement.src = 'data:image/png;base64,'+avatarData;
+        selectElement.src = 'data:image/png;base64,'+meta.avatarBase64;
     }
 
 </script>

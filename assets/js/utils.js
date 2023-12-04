@@ -108,8 +108,6 @@ const SessionWalletJsonString = '__key_global_current_wallet__';
 
 const DBKeyAllContactData = '__key__all_contact_data__';
 const DBKeyMetaDetails = '__key__meta_details__';
-const DBKeyMetaAvatarUrl = '__key__meta_avatar_url__';
-const DBKeyMetaAvatarBlob = '__key__meta_avatar_blob__';
 const DBKeySelfDetails = '__key__self_details__';
 
 

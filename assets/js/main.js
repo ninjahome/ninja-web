@@ -125,26 +125,75 @@ document.addEventListener("DOMContentLoaded", function () {
     togglePanels(null, 'messageControlPanel', 'messageContentArea');
     document.getElementById('msgSearchInput').addEventListener('keyup', function (event) {
         if (event.key === 'Enter') {
-            searchAccountMetaByAddress();
+            searchAccountMetaByAddress().then(r => {
+                showSearchedAccountMeta(r);
+            });
         }
     });
 });
 
-function searchAccountMetaByAddress() {
-    const msgSearchInput = document.getElementById('msgSearchInput');
-    const blockchainAddress = msgSearchInput.value.trim();
-
-    if (isBlockchainAddress(blockchainAddress)) {
-        console.log('用户输入的地址:', blockchainAddress);
-    } else {
-        showModal("不是有效的Ninja地址")
+function showSearchedAccountMeta(meta) {
+    if (!meta){
+        return;
     }
 
+    const popup = document.getElementById('searchedMetaPopupDialog');
+    // 显示弹出窗口
+    popup.style.display = 'flex';
+
+    if (meta.avatarBase64) {
+        document.getElementById("searchedUsrAvatar").src = "data:image/png;base64," + meta.avatarBase64;
+    } else {
+        document.getElementById("contactAvatarImage").src = "/assets/logo.png";
+    }
+
+    const expireDays = calculateDays(meta.balance)
+    document.getElementById("searchedUsrBasicInfo").innerHTML = `
+        <span>昵称：${meta.name}</span>
+        <p>地址：${meta.address}</p>
+        <p>余额: ${expireDays} 天</p>
+    `;
+
+    const buttonRow = document.querySelector("#searchedMetaPopupDialog .user-info-button-row");
+    buttonRow.innerHTML = `
+        <button onclick="startChatWithFriend('${meta.address}')">开始聊天</button>
+        <button onclick="closePopup()">关闭</button>
+    `
+}
+
+// 关闭弹出窗口的函数
+function closePopup() {
+    const popup = document.getElementById('searchedMetaPopupDialog');
+    popup.style.display = 'none';
+}
+
+async function searchAccountMetaByAddress() {
+    const msgSearchInput = document.getElementById('msgSearchInput');
+    const blockchainAddress = msgSearchInput.value.trim();
     msgSearchInput.value = '';
+    if (!isBlockchainAddress(blockchainAddress)) {
+        showModal("不是有效的Ninja地址");
+        return null;
+    }
+    console.log('用户输入的地址:', blockchainAddress);
+    let meta = cacheLoadMeta(blockchainAddress);
+    if (meta) {
+        reloadMetaFromSrv(blockchainAddress).then(r => {
+            showSearchedAccountMeta(r);
+        })
+        return meta;
+    }
+    meta = await apiGetAccountMeta(blockchainAddress);
+    if (!meta) {
+        return new accountMeta(-1, blockchainAddress, "", null, 0, 0)
+    }
+
+    await meta.queryAvatarData()
+    return meta;
 }
 
 function isBlockchainAddress(address) {
-    return address.toLowerCase().startsWith('NJ');
+    return address.toLowerCase().startsWith('nj');
 }
 
 function initMsgSender() {
@@ -255,6 +304,7 @@ function loadCombinedContacts(force) {
 }
 
 let lastSelectedFriendItem
+
 function fullFillContact(item, address) {
     if (lastSelectedFriendItem) {
         lastSelectedFriendItem.classList.remove('selected');
@@ -265,6 +315,7 @@ function fullFillContact(item, address) {
     if (!contactInfo) {
         return;
     }
+
     document.getElementById('contactContentArea').style.display = 'flex';
 
     if (contactInfo.meta.avatarBase64) {

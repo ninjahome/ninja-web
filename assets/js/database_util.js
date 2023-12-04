@@ -51,18 +51,14 @@ class accountMeta {
             return null;
         }
 
-        // console.log("avatarBase64:=>", avatarBase64)
         const isDataUri = avatarBase64 && avatarBase64.startsWith('data:application/octet-stream;base64,');
         const cleanedBase64 = isDataUri ? avatarBase64.slice('data:application/octet-stream;base64,'.length) : avatarBase64;
 
         this.avatarBase64 = cleanedBase64;
-        storeDataToLocalStorage(metaAvatarBlobKey(this.address), cleanedBase64);
+        this.syncToDB();
+
         return cleanedBase64;
     }
-}
-
-function metaAvatarBlobKey(address) {
-    return DBKeyMetaAvatarBlob + address;
 }
 
 function metaDataKey(address) {
@@ -78,7 +74,16 @@ function cacheLoadMeta(address) {
     return accountMeta.fromLocalJson(meta);
 }
 
-// return getDataFromLocalStorage(metaDataKey(address))
+async function reloadMetaFromSrv(address){
+    const  meta = await apiGetAccountMeta(address)
+    if (!meta){
+        return null;
+    }
+    await meta.queryAvatarData();
+
+    return meta;
+}
+
 
 /*****************************************************************************************
  *
@@ -92,7 +97,6 @@ class contactItem {
         this.alias = alias;
         this.remark = remark;
     }
-
 
     static fromJson(json) {
         return new contactItem(json.address, json.alias, json.remark);
@@ -200,7 +204,6 @@ async function loadSelfDetails(walletObj, force) {
     storeDataToLocalStorage(dbKey, accInfo)
     return accInfo;
 }
-
 /*****************************************************************************************
  *
  *                               message logic

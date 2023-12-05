@@ -2,14 +2,17 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"os"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
 var (
 	staticFileDir = "assets"
-	shouldReload  = true // 控制变量，用于决定是否重新加载文件
+	shouldReload  = true // 控制变量，用于决定是否重新加载文件//TODO：：
 )
 
 var simpleRouterMap = map[string]string{
@@ -39,7 +42,7 @@ func handleBalanceRequest(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir(staticFileDir))))
+	http.Handle("/assets/", http.StripPrefix("/assets/", http.HandlerFunc(assetsRouter)))
 
 	for route, fileName := range simpleRouterMap {
 		http.HandleFunc(route, simpleRouter(fileName))
@@ -76,7 +79,7 @@ func simpleRouter(fileName string) func(http.ResponseWriter, *http.Request) {
 		if shouldReload {
 			writer.Header().Set("Cache-Control", "max-age=0, no-store, must-revalidate")
 		} else {
-			writer.Header().Set("Cache-Control", "public, max-age=31536000") // 缓存一年
+			writer.Header().Set("Cache-Control", "public, max-age=1036000") // 缓存10天
 		}
 
 		// 设置 Last-Modified 头
@@ -91,4 +94,56 @@ func simpleRouter(fileName string) func(http.ResponseWriter, *http.Request) {
 		// 服务文件
 		http.ServeFile(writer, request, filePath)
 	}
+}
+
+func assetsRouter(writer http.ResponseWriter, request *http.Request) {
+	// 获取文件路径
+	realUrlPath := request.URL.Path
+	if strings.HasSuffix(realUrlPath, ".map") {
+		realUrlPath = strings.TrimSuffix(realUrlPath, ".map")
+	}
+	// 打开文件
+	filePath := filepath.Join(staticFileDir, realUrlPath)
+
+	// 打开文件
+	file, err := http.Dir(staticFileDir).Open(realUrlPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			// 文件不存在的情况
+			fmt.Printf("File not found: %s\n", realUrlPath)
+		} else {
+			// 其他错误
+			fmt.Printf("Error opening file: %s\n", err)
+		}
+		http.Error(writer, "File not found", http.StatusNotFound)
+		return
+	}
+	defer file.Close()
+
+	// 获取文件信息
+	fileInfo, err := file.Stat()
+	if err != nil {
+		http.Error(writer, "Unable to get file information", http.StatusInternalServerError)
+		return
+	}
+	modTime := fileInfo.ModTime()
+
+	// 设置 Cache-Control 头
+	if shouldReload {
+		writer.Header().Set("Cache-Control", "max-age=0, no-store, must-revalidate")
+	} else {
+		writer.Header().Set("Cache-Control", "public, max-age=1036000") //缓存10天
+	}
+
+	// 设置 Last-Modified 头
+	writer.Header().Set("Last-Modified", modTime.UTC().Format(http.TimeFormat))
+
+	// 检查是否需要重新加载
+	if t, err := time.Parse(http.TimeFormat, request.Header.Get("If-Modified-Since")); err == nil && modTime.Before(t.Add(1*time.Second)) {
+		writer.WriteHeader(http.StatusNotModified)
+		return
+	}
+
+	// 服务文件
+	http.ServeFile(writer, request, filePath)
 }

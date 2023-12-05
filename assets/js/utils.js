@@ -109,6 +109,7 @@ const SessionWalletJsonString = '__key_global_current_wallet__';
 const DBKeyAllContactData = '__key__all_contact_data__';
 const DBKeyMetaDetails = '__key__meta_details__';
 const DBKeySelfDetails = '__key__self_details__';
+const DBKeyCachedMsgTipsList = '__key__cached_msg_tips_list__';
 
 
 const DefaultAvatarUrl = "/assets/logo.png";

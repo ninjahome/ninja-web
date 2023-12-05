@@ -107,6 +107,7 @@ class IMManager {
     }
 }
 
+let cachedMsgTipMap = new Map();
 let curWalletObj = null;
 let curMsgManager = new IMManager();
 document.addEventListener("DOMContentLoaded", function () {
@@ -116,9 +117,12 @@ document.addEventListener("DOMContentLoaded", function () {
     })
 
     initModal().then(response => {
-        loadCachedMsgTipsList();
+        cachedMsgTipMap = cacheLoadCachedMsgTipsList();
+        refreshMsgTipsList();
         loadCombinedContacts(false);
-        curMsgManager.socket = wsOnline(curMsgManager);
+        wsOnline(curMsgManager).then(s => {
+            curMsgManager.socket = s;
+        });
         initMsgSender();
     });
 
@@ -155,8 +159,15 @@ function showSearchedAccountMeta(meta) {
     `;
 
     const buttonRow = document.querySelector("#searchedMetaPopupDialog .user-info-button-row");
+    if (meta.address === curWalletObj.address) {
+        buttonRow.innerHTML = `
+        <button onclick="closePopup()">关闭</button>
+    `
+        return
+    }
+
     buttonRow.innerHTML = `
-        <button onclick="startChatWithFriend('${meta.address}')">开始聊天</button>
+        <button onclick="startChatWithFriend('${meta.address}', closePopup)">开始聊天</button>
         <button onclick="closePopup()">关闭</button>
     `
 }
@@ -273,13 +284,11 @@ function loadCachedMsgListForAddr(item, address) {
     document.getElementById('messageContainer').innerHTML = messageTemplate({messages});
 }
 
-let cachedMsgTipMap = new Map();
 
-function loadCachedMsgTipsList() {
+function refreshMsgTipsList() {
     const source = document.getElementById("messageTipsListTemplate").innerHTML;
     const template = Handlebars.compile(source);
-    cachedMsgTipMap = cacheLoadCachedMsgTipsList();
-    const messages = cachedMsgTipMap.values()
+    const messages = wrapToShowAbleMsgTipsList(cachedMsgTipMap);
     document.getElementById("messageTipsList").innerHTML = template({messages: messages});
 }
 
@@ -336,13 +345,29 @@ function fullFillContact(item, address) {
 
     const buttonRow = document.querySelector("#contactContentArea .button-row");
     buttonRow.innerHTML = `
-        <button onclick="startChatWithFriend('${contactInfo.meta.address}')">开始聊天</button>
+        <button onclick="startChatWithFriend('${contactInfo.meta.address}', null)">开始聊天</button>
         <button onclick="deleteFriend('${contactInfo.meta.address}')">删除好友</button>
     `;
 }
 
-function startChatWithFriend(contact) {
-    console.log("start to chat with friend:", contact);
+function startChatWithFriend(address, callback) {
+
+    let msgTipItem = cachedMsgTipMap.get(address);
+    if (!msgTipItem) {
+        msgTipItem = new messageTipsItem(address, new Date(), "开始聊天");
+        cachedMsgTipMap.set(address, msgTipItem);
+        cacheSyncCachedMsgTipsToDb(cachedMsgTipMap).then(r => {
+        });
+        refreshMsgTipsList();
+    }
+
+    const btn = document.getElementById("messageButton");
+    togglePanels(btn, 'messageControlPanel');
+    const liElement = document.querySelector('li[data-address="' + address + '"]');
+    loadCachedMsgListForAddr(liElement, address);
+    if (callback) {
+        callback();
+    }
 }
 
 function deleteFriend(contact) {

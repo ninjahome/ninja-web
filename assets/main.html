@@ -51,18 +51,18 @@
             <div id="messageControlPanel">
                 <script id="messageTipsListTemplate" type="text/x-handlebars-template">
                     {{#each messages}}
-                    <li class="messageTipsItem" onclick="loadCachedMsgListForAddr(this,'{{address}}')">
-                        {{#if avatarBase64}}
-                        <img src="data:image/png;base64,{{avatarBase64}}" alt="Avatar">
+                    <li class="messageTipsItem" data-address="{{tips.address}}"  onclick="loadCachedMsgListForAddr(this,'{{tips.address}}')">
+                        {{#if meta.avatarBase64}}
+                        <img src="data:image/png;base64,{{meta.avatarBase64}}" alt="Avatar">
                         {{else}}
                         <img src="/assets/logo.png" alt="Avatar">
                         {{/if}}
                         <div class="info-container">
                             <div class="nickname-time">
-                                <span class="nickname">{{nickname}}</span>
-                                <span class="time">{{formatTime time}}</span>
+                                <span class="nickname">{{meta.name}}</span>
+                                <span class="time">{{formatTime tips.time}}</span>
                             </div>
-                            <div class="msgPayload">{{msgPayload}}</div>
+                            <div class="msgPayload">{{tips.description}}</div>
                         </div>
                     </li>
                     {{/each}}
@@ -150,8 +150,8 @@
             </div>
 
             <div class="button-row">
-                <button onclick="startChatWithFriend(this)">开始聊天</button>
-                <button onclick="deleteFriend(this)">删除好友</button>
+                <button >开始聊天</button>
+                <button >删除好友</button>
             </div>
         </div>
 
@@ -187,8 +187,8 @@
     </div>
 
     <div class="user-info-button-row">
-        <button onclick="startChatWithFriend('')">开始聊天</button>
-        <button onclick="closePopup()">2</button>
+        <button >开始聊天</button>
+        <button >关闭</button>
     </div>
 </div>
 

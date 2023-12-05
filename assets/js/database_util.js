@@ -74,9 +74,9 @@ function cacheLoadMeta(address) {
     return accountMeta.fromLocalJson(meta);
 }
 
-async function reloadMetaFromSrv(address){
-    const  meta = await apiGetAccountMeta(address)
-    if (!meta){
+async function reloadMetaFromSrv(address) {
+    const meta = await apiGetAccountMeta(address)
+    if (!meta) {
         return null;
     }
     await meta.queryAvatarData();
@@ -195,7 +195,7 @@ async function loadSelfDetails(walletObj, force) {
 
     let meta = await apiGetAccountMeta(getGlobalCurrentAddr())
     if (!meta) {
-        meta = new accountMeta(-1, walletObj.address, "",null, 0, 0);
+        meta = new accountMeta(-1, walletObj.address, "", null, 0, 0);
     }
     meta.avatarBase64 = await meta.queryAvatarData();
 
@@ -204,38 +204,60 @@ async function loadSelfDetails(walletObj, force) {
     storeDataToLocalStorage(dbKey, accInfo)
     return accInfo;
 }
+
 /*****************************************************************************************
  *
- *                               message logic
+ *                               message tips
  *
  * *****************************************************************************************/
+class messageTipsToShow {
+    constructor(tips, meta) {
+        this.tips = tips;
+        this.meta = meta;
+    }
+}
 
 class messageTipsItem {
-    constructor(address, avatarBase64, nickname, time, description) {
+    constructor(address, time, description) {
         this.address = address;
-        this.avatarBase64 = avatarBase64;
-        this.nickname = nickname;
         this.time = time;
         this.description = description;
     }
 }
 
-function cacheLoadCachedMsgTipsList() {
-
-    const result = new Map();
-    const currentDate = new Date();
-    const twoDaysAgo = new Date();
-    twoDaysAgo.setDate(currentDate.getDate() - 2);
-
-    const item_1 = new messageTipsItem("NJA1fmxxVFRY2XWvcPU41zfxMrjb2iXDzaRW4jSD1gVCFg", null, "日本聪", currentDate, "文本消息");
-    const item_2 = new messageTipsItem("NJJ5ryLVoNG9Cm9yaPheMQH4tpUYoGyKYXGWNfFqLTFGLP", null, "中本聪", currentDate, "文本消息");
-    const item_3 = new messageTipsItem("NJA1fmxxVFRY2XWvcPU41zfxMrjb2iXDzaRW4jSD1gVCFg", null, "V神", twoDaysAgo, "文本消息");
-
-    result.set('NJA1fmxxVFRY2XWvcPU41zfxMrjb2iXDzaRW4jSD1gVCFg',item_1);
-    result.set('NJJ5ryLVoNG9Cm9yaPheMQH4tpUYoGyKYXGWNfFqLTFGLP',item_2);
-    result.set('NJA1fmxxVFRY2XWvcPU41zfxMrjb2iXDzaRW4jSD1gVCFg',item_3);
-    return result
+function msgTipsListDbKey() {
+    return DBKeyCachedMsgTipsList + getGlobalCurrentAddr();
 }
+
+async function cacheSyncCachedMsgTipsToDb(theMap) {
+    const values = Array.from(theMap.entries());
+    storeDataToLocalStorage(msgTipsListDbKey(), values);
+}
+
+function cacheLoadCachedMsgTipsList() {
+    const result = new Map();
+    const storedData = getDataFromLocalStorage(msgTipsListDbKey());
+    if (!storedData) {
+        return result;
+    }
+    return new Map(storedData);
+
+}
+
+function wrapToShowAbleMsgTipsList(data) {
+    const result = [];
+    data.forEach((value, key) => {
+        const item = new messageTipsToShow(value, cacheLoadMeta(key));
+        result.push(item);
+    });
+    return result;
+}
+
+/*****************************************************************************************
+ *
+ *                               message item;
+ *
+ * *****************************************************************************************/
 
 class messageItem {
     constructor(isSelf, avatarBase64, nickname, msgPayload, time) {

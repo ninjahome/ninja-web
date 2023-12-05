@@ -133,7 +133,7 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 function showSearchedAccountMeta(meta) {
-    if (!meta){
+    if (!meta) {
         return;
     }
 
@@ -268,20 +268,18 @@ function loadCachedMsgListForAddr(item, address) {
     item.classList.add('selected');
     lastSelectedMsgItem = item;
 
-    cacheLoadCachedMsgListForAddr(address).then(messages => {
-        const messageTemplate = Handlebars.compile(document.getElementById('messageTemplate').innerHTML);
-        document.getElementById('messageContainer').innerHTML = messageTemplate({messages});
-    }).catch(error => {
-        showModal("加载好友列表失败:" + error);
-    });
+    const messages = cacheLoadCachedMsgListForAddr(address);
+    const messageTemplate = Handlebars.compile(document.getElementById('messageTemplate').innerHTML);
+    document.getElementById('messageContainer').innerHTML = messageTemplate({messages});
 }
+
+let cachedMsgTipMap = new Map();
 
 function loadCachedMsgTipsList() {
     const source = document.getElementById("messageTipsListTemplate").innerHTML;
-
     const template = Handlebars.compile(source);
-
-    const messages = cacheLoadCachedMsgTipsList()
+    cachedMsgTipMap = cacheLoadCachedMsgTipsList();
+    const messages = cachedMsgTipMap.values()
     document.getElementById("messageTipsList").innerHTML = template({messages: messages});
 }
 
@@ -303,7 +301,7 @@ function loadCombinedContacts(force) {
     });
 }
 
-let lastSelectedFriendItem
+let lastSelectedFriendItem = null;
 
 function fullFillContact(item, address) {
     if (lastSelectedFriendItem) {

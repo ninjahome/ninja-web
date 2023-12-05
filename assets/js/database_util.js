@@ -222,7 +222,7 @@ class messageTipsItem {
 
 function cacheLoadCachedMsgTipsList() {
 
-    const result = [];
+    const result = new Map();
     const currentDate = new Date();
     const twoDaysAgo = new Date();
     twoDaysAgo.setDate(currentDate.getDate() - 2);
@@ -231,10 +231,9 @@ function cacheLoadCachedMsgTipsList() {
     const item_2 = new messageTipsItem("NJJ5ryLVoNG9Cm9yaPheMQH4tpUYoGyKYXGWNfFqLTFGLP", null, "中本聪", currentDate, "文本消息");
     const item_3 = new messageTipsItem("NJA1fmxxVFRY2XWvcPU41zfxMrjb2iXDzaRW4jSD1gVCFg", null, "V神", twoDaysAgo, "文本消息");
 
-    result.push(item_1);
-    result.push(item_2);
-    result.push(item_3);
-
+    result.set('NJA1fmxxVFRY2XWvcPU41zfxMrjb2iXDzaRW4jSD1gVCFg',item_1);
+    result.set('NJJ5ryLVoNG9Cm9yaPheMQH4tpUYoGyKYXGWNfFqLTFGLP',item_2);
+    result.set('NJA1fmxxVFRY2XWvcPU41zfxMrjb2iXDzaRW4jSD1gVCFg',item_3);
     return result
 }
 
@@ -248,7 +247,7 @@ class messageItem {
     }
 }
 
-async function cacheLoadCachedMsgListForAddr(address) {
+function cacheLoadCachedMsgListForAddr(address) {
 
     const result = [];
 
@@ -258,9 +257,7 @@ async function cacheLoadCachedMsgListForAddr(address) {
 
     const msg_1 = new messageItem(true, null, "中本聪", "早上好", twoDaysAgo);
     const msg_2 = new messageItem(false, null, "日本聪", "您好！很开心和您聊天😊", twoDaysAgo);
-
     const msg_3 = new messageItem(true, null, "中本聪", "最近项目的进展咋样？", currentDate);
-
     const msg_4 = new messageItem(false, null, "日本聪", "项目进展顺利项目进展顺利项目进展顺利项目进展顺利项目进展顺利项目进展顺利项目进展顺利，我们在使用新的技术编程", currentDate);
 
     result.push(msg_1);
@@ -268,5 +265,4 @@ async function cacheLoadCachedMsgListForAddr(address) {
     result.push(msg_3);
     result.push(msg_4);
     return result;
-
 }

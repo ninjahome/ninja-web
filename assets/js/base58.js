@@ -168,11 +168,3 @@ function createBase58() {
 }
 
 const base58 = createBase58();
-// var keyPair = nacl.sign.keyPair();
-// var result = base58.encode(keyPair.publicKey);
-// console.log("result======>>>",result);
-//
-// const encodedString = "NJD4oFe387vB9pjr2X1iK5QF7ZeTgik2TDYPPQmY2GbHgH";
-// const stringWithoutPrefix = encodedString.substring(2); // 去掉前缀 "NJ"
-// const decodedBytes = base58.decode(stringWithoutPrefix);
-// console.log(decodedBytes);

@@ -284,8 +284,29 @@ function loadCachedMsgListForAddr(item, address) {
     document.getElementById('messageContainer').innerHTML = messageTemplate({messages});
     document.getElementById('blockchainAddressOfPeer').innerText = address
 
-    const sharedKey = GenerateAesKey(address, curWalletObj.privateKey);
-
+    // const sharedKey = GenerateAesKey(address, curWalletObj.privateKey);
+    //
+    // const plaintext = new TextEncoder().encode('Hello, World!');
+    // AesEncryptData(plaintext, sharedKey)
+    // .then(encryptedBody => {
+    //     console.log('AesEncryptData Body:', encryptedBody);
+    //     AesDecryptData(encryptedBody, sharedKey).then(origData =>{
+    //         console.log('AesDecryptData Body:', new TextDecoder().decode(origData));
+    //     }).catch(error => {
+    //         console.error('AesDecryptData error:', error);
+    //     });
+    // })
+    // .catch(error => {
+    //     console.error('AesEncryptData error:', error);
+    // });
+    //
+    // const goCipherData = hexStringToUint8Array('3d411bef4dfde148291c0c2ce9141ac8a41be574553d77918bf94cd73c0b639e68420ed7984040679103b7347d030f48')
+    // AesDecryptData(goCipherData,sharedKey).then(origData =>{
+    //     console.log('AesDecryptData Body:', new TextDecoder().decode(origData));
+    // })
+    //     .catch(error => {
+    //         console.error('AesEncryptData error:', error);
+    //     });
 }
 
 

@@ -131,21 +131,97 @@ async function decryptPrivateKey(key, cipherText, iv) {
 
 function GenerateAesKey(peerNjAddr, selfPriKey){
     const edwardsPublicKey = ToSubAddr(peerNjAddr)
-    console.log(uint8ArrayToHexString(edwardsPublicKey));
+    // console.log(uint8ArrayToHexString(edwardsPublicKey));
     // 转换为X25519公钥
     const x25519PublicKey = sodium.crypto_sign_ed25519_pk_to_curve25519(edwardsPublicKey);
 
-    console.log('X25519公钥:', uint8ArrayToHexString(x25519PublicKey));
+    // console.log('X25519公钥:', uint8ArrayToHexString(x25519PublicKey));
 
     // 转换为X25519私钥
     const x25519PrivateKey = sodium.crypto_sign_ed25519_sk_to_curve25519(Uint8Array.from(selfPriKey));
 
-    console.log('X25519私钥:', uint8ArrayToHexString(x25519PrivateKey));
-    const sharedA = nacl.box.before(x25519PublicKey, x25519PrivateKey);
-    console.log("aes key is=>",uint8ArrayToHexString(sharedA));
+    // console.log('X25519私钥:', uint8ArrayToHexString(x25519PrivateKey));
 
     const sharedKey = sodium.crypto_scalarmult(x25519PrivateKey, x25519PublicKey);
-    console.log("aes key is=>",uint8ArrayToHexString(sharedKey));
+    // console.log("aes key is=>",uint8ArrayToHexString(sharedKey));
 
-    return sharedA;
+    return sharedKey;
+}
+
+async function AesEncryptData(plainData, key) {
+    // Copy the input data to avoid modification
+    const plainDataCopy = new Uint8Array(plainData);
+
+    // Copy the key to avoid modification
+    const keyBytes = new Uint8Array(key);
+
+    // Generate a random IV
+    const iv = crypto.getRandomValues(new Uint8Array(16));
+
+    // Import key
+    const importedKey = await crypto.subtle.importKey(
+        "raw",
+        keyBytes,
+        { name: "AES-CBC" },
+        false,
+        ["encrypt"]
+    );
+
+    // PKCS#7 padding
+    const blockSize = 16; // AES block size
+    const padding = blockSize - (plainDataCopy.length % blockSize);
+    const paddedData = new Uint8Array(plainDataCopy.length + padding);
+    paddedData.set(plainDataCopy);
+    paddedData.fill(padding, plainDataCopy.length);
+
+    // Encrypt using AES-CBC algorithm
+    const encrypted = await crypto.subtle.encrypt(
+        {
+            name: 'AES-CBC',
+            iv: iv,
+        },
+        importedKey,
+        paddedData
+    );
+
+    // Combine IV and encrypted data
+    const result = new Uint8Array(iv.length + encrypted.byteLength);
+    result.set(iv);
+    result.set(new Uint8Array(encrypted), iv.length);
+
+    return result;
+}
+
+
+async function AesDecryptData(ciphertext, key) {
+    // Copy the input data to avoid modification
+    const ciphertextCopy = new Uint8Array(ciphertext);
+
+    // Copy the key to avoid modification
+    const keyBytes = new Uint8Array(key);
+
+    // Extract IV and encrypted data
+    const iv = ciphertextCopy.slice(0, 16);
+    const encryptedData = ciphertextCopy.slice(16);
+
+    // Import key
+    const importedKey = await crypto.subtle.importKey(
+        "raw",
+        keyBytes,
+        { name: "AES-CBC" },
+        false,
+        ["decrypt"]
+    );
+
+    // Decrypt using AES-CBC algorithm
+    const decrypted = await crypto.subtle.decrypt(
+        {
+            name: 'AES-CBC',
+            iv: iv,
+        },
+        importedKey,
+        encryptedData
+    );
+
+    return new Uint8Array(decrypted);
 }

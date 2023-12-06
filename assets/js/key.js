@@ -38,7 +38,7 @@ class LightSubKey {
             throw new Error('Private key is not available.');
         }
         const privateKeyUint8Array = new Uint8Array(this.privateKey);
-        return nacl.sign.detached(data, privateKeyUint8Array);
+        return sodium.crypto_sign_detached(data, privateKeyUint8Array);
     }
 }
 

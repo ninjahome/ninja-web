@@ -282,7 +282,10 @@ function loadCachedMsgListForAddr(item, address) {
     const messages = cacheLoadCachedMsgListForAddr(address);
     const messageTemplate = Handlebars.compile(document.getElementById('messageTemplate').innerHTML);
     document.getElementById('messageContainer').innerHTML = messageTemplate({messages});
-    document.getElementById('blockchainAddressOfPeer').innerText = address;
+    document.getElementById('blockchainAddressOfPeer').innerText = address
+
+    const sharedKey = GenerateAesKey(address, curWalletObj.privateKey);
+
 }
 
 

@@ -250,6 +250,8 @@ function wrapToShowAbleMsgTipsList(data) {
         const item = new messageTipsToShow(value, cacheLoadMeta(key));
         result.push(item);
     });
+
+    result.sort((a, b) => b.time - a.time);
     return result;
 }
 

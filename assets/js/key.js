@@ -44,18 +44,18 @@ class LightSubKey {
 
 function ToSubAddr(addStr) {
     if (!addStr.startsWith(SubAddrPrefix)) {
-        return {error: "字符串不以NJ开头", result: null};
+        throw new Error("字符串不以NJ开头");
     }
 
     const base58Str = addStr.substring(SubAddrPrefix.length);
-    const decodedResult = base58.decode(base58Str);
+    const decodedResult = new Uint8Array(base58.decode(base58Str));
 
     if (!decodedResult) {
-        return {error: "解码失败", result: null};
+        throw new Error("解码失败");
     }
-
-    return {error: null, result: decodedResult};
+    return decodedResult;
 }
+
 
 function generateNewLightSubKey() {
     const keyPair = generateKeyPair();
@@ -68,9 +68,9 @@ function generateNewLightSubKey() {
 }
 
 function generateKeyPair() {
-    const keyPair = nacl.sign.keyPair();
+    const keyPair = sodium.crypto_sign_keypair();
     const publicKey = keyPair.publicKey;
-    const privateKey = keyPair.secretKey;
+    const privateKey = keyPair.privateKey;
     return {publicKey, privateKey};
 }
 

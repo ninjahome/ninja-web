@@ -128,3 +128,24 @@ async function decryptPrivateKey(key, cipherText, iv) {
         throw error;
     }
 }
+
+function GenerateAesKey(peerNjAddr, selfPriKey){
+    const edwardsPublicKey = ToSubAddr(peerNjAddr)
+    console.log(uint8ArrayToHexString(edwardsPublicKey));
+    // 转换为X25519公钥
+    const x25519PublicKey = sodium.crypto_sign_ed25519_pk_to_curve25519(edwardsPublicKey);
+
+    console.log('X25519公钥:', uint8ArrayToHexString(x25519PublicKey));
+
+    // 转换为X25519私钥
+    const x25519PrivateKey = sodium.crypto_sign_ed25519_sk_to_curve25519(Uint8Array.from(selfPriKey));
+
+    console.log('X25519私钥:', uint8ArrayToHexString(x25519PrivateKey));
+    const sharedA = nacl.box.before(x25519PublicKey, x25519PrivateKey);
+    console.log("aes key is=>",uint8ArrayToHexString(sharedA));
+
+    const sharedKey = sodium.crypto_scalarmult(x25519PrivateKey, x25519PublicKey);
+    console.log("aes key is=>",uint8ArrayToHexString(sharedKey));
+
+    return sharedA;
+}

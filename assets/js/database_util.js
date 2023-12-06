@@ -261,13 +261,21 @@ function wrapToShowAbleMsgTipsList(data) {
  *
  * *****************************************************************************************/
 
-class messageItem {
+class showAbleMsgItem {
     constructor(isSelf, avatarBase64, nickname, msgPayload, time) {
         this.isSelf = isSelf;
         this.avatarBase64 = avatarBase64;
         this.nickname = nickname;
         this.msgPayload = msgPayload;
         this.time = time;
+    }
+}
+class msgPayLoad{
+    constructor(typ, txt, data) {
+    }
+}
+class storedMsgItem{
+    constructor(mid, from, to, payload, isGrp) {
     }
 }
 
@@ -279,10 +287,10 @@ function cacheLoadCachedMsgListForAddr(address) {
     const twoDaysAgo = new Date();
     twoDaysAgo.setDate(currentDate.getDate() - 2);
 
-    const msg_1 = new messageItem(true, null, "中本聪", "早上好", twoDaysAgo);
-    const msg_2 = new messageItem(false, null, "日本聪", "您好！很开心和您聊天😊", twoDaysAgo);
-    const msg_3 = new messageItem(true, null, "中本聪", "最近项目的进展咋样？", currentDate);
-    const msg_4 = new messageItem(false, null, "日本聪", "项目进展顺利项目进展顺利项目进展顺利项目进展顺利项目进展顺利项目进展顺利项目进展顺利，我们在使用新的技术编程", currentDate);
+    const msg_1 = new showAbleMsgItem(true, null, "中本聪", "早上好", twoDaysAgo);
+    const msg_2 = new showAbleMsgItem(false, null, "日本聪", "您好！很开心和您聊天😊", twoDaysAgo);
+    const msg_3 = new showAbleMsgItem(true, null, "中本聪", "最近项目的进展咋样？", currentDate);
+    const msg_4 = new showAbleMsgItem(false, null, "日本聪", "项目进展顺利项目进展顺利项目进展顺利项目进展顺利项目进展顺利项目进展顺利项目进展顺利，我们在使用新的技术编程", currentDate);
 
     result.push(msg_1);
     result.push(msg_2);

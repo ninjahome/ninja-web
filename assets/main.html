@@ -51,7 +51,8 @@
             <div id="messageControlPanel">
                 <script id="messageTipsListTemplate" type="text/x-handlebars-template">
                     {{#each messages}}
-                    <li class="messageTipsItem" data-address="{{tips.address}}"  onclick="loadCachedMsgListForAddr(this,'{{tips.address}}')">
+                    <li class="messageTipsItem" data-address="{{tips.address}}"
+                        onclick="loadCachedMsgListForAddr(this,'{{tips.address}}')">
                         {{#if meta.avatarBase64}}
                         <img src="data:image/png;base64,{{meta.avatarBase64}}" alt="Avatar">
                         {{else}}
@@ -150,8 +151,8 @@
             </div>
 
             <div class="button-row">
-                <button >开始聊天</button>
-                <button >删除好友</button>
+                <button>开始聊天</button>
+                <button>删除好友</button>
             </div>
         </div>
 
@@ -187,8 +188,8 @@
     </div>
 
     <div class="user-info-button-row">
-        <button >开始聊天</button>
-        <button >关闭</button>
+        <button>开始聊天</button>
+        <button>关闭</button>
     </div>
 </div>
 

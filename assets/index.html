@@ -64,7 +64,7 @@
         const password = document.getElementById("password").value;
         showModal("解码中......");
 
-        const wallet = await getSavedWallet(walletAddr);
+        const wallet = await dbManager.getData(IndexedDBManager.WALLET_TABLE_NAME,walletAddr);
         if (!wallet) {
             showError('加载钱包信息失败：' + curWalletObj.address);
             return
@@ -88,26 +88,36 @@
             });
     }
 
-    document.addEventListener("DOMContentLoaded", function () {
-        initModal();
+    document.addEventListener("DOMContentLoaded", async function () {
+        await dbManager.openDatabase();
+        await initModal();
         initializePage();
     });
+    window.addEventListener('beforeunload', () => {
+        dbManager.closeDatabase(); // 在页面卸载前关闭数据库连接
+    });
+
 
     function initializePage() {
         // 填充地址列表
         const walletAddrSelect = document.getElementById("walletAddr");
         const lastUsedAddr = getDataFromLocalStorage(DBKeyLastUsedWallet)
-
-        loadAllSaveWallets().then(wallets=>{
+        dbManager.getAllData(IndexedDBManager.WALLET_TABLE_NAME).then(wallets => {
             let i = 0;
             wallets.forEach(w => {
                 i = i + 1;
                 const option = document.createElement("option");
                 option.value = w.address;
                 option.text = w.address;
-                //TODO::query meta of address;
                 walletAddrSelect.add(option);
-                if (lastUsedAddr === w.address){
+                dbManager.getData(IndexedDBManager.META_TABLE_NAME, w.address).then(meta => {
+                    if (!meta){
+                        return;
+                    }
+                    option.text = meta.name;
+                });
+
+                if (lastUsedAddr === w.address) {
                     walletAddrSelect.selectedIndex = i;
                     setAvatarByAddress(lastUsedAddr);
                 }
@@ -155,15 +165,16 @@
             showModal("无效的账号文件");
             return;
         }
-        getSavedWallet(content.address).then(wallet =>{
-            if(!wallet){
+
+        dbManager.getData(IndexedDBManager.WALLET_TABLE_NAME,content.address) .then(wallet => {
+            if (!wallet) {
                 addNewKeyItem(content);
                 location.reload();
                 return;
             }
             showModal("该账号已经存在");
-        }).catch(err=>{
-            showModal("加载账号失败:"+err);
+        }).catch(err => {
+            showModal("加载账号失败:" + err);
         })
     }
 
@@ -180,19 +191,27 @@
         reader.readAsText(file);
     }
 
-    function setAvatarByAddress(address){
+    async function setAvatarByAddress(address) {
         const selectElement = document.getElementById('userAvatarImg');
-        let meta = cacheLoadMeta(address)
-        if (!meta || !meta.avatarBase64){
+        if (!currentSelectedMeta) {
+            currentSelectedMeta = await dbManager.getData(IndexedDBManager.META_TABLE_NAME, address);
+        }
+
+        if (!currentSelectedMeta || !currentSelectedMeta.avatarBase64) {
             selectElement.src = DefaultAvatarUrl;
             return;
         }
-        selectElement.src = 'data:image/png;base64,'+meta.avatarBase64;
+        selectElement.src = 'data:image/png;base64,' + currentSelectedMeta.avatarBase64;
     }
+
+    let currentSelectedMeta = null
+
     function handleSelectChange() {
-        const selectedValue = document.getElementById('walletAddr').value;
-        setAvatarByAddress(selectedValue);
-        console.log('Selected wallet address:', selectedValue);
+        const address = document.getElementById('walletAddr').value;
+        dbManager.getData(IndexedDBManager.META_TABLE_NAME, address).then(meta => {
+            currentSelectedMeta = meta;
+            setAvatarByAddress(address);
+        })
     }
 </script>
 </body>

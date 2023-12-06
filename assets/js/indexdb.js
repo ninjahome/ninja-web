@@ -237,9 +237,9 @@ class IndexedDBManager {
 // Example Usage:
 const dbManager = new IndexedDBManager('ninja-protocol', 1);
 
-dbManager.openDatabase().then(() => {
-    console.log("index db open success");
-})
+// dbManager.openDatabase().then(() => {
+//     console.log("index db open success");
+// })
 //     const dataToAddToTable1 = { name: 'John Doe', age: 30 };
 //     dbManager.addData('table1', dataToAddToTable1)
 //         .then(result => console.log(result))

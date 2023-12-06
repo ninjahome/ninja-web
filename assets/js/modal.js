@@ -102,7 +102,7 @@ async function openCurrentWallet() {
         return;
     }
 
-    const wallet = await getSavedWallet(curWalletObj.address);
+    const wallet = await dbManager.getData(IndexedDBManager.WALLET_TABLE_NAME,curWalletObj.address);
     if (!wallet){
         showError('加载钱包信息失败：' + curWalletObj.address);
         return

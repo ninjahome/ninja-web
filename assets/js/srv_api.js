@@ -69,7 +69,7 @@ async function httpRequest(url, requestData, needRawData = false, timeout = Defa
         const decodedApiResponse = ApiResponse.decode(new Uint8Array(arrayBuffer));
 
         const responseData = ApiResponse.toObject(decodedApiResponse);
-        if (needRawData){
+        if (needRawData) {
             return responseData.chainData;
         }
 
@@ -103,13 +103,13 @@ function readBinaryDataAsBase64(binaryData) {
     });
 }
 
-async  function apiGetMetaAvatar(address){
+async function apiGetMetaAvatar(address) {
     const textEncoder = new TextEncoder();
     const param = textEncoder.encode(address);
 
     const avatarData = await httpRequest(chainData_api_account_avatar, param, true);
-    if (!avatarData || avatarData.length === 0){
-        return  null;
+    if (!avatarData || avatarData.length === 0) {
+        return null;
     }
     const blob = new Blob([avatarData]);
     return await readBinaryDataAsBase64(blob);
@@ -123,7 +123,8 @@ async function apiGetAccountMeta(address) {
     if (!jsonObj) {
         return null;
     }
-    return accountMeta.fromSrvJson(jsonObj);
+    return new accountMeta(jsonObj.nonce, jsonObj.addr, jsonObj.name,
+        null, jsonObj.balance, jsonObj.touch_time, 0.0, 0.0)
 }
 
 
@@ -155,15 +156,15 @@ async function apiLoadContactListFromServer(address) {
     return refreshedContact;
 }
 
-async function apiWeb3EthBalance(address){
-    const balance  = await web3Api.eth.getBalance(address)
+async function apiWeb3EthBalance(address) {
+    const balance = await web3Api.eth.getBalance(address)
     const ethBalance = web3Api.utils.fromWei(balance, 'ether')
     const usdtContract = new web3Api.eth.Contract([
         {
             "constant": true,
-            "inputs": [{ "name": "_owner", "type": "address" }],
+            "inputs": [{"name": "_owner", "type": "address"}],
             "name": "balanceOf",
-            "outputs": [{ "name": "balance", "type": "uint256" }],
+            "outputs": [{"name": "balance", "type": "uint256"}],
             "type": "function"
         }
     ], USDT_CONTRACT_ADDRESS);

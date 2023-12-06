@@ -1,30 +1,4 @@
 // wallet.js
-async function getSavedWallet(address){
-    await dbManager.openDatabase()
-    const wallet =  dbManager.getData(IndexedDBManager.WALLET_TABLE_NAME,address);
-    dbManager.closeDatabase();
-    return wallet
-}
-
-async function loadAllSaveWallets() {
-    // const storedWalletString = localStorage.getItem(DBKeyAllWallets);
-    //
-    // let allWallets;
-    // if (storedWalletString) {
-    //     const storedWalletData = JSON.parse(storedWalletString);
-    //     allWallets = new AllLocalWallet(storedWalletData);
-    // } else {
-    //     allWallets = new AllLocalWallet();
-    // }
-    //
-    // return allWallets;
-
-    await dbManager.openDatabase()
-    const allWallets = dbManager.getAllData(IndexedDBManager.WALLET_TABLE_NAME);
-    dbManager.closeDatabase();
-    return allWallets;
-}
-
 class EncryptedKeyJSON {
     constructor(address, crypto, id, version) {
         this.address = address;
@@ -44,24 +18,8 @@ class Wallet{
 
 async function addNewKeyItem(encryptedKeyJSON) {
     const jsonString = JSON.stringify(encryptedKeyJSON, null, '\t');
-    // // localStorage.setItem(DBKeyWalletAddr + encryptedKeyJSON.address, jsonString);
-    // const allWallets = loadOrCreateWallet();
-    // allWallets.addWallet(encryptedKeyJSON.address)
-
     const wallet = new Wallet(encryptedKeyJSON.address, jsonString, new Date());
-    await  dbManager.openDatabase();
     await dbManager.addData(IndexedDBManager.WALLET_TABLE_NAME, wallet);
-    dbManager.closeDatabase()
-}
-
-async function  removeKeyItem(address){
-    // const allWallets = loadOrCreateWallet();
-    // allWallets.removeWallet(address);
-    // localStorage.removeItem(DBKeyWalletAddr + address);
-
-    await  dbManager.openDatabase();
-    await dbManager.deleteData(IndexedDBManager.WALLET_TABLE_NAME, address);
-    dbManager.closeDatabase()
 }
 
 async function newWallet(password) {

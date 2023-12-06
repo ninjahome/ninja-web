@@ -43,6 +43,14 @@
     function cancelRegistration() {
         window.location.href = "/"; // 返回根目录
     }
+    document.addEventListener("DOMContentLoaded", async function () {
+        await dbManager.openDatabase();
+        await initModal();
+    });
+
+    window.addEventListener('beforeunload', () => {
+        dbManager.closeDatabase(); // 在页面卸载前关闭数据库连接
+    });
 
     async function register() {
         // 获取密码和确认密码的值
@@ -76,10 +84,6 @@
         }
     }
 
-    // 点击模态框外部区域关闭模态框
-    window.onclick = function (event) {
-        initModal();
-    };
 </script>
 </body>
 </html>

@@ -18,69 +18,40 @@ function getGlobalCurrentAddr() {
  *
  * *****************************************************************************************/
 class accountMeta {
-    constructor(nonce, address, name, avatarBase64, balance, updateTime) {
+    constructor(nonce, address, name, avatarBase64, balance, updateTime, ethBalance, usdtBalance) {
         this.nonce = nonce;
         this.address = address;
         this.name = name;
         this.avatarBase64 = avatarBase64;
         this.balance = balance;
         this.updateTime = updateTime;
-    }
-
-    static fromSrvJson(jsonObj) {
-        return new accountMeta(jsonObj.nonce, jsonObj.addr, jsonObj.name, null, jsonObj.balance, jsonObj.touch_time,)
-    }
-
-    syncToDB() {
-        storeDataToLocalStorage(metaDataKey(this.address), this);
-    }
-
-    static fromLocalJson(json) {
-        return new accountMeta(json.nonce, json.address, json.name, json.avatarBase64, json.balance, json.updateTime);
-    }
-
-    static defaultMeta(address) {
-        return new accountMeta(-1, address, "", null,// ,
-            0, 0);
-    }
-
-    async queryAvatarData() {
-        const avatarBase64 = await apiGetMetaAvatar(this.address);
-        if (!avatarBase64) {
-            console.log("query avatar raw data failed:", this.address);
-            return null;
-        }
-
-        const isDataUri = avatarBase64 && avatarBase64.startsWith('data:application/octet-stream;base64,');
-        const cleanedBase64 = isDataUri ? avatarBase64.slice('data:application/octet-stream;base64,'.length) : avatarBase64;
-
-        this.avatarBase64 = cleanedBase64;
-        this.syncToDB();
-
-        return cleanedBase64;
+        this.ethBalance = ethBalance;
+        this.usdtBalance = usdtBalance;
     }
 }
 
-function metaDataKey(address) {
-    return DBKeyMetaDetails + address;
-}
-
-function cacheLoadMeta(address) {
-    const key = metaDataKey(address);
-    let meta = getDataFromLocalStorage(key);
-    if (!meta) {
+async function queryAvatarData(address) {
+    const avatarBase64 = await apiGetMetaAvatar(address);
+    if (!avatarBase64) {
+        console.log("query avatar raw data failed:", address);
         return null;
     }
-    return accountMeta.fromLocalJson(meta);
+    const isDataUri = avatarBase64 && avatarBase64.startsWith('data:application/octet-stream;base64,');
+    return isDataUri ? avatarBase64.slice('data:application/octet-stream;base64,'.length) : avatarBase64;
 }
 
-async function reloadMetaFromSrv(address) {
+async function reloadMetaFromSrv(addNew, address) {
     const meta = await apiGetAccountMeta(address)
     if (!meta) {
         return null;
     }
-    await meta.queryAvatarData();
+    await queryAvatarData(address);
 
+    if (addNew) {
+        await dbManager.addData(IndexedDBManager.META_TABLE_NAME, meta);
+    } else {
+        await dbManager.updateData(IndexedDBManager.META_TABLE_NAME, address, meta);
+    }
     return meta;
 }
 
@@ -149,21 +120,15 @@ async function initAllContactWithDetails(forceReload = false) {
     for (const contactData of contactList) {
         const contact = contactItem.fromJson(contactData)
         const address = contact.address
-        let meta = cacheLoadMeta(address);
-        if (meta) {
-            __globalAllCombinedContact.set(address, new combinedContact(meta, contact));
-            continue;
-        }
-
-        meta = await apiGetAccountMeta(address);
-        if (!meta) {
-            meta = accountMeta.defaultMeta(address);
-        } else {
-            meta.avatarBase64 = await meta.queryAvatarData();
-        }
-        meta.syncToDB();
+        let meta = await dbManager.getData(IndexedDBManager.META_TABLE_NAME, address);
         __globalAllCombinedContact.set(address, new combinedContact(meta, contact));
+        if (!meta) {
+             reloadMetaFromSrv(true, address).then(r =>{
+                console.log("reload meta from server success", address);
+            })
+        }
     }
+
     return __globalAllCombinedContact;
 }
 
@@ -172,37 +137,33 @@ async function initAllContactWithDetails(forceReload = false) {
  *                               self details
  *
  * *****************************************************************************************/
-class SelfDetails {
-    constructor(meta, ethBalance, usdtBalance) {
-        this.meta = meta;
-        this.ethBalance = ethBalance;
-        this.usdeBalance = usdtBalance;
-    }
-}
-
-function selfDataDBKey() {
-    return DBKeySelfDetails + getGlobalCurrentAddr()
-}
 
 async function loadSelfDetails(walletObj, force) {
-
-    const dbKey = selfDataDBKey()
-    const storedData = getDataFromLocalStorage(dbKey);
-    if (!force && storedData) {
-        const meta = accountMeta.fromLocalJson(storedData.meta)
-        return new SelfDetails(meta, storedData.ethBalance, storedData.usdeBalance);
+    const address = getGlobalCurrentAddr();
+    let meta = await dbManager.getData(IndexedDBManager.META_TABLE_NAME, address)
+    let update = true;
+    if (!force && meta) {
+        return meta;
     }
-
-    let meta = await apiGetAccountMeta(getGlobalCurrentAddr())
     if (!meta) {
-        meta = new accountMeta(-1, walletObj.address, "", null, 0, 0);
+        update = false;
     }
-    meta.avatarBase64 = await meta.queryAvatarData();
-
+    meta = await apiGetAccountMeta(getGlobalCurrentAddr())
+    if (!meta) {
+        return new accountMeta(-1, walletObj.address, "",
+            null, 0, 0, 0.0, 0.0);
+    }
+    meta.avatarBase64 = await queryAvatarData(address);
     const eth = await apiWeb3EthBalance(walletObj.EthAddrStr());
-    const accInfo = new SelfDetails(meta, eth[0], eth[1])
-    storeDataToLocalStorage(dbKey, accInfo)
-    return accInfo;
+    meta.ethBalance = eth[0];
+    meta.usdtBalance = eth[1];
+
+    if (update) {
+        await dbManager.updateData(IndexedDBManager.META_TABLE_NAME, address, meta);
+    } else {
+        await dbManager.addData(IndexedDBManager.META_TABLE_NAME, meta);
+    }
+    return meta;
 }
 
 /*****************************************************************************************
@@ -246,12 +207,13 @@ function cacheLoadCachedMsgTipsList() {
 
 function wrapToShowAbleMsgTipsList(data) {
     const result = [];
-    data.forEach((value, key) => {
-        const item = new messageTipsToShow(value, cacheLoadMeta(key));
-        result.push(item);
-    });
-
-    result.sort((a, b) => b.time - a.time);
+    // data.forEach((value, key) => {
+    //     const meta = await  cacheLoadMeta(key);
+    //     const item = new messageTipsToShow(value, meta);
+    //     result.push(item);
+    // });
+    //
+    // result.sort((a, b) => b.time - a.time);
     return result;
 }
 
@@ -270,11 +232,13 @@ class showAbleMsgItem {
         this.time = time;
     }
 }
-class msgPayLoad{
+
+class msgPayLoad {
     constructor(typ, txt, data) {
     }
 }
-class storedMsgItem{
+
+class storedMsgItem {
     constructor(mid, from, to, payload, isGrp) {
     }
 }

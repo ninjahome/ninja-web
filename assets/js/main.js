@@ -38,17 +38,17 @@ function selfAccountSettings() {
 
         document.getElementById('settingContentArea').style.display = 'block';
         document.getElementById('accountSettingContentArea').style.visibility = 'visible';
-        if (result.meta.avatarBase64) {
-            document.getElementById('avatarImage').src = "data:image/png;base64," + result.meta.avatarBase64;
+        if (result.avatarBase64) {
+            document.getElementById('avatarImage').src = "data:image/png;base64," + result.avatarBase64;
         } else {
             document.getElementById('avatarImage').src = '/assets/logo.png';
         }
         document.getElementById('blockchainAddress').innerText = curWalletObj.address;
-        document.getElementById('nickname').innerText = result.meta.name;
-        document.getElementById('expireDays').innerText = calculateDays(result.meta.balance) + ' 天';
+        document.getElementById('nickname').innerText = result.name;
+        document.getElementById('expireDays').innerText = calculateDays(result.balance) + ' 天';
         document.getElementById('ethAddress').innerText = curWalletObj.EthAddrStr();
         document.getElementById('ethBalance').innerText = result.ethBalance + ' ETH';
-        document.getElementById('usdtBalance').innerText = result.usdeBalance + ' USDT';
+        document.getElementById('usdtBalance').innerText = result.usdtBalance + ' USDT';
         selfAccountInfo = result;
     }).catch(err => {
         console.log(err)
@@ -110,13 +110,14 @@ class IMManager {
 let cachedMsgTipMap = new Map();
 let curWalletObj = null;
 let curMsgManager = new IMManager();
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", async function () {
+    await dbManager.openDatabase()
     checkSessionKeyPriKey();
     window.addEventListener('popstate', function () {
         clearSessionStorage();
     })
 
-    initModal().then(response => {
+    initModal().then(async response => {
         cachedMsgTipMap = cacheLoadCachedMsgTipsList();
         refreshMsgTipsList();
         loadCombinedContacts(false);
@@ -134,6 +135,10 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         }
     });
+});
+
+window.addEventListener('beforeunload', () => {
+    dbManager.closeDatabase(); // 在页面卸载前关闭数据库连接
 });
 
 function showSearchedAccountMeta(meta) {
@@ -187,19 +192,14 @@ async function searchAccountMetaByAddress() {
         return null;
     }
     console.log('用户输入的地址:', blockchainAddress);
-    let meta = cacheLoadMeta(blockchainAddress);
-    if (meta) {
-        reloadMetaFromSrv(blockchainAddress).then(r => {
-            showSearchedAccountMeta(r);
-        })
-        return meta;
-    }
-    meta = await apiGetAccountMeta(blockchainAddress);
+    let meta = await dbManager.getData(IndexedDBManager.META_TABLE_NAME, blockchainAddress);
+
+    reloadMetaFromSrv(meta === null, blockchainAddress).then(r => {
+        showSearchedAccountMeta(r);
+    })
     if (!meta) {
         return new accountMeta(-1, blockchainAddress, "", null, 0, 0)
     }
-
-    await meta.queryAvatarData()
     return meta;
 }
 
@@ -325,20 +325,34 @@ function fullFillContact(item, address) {
     }
 
     document.getElementById('contactContentArea').style.display = 'flex';
-
-    if (contactInfo.meta.avatarBase64) {
-        document.getElementById("contactAvatarImage").src = "data:image/png;base64," + contactInfo.meta.avatarBase64;
-    } else {
-        document.getElementById("contactAvatarImage").src = "/assets/logo.png";
-        contactInfo.meta.queryAvatarData().then(r => {
-            contactInfo.meta.syncToDB();
+    let meta = contactInfo.meta;
+    if (!meta) {
+        reloadMetaFromSrv(true, address).then(r => {
+            console.log("refresh user's meta data");
         });
+        document.getElementById("contactAvatarImage").src = "/assets/logo.png";
+        meta = new accountMeta(-1, address,'',null,0,0,0,0,)
+    } else {
+        if (!meta.avatarBase64){
+            document.getElementById("contactAvatarImage").src = "/assets/logo.png";
+            queryAvatarData(address).then(r=>{
+                if (!r){
+                    return;
+                }
+                meta.avatarBase64 = r;
+                dbManager.updateData(IndexedDBManager.META_TABLE_NAME, address, meta).then(r=>{
+                    console.log("update meta success", address);
+                });
+            })
+        }else{
+            document.getElementById("contactAvatarImage").src = "data:image/png;base64," + meta.avatarBase64;
+        }
     }
 
-    const expireDays = calculateDays(contactInfo.meta.balance)
+    const expireDays = calculateDays(meta.balance)
     document.getElementById("contactInfoContainer").innerHTML = `
-        <span>昵称：${contactInfo.meta.name}</span>
-        <p>地址：${contactInfo.meta.address}</p>
+        <span>昵称：${meta.name}</span>
+        <p>地址：${meta.address}</p>
         <p>别名: ${contactInfo.contact.alias}</p>
         <p>备注: ${contactInfo.contact.remark}</p>
         <p>余额: ${expireDays} 天</p>
@@ -346,8 +360,8 @@ function fullFillContact(item, address) {
 
     const buttonRow = document.querySelector("#contactContentArea .button-row");
     buttonRow.innerHTML = `
-        <button onclick="startChatWithFriend('${contactInfo.meta.address}', null)">开始聊天</button>
-        <button onclick="deleteFriend('${contactInfo.meta.address}')">删除好友</button>
+        <button onclick="startChatWithFriend('${meta.address}', null)">开始聊天</button>
+        <button onclick="deleteFriend('${meta.address}')">删除好友</button>
     `;
 }
 
@@ -380,6 +394,7 @@ function exportWallet(keyString, password) {
 }
 
 function removeWallet(keyString, password) {
-    removeKeyItem(curWalletObj.address);
-    window.location.href = '/';
+    dbManager.deleteData(IndexedDBManager.WALLET_TABLE_NAME, curWalletObj.address).then(r => {
+        window.location.href = '/';
+    })
 }

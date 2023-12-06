@@ -99,8 +99,6 @@ const ScryptDKLen = 32;
 const SubAddrPrefix = "NJ";
 const WalletVer = 1;
 
-const DBKeyWalletAddr = '__key__address';
-const DBKeyAllWallets = '__key__all_wallets__';
 const DBKeyLastUsedWallet = '__key_last_used_address__';
 
 const SessionKeyCurWalletObj = '__key_global_private_key__';

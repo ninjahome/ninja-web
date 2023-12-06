@@ -1,57 +1,27 @@
 // wallet.js
-class AllLocalWallet {
-    constructor(data = {addresses: []}) {
-        this.addresses = data.addresses || [];
-    }
-
-    addWallet(address) {
-        if (!this.has(address)) {
-            this.addresses.push(address);
-            this.saveToLocalStorage();
-            return true; // 表示地址成功添加
-        } else {
-            return false; // 表示地址已存在
-        }
-    }
-
-    removeWallet(address) {
-        const index = this.addresses.indexOf(address);
-        if (index !== -1) {
-            this.addresses.splice(index, 1);
-            this.saveToLocalStorage();
-            return true; // 表示地址成功删除
-        } else {
-            return false; // 表示地址不存在
-        }
-    }
-
-    clearWallets() {
-        this.addresses = [];
-        this.saveToLocalStorage();
-    }
-
-    getWallets() {
-        return this.addresses;
-    }
-    has(address) {
-        return this.addresses.includes(address);
-    }
-    saveToLocalStorage() {
-        localStorage.setItem(DBKeyAllWallets, JSON.stringify(this));
-    }
+async function getSavedWallet(address){
+    await dbManager.openDatabase()
+    const wallet =  dbManager.getData(IndexedDBManager.WALLET_TABLE_NAME,address);
+    dbManager.closeDatabase();
+    return wallet
 }
 
-function loadOrCreateWallet() {
-    const storedWalletString = localStorage.getItem(DBKeyAllWallets);
+async function loadAllSaveWallets() {
+    // const storedWalletString = localStorage.getItem(DBKeyAllWallets);
+    //
+    // let allWallets;
+    // if (storedWalletString) {
+    //     const storedWalletData = JSON.parse(storedWalletString);
+    //     allWallets = new AllLocalWallet(storedWalletData);
+    // } else {
+    //     allWallets = new AllLocalWallet();
+    // }
+    //
+    // return allWallets;
 
-    let allWallets;
-    if (storedWalletString) {
-        const storedWalletData = JSON.parse(storedWalletString);
-        allWallets = new AllLocalWallet(storedWalletData);
-    } else {
-        allWallets = new AllLocalWallet();
-    }
-
+    await dbManager.openDatabase()
+    const allWallets = dbManager.getAllData(IndexedDBManager.WALLET_TABLE_NAME);
+    dbManager.closeDatabase();
     return allWallets;
 }
 
@@ -64,17 +34,34 @@ class EncryptedKeyJSON {
     }
 }
 
-function addNewKeyItem(encryptedKeyJSON) {
-    const jsonString = JSON.stringify(encryptedKeyJSON, null, '\t');
-    localStorage.setItem(DBKeyWalletAddr + encryptedKeyJSON.address, jsonString);
-    const allWallets = loadOrCreateWallet();
-    allWallets.addWallet(encryptedKeyJSON.address)
+class Wallet{
+    constructor(address, jsonStr, atTime) {
+        this.address = address;
+        this.jsonStr = jsonStr;
+        this.atTime = atTime;
+    }
 }
 
-function  removeKeyItem(address){
-    const allWallets = loadOrCreateWallet();
-    allWallets.removeWallet(address);
-    localStorage.removeItem(DBKeyWalletAddr + address);
+async function addNewKeyItem(encryptedKeyJSON) {
+    const jsonString = JSON.stringify(encryptedKeyJSON, null, '\t');
+    // // localStorage.setItem(DBKeyWalletAddr + encryptedKeyJSON.address, jsonString);
+    // const allWallets = loadOrCreateWallet();
+    // allWallets.addWallet(encryptedKeyJSON.address)
+
+    const wallet = new Wallet(encryptedKeyJSON.address, jsonString, new Date());
+    await  dbManager.openDatabase();
+    await dbManager.addData(IndexedDBManager.WALLET_TABLE_NAME, wallet);
+    dbManager.closeDatabase()
+}
+
+async function  removeKeyItem(address){
+    // const allWallets = loadOrCreateWallet();
+    // allWallets.removeWallet(address);
+    // localStorage.removeItem(DBKeyWalletAddr + address);
+
+    await  dbManager.openDatabase();
+    await dbManager.deleteData(IndexedDBManager.WALLET_TABLE_NAME, address);
+    dbManager.closeDatabase()
 }
 
 async function newWallet(password) {
@@ -87,7 +74,7 @@ async function newWallet(password) {
             cryptoStruct,
             key.id,
             WalletVer);
-        addNewKeyItem(encryptedKeyJSON);
+        await addNewKeyItem(encryptedKeyJSON);
         return encryptedKeyJSON;
     } catch (error) {
         console.error("Error:", error);

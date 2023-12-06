@@ -1,31 +1,79 @@
 class IndexedDBManager {
+
     constructor(databaseName, version) {
         this.databaseName = databaseName;
         this.version = version;
         this.db = null;
     }
 
+    static get WALLET_TABLE_NAME() {
+        return 'wallets';
+    }
+
+    static get CONTACT_TABLE_NAME() {
+        return 'contacts';
+    }
+
+    static get META_TABLE_NAME() {
+        return 'metas';
+    }
+
+    static get MSG_TIP_TABLE_NAME() {
+        return 'msgTips';
+    }
+
+    static get MESSAGE_TABLE_NAME() {
+        return 'message';
+    }
+
     initWalletTable(db) {
-        if (!db.objectStoreNames.contains('wallets')) {
-            const walletStore = db.createObjectStore('wallets', {keyPath: 'address'});
+        if (!db.objectStoreNames.contains(IndexedDBManager.WALLET_TABLE_NAME)) {
+            const walletStore = db.createObjectStore(IndexedDBManager.WALLET_TABLE_NAME, {keyPath: 'address'});
             walletStore.createIndex('addressIndex', 'address', {unique: true});
+            walletStore.createIndex('jsonStrIndex', 'jsonStr', {unique: false});
+            walletStore.createIndex('atTimeIndex', 'atTime', {unique: false});
         }
     }
 
     initMetaTable(db) {
-
+        if (!db.objectStoreNames.contains(IndexedDBManager.META_TABLE_NAME)) {
+            const walletStore = db.createObjectStore(IndexedDBManager.META_TABLE_NAME, {keyPath: 'address'});
+            walletStore.createIndex('addressIndex', 'address', {unique: true});
+            walletStore.createIndex('nonceIndex', 'nonce', {unique: false});
+            walletStore.createIndex('nameIndex', 'name', {unique: false});
+            walletStore.createIndex('avatarBase64Index', 'avatarBase64', {unique: false});
+            walletStore.createIndex('balanceIndex', 'balance', {unique: false});
+            walletStore.createIndex('updateTimeIndex', 'updateTime', {unique: false});
+            walletStore.createIndex('ethBalanceIndex', 'ethBalance', {unique: false});
+            walletStore.createIndex('usdtBalanceIndex', 'usdtBalance', {unique: false});
+        }
     }
 
     initContactTable(db) {
-
+        if (!db.objectStoreNames.contains(IndexedDBManager.CONTACT_TABLE_NAME)) {
+            const walletStore = db.createObjectStore(IndexedDBManager.CONTACT_TABLE_NAME, {keyPath: 'address'});
+            walletStore.createIndex('addressIndex', 'address', {unique: true});
+            walletStore.createIndex('aliasIndex', 'alias', {unique: false});
+            walletStore.createIndex('remarkIndex', 'remark', {unique: false});
+        }
     }
 
     initMsgTipTable(db) {
-
+        if (!db.objectStoreNames.contains(IndexedDBManager.MSG_TIP_TABLE_NAME)) {
+            const walletStore = db.createObjectStore(IndexedDBManager.MSG_TIP_TABLE_NAME, {keyPath: 'address'});
+            walletStore.createIndex('addressIndex', 'address', {unique: true});
+            walletStore.createIndex('timeIndex', 'time', {unique: false});
+            walletStore.createIndex('descriptionIndex', 'description', {unique: false});
+        }
     }
 
     initMsgItemTable(db) {
-
+        if (!db.objectStoreNames.contains(IndexedDBManager.MESSAGE_TABLE_NAME)) {
+            const walletStore = db.createObjectStore(IndexedDBManager.MESSAGE_TABLE_NAME, {keyPath: 'msgId'});
+            walletStore.createIndex('addressIndex', 'address', {unique: true});
+            walletStore.createIndex('msgIdIndex', 'msgId', {unique: false});
+            walletStore.createIndex('payloadIndex', 'payload', {unique: false});
+        }
     }
 
     openDatabase() {
@@ -44,7 +92,9 @@ class IndexedDBManager {
                     this.initMsgTipTable(db);
                     this.initMsgItemTable(db);
                 }
+                if (oldVersion < 2) {
 
+                }
             };
 
             request.onsuccess = event => {
@@ -93,7 +143,7 @@ class IndexedDBManager {
                 if (result) {
                     resolve(result);
                 } else {
-                    reject(`No data found with ID ${id} in ${storeName}`);
+                    resolve(null);
                 }
             };
 
@@ -136,6 +186,52 @@ class IndexedDBManager {
             };
         });
     }
+
+    // 查询某个 storeName 下的所有数据
+    getAllData(storeName) {
+        return new Promise((resolve, reject) => {
+            const transaction = this.db.transaction([storeName], 'readonly');
+            const objectStore = transaction.objectStore(storeName);
+            const request = objectStore.getAll();
+
+            request.onsuccess = event => {
+                const data = event.target.result;
+                resolve(data);
+            };
+
+            request.onerror = event => {
+                reject(`Error getting all data from ${storeName}: ${event.target.error}`);
+            };
+        });
+    }
+
+    // 查询某个 storeName 下符合条件的所有数据
+    queryData(storeName, conditionFn) {
+        return new Promise((resolve, reject) => {
+            const transaction = this.db.transaction([storeName], 'readonly');
+            const objectStore = transaction.objectStore(storeName);
+            const request = objectStore.openCursor();
+
+            const results = [];
+
+            request.onsuccess = event => {
+                const cursor = event.target.result;
+                if (cursor) {
+                    const data = cursor.value;
+                    if (conditionFn(data)) {
+                        results.push(data);
+                    }
+                    cursor.continue();
+                } else {
+                    resolve(results);
+                }
+            };
+
+            request.onerror = event => {
+                reject(`Error querying data from ${storeName}: ${event.target.error}`);
+            };
+        });
+    }
 }
 
 // Example Usage:
@@ -164,4 +260,16 @@ dbManager.openDatabase().then(() => {
 //     dbManager.deleteData('table1', idToDeleteFromTable1)
 //         .then(result => console.log(result))
 //         .catch(error => console.error(error));
+// });
+
+// dbManager.openDatabase().then(async () => {
+//     // 查询某个 storeName 下符合条件的所有数据
+//     const resultsWithCondition = await dbManager.queryData('wallets', data => data.isMain);
+//
+//     console.log('Results with condition:', resultsWithCondition);
+//
+//     // 查询某个 storeName 下的所有数据
+//     const allData = await dbManager.getAllData('wallets');
+//
+//     console.log('All data:', allData);
 // });

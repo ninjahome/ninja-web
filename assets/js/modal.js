@@ -93,7 +93,7 @@ function clearErrorText() {
     errorText.style.display = 'none'; // 隐藏错误提示
 }
 
-function openCurrentWallet() {
+async function openCurrentWallet() {
 
     const password = document.getElementById('passwordInput').value;
 
@@ -102,19 +102,19 @@ function openCurrentWallet() {
         return;
     }
 
-    const keyString = localStorage.getItem(DBKeyWalletAddr + curWalletObj.address);
-    if (!keyString) {
+    const wallet = await getSavedWallet(curWalletObj.address);
+    if (!wallet){
         showError('加载钱包信息失败：' + curWalletObj.address);
         return
     }
+
     if (typeof passwordDialogCallBackFunction !== 'function') {
         // 在这里执行回调函数
         return;
     }
-
-    getEncryptedKeyJSON(keyString, password).then(() => {
+    getEncryptedKeyJSON(wallet.jsonStr, password).then(() => {
         clearErrorText();
-        passwordDialogCallBackFunction(keyString, password);
+        passwordDialogCallBackFunction(wallet.jsonStr, password);
         closePasswordDialog();
 
     }).catch((error) => {

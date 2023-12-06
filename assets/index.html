@@ -33,7 +33,7 @@
 <img src="/assets/logo.png" alt="Logo" id="userAvatarImg">
 <form id="loginForm" action="/login" method="post">
     <label for="walletAddr">选择登录钱包:</label>
-    <select id="walletAddr" name="walletAddr">
+    <select id="walletAddr" name="walletAddr" onchange="handleSelectChange()">
         <!-- 请将你的选项填写在这里 -->
     </select><br>
 
@@ -58,19 +58,19 @@
         window.location.href = "/registration";
     }
 
-    function login() {
+    async function login() {
         // 执行登录逻辑，例如获取钱包地址和密码
         const walletAddr = document.getElementById("walletAddr").value;
         const password = document.getElementById("password").value;
         showModal("解码中......");
 
-        const keyString = localStorage.getItem(DBKeyWalletAddr + walletAddr);
-        if (!keyString) {
-            showModal("加载钱包信息失败:" + walletAddr);
+        const wallet = await getSavedWallet(walletAddr);
+        if (!wallet) {
+            showError('加载钱包信息失败：' + curWalletObj.address);
             return
         }
         // 获取 EncryptedKeyJSON 对象
-        getEncryptedKeyJSON(keyString, password)
+        getEncryptedKeyJSON(wallet.jsonStr, password)
             .then((result) => {
                 // 异步操作完成，关闭加载提示界面
                 closeModal()
@@ -91,26 +91,27 @@
     document.addEventListener("DOMContentLoaded", function () {
         initModal();
         initializePage();
-        setSelectedWallet();
     });
 
     function initializePage() {
-        // 加载或创建 AllLocalWallet 对象
-        const allWallets = loadOrCreateWallet();
         // 填充地址列表
         const walletAddrSelect = document.getElementById("walletAddr");
-        const wallets = allWallets.getWallets();
+        const lastUsedAddr = getDataFromLocalStorage(DBKeyLastUsedWallet)
 
-        if (!Array.isArray(wallets)) {
-            console.error("Wallets is not an array:", wallets);
-            return;
-        }
-
-        wallets.forEach(address => {
-            const option = document.createElement("option");
-            option.value = address;
-            option.text = address;
-            walletAddrSelect.add(option);
+        loadAllSaveWallets().then(wallets=>{
+            let i = 0;
+            wallets.forEach(w => {
+                i = i + 1;
+                const option = document.createElement("option");
+                option.value = w.address;
+                option.text = w.address;
+                //TODO::query meta of address;
+                walletAddrSelect.add(option);
+                if (lastUsedAddr === w.address){
+                    walletAddrSelect.selectedIndex = i;
+                    setAvatarByAddress(lastUsedAddr);
+                }
+            });
         });
     }
 
@@ -150,21 +151,20 @@
 
     function saveLoadedWalletStr(walletString) {
         const content = JSON.parse(walletString);
-        console.log("wallet:", content, content.address);
         if (!content.address) {
             showModal("无效的账号文件");
             return;
         }
-
-        const wallets = loadOrCreateWallet();
-        console.log("all the wallets:===>>", wallets.getWallets())
-        console.log("current wallets:===>>", content.address)
-        if (wallets.has(content.address)) {
+        getSavedWallet(content.address).then(wallet =>{
+            if(!wallet){
+                addNewKeyItem(content);
+                location.reload();
+                return;
+            }
             showModal("该账号已经存在");
-            return;
-        }
-        addNewKeyItem(content);
-        location.reload();
+        }).catch(err=>{
+            showModal("加载账号失败:"+err);
+        })
     }
 
     function readJsonTxt(file) {
@@ -180,32 +180,20 @@
         reader.readAsText(file);
     }
 
-
-    function setSelectedWallet() {
-        const lastUsedAddr = getDataFromLocalStorage(DBKeyLastUsedWallet)
-        if (!lastUsedAddr){
-            return;
-        }
-        const selectElement = document.getElementById('walletAddr');
-        // 遍历选项，找到匹配的值并设置 selectedIndex
-        for (let i = 0; i < selectElement.options.length; i++) {
-            if (selectElement.options[i].value === lastUsedAddr) {
-                selectElement.selectedIndex = i;
-                setAvatarByAddress(lastUsedAddr);
-                break;
-            }
-        }
-    }
-
     function setAvatarByAddress(address){
         const selectElement = document.getElementById('userAvatarImg');
         let meta = cacheLoadMeta(address)
         if (!meta || !meta.avatarBase64){
+            selectElement.src = DefaultAvatarUrl;
             return;
         }
         selectElement.src = 'data:image/png;base64,'+meta.avatarBase64;
     }
-
+    function handleSelectChange() {
+        const selectedValue = document.getElementById('walletAddr').value;
+        setAvatarByAddress(selectedValue);
+        console.log('Selected wallet address:', selectedValue);
+    }
 </script>
 </body>
 </html>

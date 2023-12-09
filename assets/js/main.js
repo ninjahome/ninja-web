@@ -119,7 +119,9 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     initModal().then(async response => {
         cachedMsgTipMap = cacheLoadCachedMsgTipsList();
-        refreshMsgTipsList();
+        refreshMsgTipsList().then(r=>{
+
+        });
         loadCombinedContacts(false);
         wsOnline(curMsgManager).then(s => {
             curMsgManager.socket = s;
@@ -286,12 +288,15 @@ function loadCachedMsgListForAddr(item, address) {
 }
 
 
-function refreshMsgTipsList() {
+async function refreshMsgTipsList() {
+    if (cachedMsgTipMap.size === 0) {
+        return;
+    }
     const source = document.getElementById("messageTipsListTemplate").innerHTML;
     const template = Handlebars.compile(source);
-    wrapToShowAbleMsgTipsList(cachedMsgTipMap).then(messages => {
-        document.getElementById("messageTipsList").innerHTML = template({messages: messages});
-    });
+    const messages = await wrapToShowAbleMsgTipsList(cachedMsgTipMap);
+    document.getElementById("messageTipsList").innerHTML = template({messages: messages});
+
 }
 
 function removeMsgTipsItem() {
@@ -360,7 +365,7 @@ async function fullFillContact(item, address) {
     `;
 }
 
-function startChatWithFriend(address, callback) {
+async function startChatWithFriend(address, callback) {
 
     let msgTipItem = cachedMsgTipMap.get(address);
     if (!msgTipItem) {
@@ -368,7 +373,7 @@ function startChatWithFriend(address, callback) {
         cachedMsgTipMap.set(address, msgTipItem);
         cacheSyncCachedMsgTipsToDb(cachedMsgTipMap).then(r => {
         });
-        refreshMsgTipsList();
+        await refreshMsgTipsList();
     }
 
     const btn = document.getElementById("messageButton");

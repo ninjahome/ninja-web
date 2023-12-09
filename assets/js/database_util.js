@@ -40,18 +40,13 @@ async function queryAvatarData(address) {
     return isDataUri ? avatarBase64.slice('data:application/octet-stream;base64,'.length) : avatarBase64;
 }
 
-async function reloadMetaFromSrv(addNew, address) {
+async function reloadMetaFromSrv(address) {
     const meta = await apiGetAccountMeta(address)
     if (!meta) {
         return null;
     }
-    await queryAvatarData(address);
-
-    if (addNew) {
-        await dbManager.addData(IndexedDBManager.META_TABLE_NAME, meta);
-    } else {
-        await dbManager.updateData(IndexedDBManager.META_TABLE_NAME, address, meta);
-    }
+    meta.avatarBase64 = await queryAvatarData(address);
+    await dbManager.addOrUpdateData(IndexedDBManager.META_TABLE_NAME, address, meta);
     return meta;
 }
 
@@ -121,10 +116,12 @@ async function initAllContactWithDetails(forceReload = false) {
         const contact = contactItem.fromJson(contactData)
         const address = contact.address
         let meta = await dbManager.getData(IndexedDBManager.META_TABLE_NAME, address);
-        __globalAllCombinedContact.set(address, new combinedContact(meta, contact));
+        const cc = new combinedContact(meta, contact);
+        __globalAllCombinedContact.set(address, cc);
         if (!meta) {
-             reloadMetaFromSrv(true, address).then(r =>{
+            reloadMetaFromSrv(address).then(r => {
                 console.log("reload meta from server success", address);
+                cc.meta = r;
             })
         }
     }
@@ -141,13 +138,10 @@ async function initAllContactWithDetails(forceReload = false) {
 async function loadSelfDetails(walletObj, force) {
     const address = getGlobalCurrentAddr();
     let meta = await dbManager.getData(IndexedDBManager.META_TABLE_NAME, address)
-    let update = true;
     if (!force && meta) {
         return meta;
     }
-    if (!meta) {
-        update = false;
-    }
+
     meta = await apiGetAccountMeta(getGlobalCurrentAddr())
     if (!meta) {
         return new accountMeta(-1, walletObj.address, "",
@@ -158,11 +152,7 @@ async function loadSelfDetails(walletObj, force) {
     meta.ethBalance = eth[0];
     meta.usdtBalance = eth[1];
 
-    if (update) {
-        await dbManager.updateData(IndexedDBManager.META_TABLE_NAME, address, meta);
-    } else {
-        await dbManager.addData(IndexedDBManager.META_TABLE_NAME, meta);
-    }
+    await dbManager.addOrUpdateData(IndexedDBManager.META_TABLE_NAME, address, meta);
     return meta;
 }
 
@@ -205,15 +195,14 @@ function cacheLoadCachedMsgTipsList() {
 
 }
 
-function wrapToShowAbleMsgTipsList(data) {
+async function wrapToShowAbleMsgTipsList(data) {
     const result = [];
-    // data.forEach((value, key) => {
-    //     const meta = await  cacheLoadMeta(key);
-    //     const item = new messageTipsToShow(value, meta);
-    //     result.push(item);
-    // });
-    //
-    // result.sort((a, b) => b.time - a.time);
+    for (const [key, value] of data) {
+        const meta = await dbManager.getData(IndexedDBManager.META_TABLE_NAME, key);
+        const item = new messageTipsToShow(value, meta);
+        result.push(item);
+    }
+    result.sort((a, b) => b.time - a.time);
     return result;
 }
 

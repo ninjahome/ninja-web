@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ninja-web</title>
+    <link rel="icon" type="image/png" href="/assets/logo.png"> <!-- 设置网页图标 -->
     <link rel="stylesheet" type="text/css" href="/assets/css/common.css">
     <link rel="stylesheet" type="text/css" href="/assets/css/main.css">
     <script src="/assets/js/handlebars.min.js"></script>
@@ -52,8 +53,7 @@
             <div id="messageControlPanel">
                 <script id="messageTipsListTemplate" type="text/x-handlebars-template">
                     {{#each messages}}
-                    <li class="messageTipsItem" data-address="{{tips.address}}"
-                        onclick="loadCachedMsgListForAddr(this,'{{tips.address}}')">
+                    <li class="messageTipsItem" data-address="{{tips.address}}">
                         {{#if meta.avatarBase64}}
                         <img src="data:image/png;base64,{{meta.avatarBase64}}" alt="Avatar">
                         {{else}}
@@ -66,9 +66,11 @@
                             </div>
                             <div class="msgPayload">{{tips.description}}</div>
                         </div>
+                        <button class="clearButton" onclick="removeMsgTipsItem('{{tips.address}}')">清除</button>
                     </li>
                     {{/each}}
                 </script>
+
                 <ul id="messageTipsList"></ul>
             </div>
 
@@ -77,9 +79,9 @@
                     {{#each friends}}
                     <li class="friendListItem" onclick="fullFillContact(this, '{{contact.address}}')">
                         {{#if meta.avatarBase64}}
-                        <img src="data:image/png;base64,{{meta.avatarBase64}}" alt="Friend Avatar">
+                        <img src="data:image/png;base64,{{meta.avatarBase64}}" alt="Friend Avatar" id="contact-avatar-{{contact.address}}">
                         {{else}}
-                        <img src="/assets/logo.png" alt="Friend Avatar">
+                        <img src="/assets/logo.png" alt="Friend Avatar" id="contact-avatar-{{contact.address}}">
                         {{/if}}
                         {{#if contact.alias}}
                         <span class="friendNickname">{{contact.alias}} </span>

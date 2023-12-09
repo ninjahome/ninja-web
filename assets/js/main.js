@@ -41,7 +41,7 @@ function selfAccountSettings() {
         if (result.avatarBase64) {
             document.getElementById('avatarImage').src = "data:image/png;base64," + result.avatarBase64;
         } else {
-            document.getElementById('avatarImage').src = '/assets/logo.png';
+            document.getElementById('avatarImage').src = DefaultAvatarUrl;
         }
         document.getElementById('blockchainAddress').innerText = curWalletObj.address;
         document.getElementById('nickname').innerText = result.name;
@@ -153,7 +153,7 @@ function showSearchedAccountMeta(meta) {
     if (meta.avatarBase64) {
         document.getElementById("searchedUsrAvatar").src = "data:image/png;base64," + meta.avatarBase64;
     } else {
-        document.getElementById("contactAvatarImage").src = "/assets/logo.png";
+        document.getElementById("contactAvatarImage").src = DefaultAvatarUrl;
     }
 
     const expireDays = calculateDays(meta.balance)
@@ -194,7 +194,7 @@ async function searchAccountMetaByAddress() {
     console.log('用户输入的地址:', blockchainAddress);
     let meta = await dbManager.getData(IndexedDBManager.META_TABLE_NAME, blockchainAddress);
 
-    reloadMetaFromSrv(meta === null, blockchainAddress).then(r => {
+    reloadMetaFromSrv(blockchainAddress).then(r => {
         showSearchedAccountMeta(r);
     })
     if (!meta) {
@@ -289,8 +289,13 @@ function loadCachedMsgListForAddr(item, address) {
 function refreshMsgTipsList() {
     const source = document.getElementById("messageTipsListTemplate").innerHTML;
     const template = Handlebars.compile(source);
-    const messages = wrapToShowAbleMsgTipsList(cachedMsgTipMap);
-    document.getElementById("messageTipsList").innerHTML = template({messages: messages});
+    wrapToShowAbleMsgTipsList(cachedMsgTipMap).then(messages => {
+        document.getElementById("messageTipsList").innerHTML = template({messages: messages});
+    });
+}
+
+function removeMsgTipsItem() {
+
 }
 
 function clearCachedMsg() {
@@ -313,7 +318,7 @@ function loadCombinedContacts(force) {
 
 let lastSelectedFriendItem = null;
 
-function fullFillContact(item, address) {
+async function fullFillContact(item, address) {
     if (lastSelectedFriendItem) {
         lastSelectedFriendItem.classList.remove('selected');
     }
@@ -327,26 +332,16 @@ function fullFillContact(item, address) {
     document.getElementById('contactContentArea').style.display = 'flex';
     let meta = contactInfo.meta;
     if (!meta) {
-        reloadMetaFromSrv(true, address).then(r => {
-            console.log("refresh user's meta data");
-        });
-        document.getElementById("contactAvatarImage").src = "/assets/logo.png";
-        meta = new accountMeta(-1, address,'',null,0,0,0,0,)
-    } else {
-        if (!meta.avatarBase64){
-            document.getElementById("contactAvatarImage").src = "/assets/logo.png";
-            queryAvatarData(address).then(r=>{
-                if (!r){
-                    return;
-                }
-                meta.avatarBase64 = r;
-                dbManager.updateData(IndexedDBManager.META_TABLE_NAME, address, meta).then(r=>{
-                    console.log("update meta success", address);
-                });
-            })
-        }else{
-            document.getElementById("contactAvatarImage").src = "data:image/png;base64," + meta.avatarBase64;
+        meta = await reloadMetaFromSrv(address);
+        if (!meta) {
+            meta = new accountMeta(-1, address, '', null, 0, 0, 0, 0,)
         }
+    }
+    if (meta.avatarBase64) {
+        document.getElementById("contactAvatarImage").src = "data:image/png;base64," + meta.avatarBase64;
+        document.getElementById("contact-avatar-" + address).src = "data:image/png;base64," + meta.avatarBase64;
+    } else {
+        document.getElementById("contactAvatarImage").src = DefaultAvatarUrl;
     }
 
     const expireDays = calculateDays(meta.balance)

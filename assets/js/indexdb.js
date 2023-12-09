@@ -170,6 +170,24 @@ class IndexedDBManager {
         });
     }
 
+    addOrUpdateData(storeName, key, data) {
+        const transaction = this.db.transaction([storeName], 'readwrite');
+        const objectStore = transaction.objectStore(storeName);
+
+        // Use put instead of add
+        const request = objectStore.put(data);
+
+        return new Promise((resolve, reject) => {
+            request.onsuccess = () => {
+                resolve(`Data added/updated in ${storeName} successfully`);
+            };
+
+            request.onerror = event => {
+                reject(`Error adding/updating data in ${storeName}: ${event.target.error}`);
+            };
+        });
+    }
+
     deleteData(storeName, id) {
         return new Promise((resolve, reject) => {
             const transaction = this.db.transaction([storeName], 'readwrite');

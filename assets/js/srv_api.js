@@ -59,7 +59,7 @@ async function httpRequest(url, requestData, needRawData = false, timeout = Defa
         if (!response.ok) {
             const data = await response.text();
             if (data.startsWith("not found")) {
-                console.log("httpRequest:result not found");
+                console.log("httpRequest:result not found",url);
                 return null;
             }
             throw new Error(`HTTP error: ${response.status}`);
@@ -109,6 +109,7 @@ async function apiGetMetaAvatar(address) {
 
     const avatarData = await httpRequest(chainData_api_account_avatar, param, true);
     if (!avatarData || avatarData.length === 0) {
+        console.log("avatar data not found:", address);
         return null;
     }
     const blob = new Blob([avatarData]);
@@ -121,6 +122,7 @@ async function apiGetAccountMeta(address) {
 
     const jsonObj = await httpRequest(chainData_api_account_meta, param);
     if (!jsonObj) {
+        console.log("account meta not found:", address);
         return null;
     }
     return new accountMeta(jsonObj.nonce, jsonObj.addr, jsonObj.name,
@@ -135,7 +137,7 @@ async function apiLoadContactListFromServer(address) {
 
     const jsonData = await httpRequest(chainData_api_allFriendIDs, param);
     if (!jsonData) {
-        console.log("no friends data got from http server:", address)
+        console.log("friends not found:", address)
         return [];
     }
 

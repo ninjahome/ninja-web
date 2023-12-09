@@ -97,7 +97,6 @@
         dbManager.closeDatabase(); // 在页面卸载前关闭数据库连接
     });
 
-
     function initializePage() {
         // 填充地址列表
         const walletAddrSelect = document.getElementById("walletAddr");
@@ -105,7 +104,6 @@
         dbManager.getAllData(IndexedDBManager.WALLET_TABLE_NAME).then(wallets => {
             let i = 0;
             wallets.forEach(w => {
-                i = i + 1;
                 const option = document.createElement("option");
                 option.value = w.address;
                 option.text = w.address;
@@ -121,6 +119,7 @@
                     walletAddrSelect.selectedIndex = i;
                     setAvatarByAddress(lastUsedAddr);
                 }
+                i = i + 1;
             });
         });
     }

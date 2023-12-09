@@ -78,16 +78,9 @@
                 <script id="friendListTemplate" type="text/x-handlebars-template">
                     {{#each friends}}
                     <li class="friendListItem" onclick="fullFillContact(this, '{{contact.address}}')">
-                        {{#if meta.avatarBase64}}
-                        <img src="data:image/png;base64,{{meta.avatarBase64}}" alt="Friend Avatar" id="contact-avatar-{{contact.address}}">
-                        {{else}}
-                        <img src="/assets/logo.png" alt="Friend Avatar" id="contact-avatar-{{contact.address}}">
-                        {{/if}}
-                        {{#if contact.alias}}
-                        <span class="friendNickname">{{contact.alias}} </span>
-                        {{else}}
-                        <span class="friendNickname">{{meta.name}}</span>
-                        {{/if}}
+                        <img src="{{#if meta.avatarBase64}}data:image/png;base64,{{meta.avatarBase64}}{{else}}/assets/logo.png{{/if}}"
+                             alt="Friend Avatar" id="contact-avatar-{{contact.address}}">
+                        <span class="friendNickname">{{#if contact.alias}}{{contact.alias}}{{else}}{{meta.name}} {{/if}}</span>
                     </li>
                     {{/each}}
                 </script>

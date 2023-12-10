@@ -91,102 +91,275 @@ const webSocketProtoDefinition = `
             }
         `;
 
+const clientMsgProtoDefinition = `syntax = "proto3";
 
-let pbsRootObj = null;
-
-async function wsOnline(callback) {
-
-    pbsRootObj = protobuf.parse(webSocketProtoDefinition).root;
-
-    const socket = new WebSocket(WebSocketUrl);
-
-    socket.onopen = (event) => {
-        online(callback, socket);
-    };
-
-    socket.onmessage = (event) => {
-        processIM(callback,event.data);
-    };
-
-    socket.onclose = (event) => {
-        console.log('WebSocket connection closed:', event);
-        callback.SocketClosed(event);
-    };
-
-    socket.onerror = (event) => {
-        console.error('WebSocket error:', event);
-        const errorMessage = event.data || '未提供详细错误信息';
-        callback.SocketError(errorMessage);
-    };
-    return socket;
+message ProPlainTxt {
+  string txt = 1;
 }
 
-function online(callback, socket) {
-    const WsMsg = pbsRootObj.lookupType("WsMsg");
-    const WsOnlineMsg = pbsRootObj.lookupType("WSOnline");
+message ProImg {
+  bytes content = 1;
+  string hash = 2;
+  bytes key = 3;
+}
 
-    const msgObj = {
-        devTyp: 4,
-        voipToken: "0",
-        devToken: "0",
-        UID: callback.getAddress(),
-        UnixTime: Math.floor(Date.now() / 1000),
+message ProVoice {
+  int32 len = 1;
+  bytes content = 2;
+}
+
+message ProLocation {
+  string name = 1;
+  double long = 2;
+  double lat = 3;
+}
+
+message ProFile {
+  string name = 1;
+  bytes content = 2;
+  int32 typ = 3;
+}
+
+message ProVideoWithHash {
+  string hash = 1;
+  bytes thumb = 2;
+  bool isHorizon = 3;
+  bytes key = 4;
+}
+
+message ProRedPacket {
+  string from = 1;
+  string to = 2;
+  int64 amount = 3;
+  string fromEth = 4;
+  int64 sendTime = 5;
+  bytes fromSig = 6;
+}
+
+message ProContact {
+  string uid = 1;
+  string recommender = 2;
+}
+
+message ProRedPackAck {
+  int64 redPackId = 1;
+  string txHash = 2;
+  string receiverID = 3;
+}
+
+message VoipCallInfo {
+  bool isVideo = 1;
+  int32 duration = 2;
+  int32 status = 3;
+  int64 callTime = 4;
+}
+
+`;
+
+
+let pbsProtocolRootObj = protobuf.parse(webSocketProtoDefinition).root;
+const WsMsg = pbsProtocolRootObj.lookupType("WsMsg");
+const WsOnlineMsg = pbsProtocolRootObj.lookupType("WSOnline");
+const WSCryptoMsg = pbsProtocolRootObj.lookupType("WSCryptoMsg");
+
+let pbsClientMsgRootObj = protobuf.parse(clientMsgProtoDefinition).root;
+const ProPlainTxt = pbsClientMsgRootObj.lookupType("ProPlainTxt");
+
+const MsgMediaTyp = {
+    MMTTxt: 1,
+    MMTImg: 2,
+    MMTRedPacket: 22,
+    MMTContact: 23,
+    MMNostrMsg:30,
+};
+
+// 封装消息
+function wrapWithType(typ, msg) {
+    let data = null;
+    switch (typ) {
+        case MsgMediaTyp.MMTTxt:
+             data = ProPlainTxt.encode(ProPlainTxt.create(msg)).finish();
+        break;
+        default:
+            console.error("Unknown message type:", typ);
+            return null;
+    }
+    const buf = new Uint8Array(1 + data.length);
+    buf[0] = typ;
+    buf.set(data, 1);
+    // console.log("======>>>", buf);
+    return buf;
+}
+
+function unwrapWithType(data) {
+    // console.log("======>>>", data);
+    const typ = data[0];
+    const msgData = data.subarray(1);
+
+    let msg;
+    switch (typ) {
+        case MsgMediaTyp.MMTTxt:
+            msg = ProPlainTxt.decode(msgData);
+            break;
+
+        default:
+            console.error("Unknown message type:", typ);
+            return null;
     }
 
-    const msgData = WsOnlineMsg.create(msgObj);
-    const trimmedMsgData = WsOnlineMsg.encode(msgData).finish();
-    const sig = callback.SignData(trimmedMsgData);
-    const wsMessage = WsMsg.create({
-        version: 1,
-        Hash: null,
-        Sig: sig,
-        typ: pbsRootObj.lookupEnum("WsMsgType").values.Online,
-        online: msgObj,
-    });
-
-    const binaryData = WsMsg.encode(wsMessage).finish();
-
-    const trimmedBinaryData = trimZeroData(binaryData);
-    socket.send(trimmedBinaryData);
+    return {typ,msg};
 }
 
-async function processIM(callback, data) {
-    const WsMsg = pbsRootObj.lookupType("WsMsg");
-    const response = new Response(data);
-    const arrayBuffer = await response.arrayBuffer();
-    const websocketMsg = WsMsg.decode(new Uint8Array(arrayBuffer));
+class WSDelegate {
+    constructor(address, callback) {
+        this.address = address;
+        this.socket = null;
+        this.callback = callback;
+    }
 
-    const responseData = WsMsg.toObject(websocketMsg);
-    switch (responseData.typ) {
-        case pbsRootObj.lookupEnum("WsMsgType").values.Online:
-            const onlinePayload = responseData.online;
-            console.log("Received WSOnline payload:", onlinePayload);
-            break;
-        case pbsRootObj.lookupEnum("WsMsgType").values.OnlineACK:
-            const olAckPayload = responseData.olAck;
-            if (olAckPayload.Success){
-                callback.OnlineResult(null);
-            }else{
-                callback.OnlineResult("online failed");
-            }
-            break;
-        case pbsRootObj.lookupEnum("WsMsgType").values.IMData:
-            const msgPayload = responseData.msg;
-            console.log("Received WSCryptoMsg payload:", msgPayload);
-            break;
-        case pbsRootObj.lookupEnum("WsMsgType").values.PullUnread:
-            const unreadPayload = responseData.unread;
-            console.log("Received WSPullUnread payload:", unreadPayload);
-            break;
-        case pbsRootObj.lookupEnum("WsMsgType").values.Offline:
-            // 处理 Offline 类型
-            break;
-        case pbsRootObj.lookupEnum("WsMsgType").values.WsMsgAck:
-            const msgAckPayload = responseData.msgAck;
-            console.log("Received WSMsgAck payload:", msgAckPayload);
-            break;
-        default:
-            console.log("Unknown payload type:", responseData.type);
-            break;
+    async wsOnline() {
+
+        const socket = new WebSocket(WebSocketUrl);
+        this.socket = socket;
+        socket.onopen = (event) => {
+            this.online();
+        };
+
+        socket.onmessage = (event) => {
+            this.processWsMsg(event.data);
+        };
+
+        socket.onclose = (event) => {
+            console.log('WebSocket connection closed:', event);
+            this.callback.SocketClosed(event);
+        };
+
+        socket.onerror = (event) => {
+            console.error('WebSocket error:', event);
+            const errorMessage = event.data || '未提供详细错误信息';
+            this.callback.SocketError(errorMessage);
+        };
+        return socket;
+    }
+
+    online() {
+
+        const msgObj = {
+            devTyp: 4,
+            voipToken: "0",
+            devToken: "0",
+            UID: this.address,
+            UnixTime: Math.floor(Date.now() / 1000),
+        }
+
+        const msgData = WsOnlineMsg.create(msgObj);
+        const trimmedMsgData = WsOnlineMsg.encode(msgData).finish();
+        const sig = this.callback.SignData(trimmedMsgData);
+        const wsMessage = WsMsg.create({
+            version: 1,
+            Hash: null,
+            Sig: sig,
+            typ: pbsProtocolRootObj.lookupEnum("WsMsgType").values.Online,
+            online: msgObj,
+        });
+
+        const binaryData = WsMsg.encode(wsMessage).finish();
+        // const trimmedBinaryData = trimZeroData(binaryData);
+        this.socket.send(binaryData);
+    }
+
+    async processWsMsg(data) {
+        const response = new Response(data);
+        const arrayBuffer = await response.arrayBuffer();
+        const websocketMsg = WsMsg.decode(new Uint8Array(arrayBuffer));
+
+        const responseData = WsMsg.toObject(websocketMsg);
+        switch (responseData.typ) {
+            case pbsProtocolRootObj.lookupEnum("WsMsgType").values.Online:
+                const onlinePayload = responseData.online;
+                console.log("Received WSOnline payload:", onlinePayload);
+                break;
+            case pbsProtocolRootObj.lookupEnum("WsMsgType").values.OnlineACK:
+                const olAckPayload = responseData.olAck;
+                if (olAckPayload.Success) {
+                    this.callback.OnlineResult(null);
+                } else {
+                    this.callback.OnlineResult("online failed");
+                }
+                break;
+            case pbsProtocolRootObj.lookupEnum("WsMsgType").values.IMData:
+                const msgPayload = responseData.msg;
+                console.log("Received WSCryptoMsg payload:", msgPayload);
+                this.procCryptoIM(msgPayload)
+
+                break;
+            case pbsProtocolRootObj.lookupEnum("WsMsgType").values.PullUnread:
+                const unreadPayload = responseData.unread;
+                console.log("Received WSPullUnread payload:", unreadPayload);
+                break;
+            case pbsProtocolRootObj.lookupEnum("WsMsgType").values.Offline:
+                // 处理 Offline 类型
+                break;
+            case pbsProtocolRootObj.lookupEnum("WsMsgType").values.WsMsgAck:
+                const msgAckPayload = responseData.msgAck;
+                console.log("Received WSMsgAck payload:", msgAckPayload);
+                break;
+            default:
+                console.log("Unknown payload type:", responseData.type);
+                break;
+        }
+    }
+
+    procCryptoIM(imMsg) {
+        console.log("Received WSCryptoMsg payload:", imMsg.From, imMsg.To,imMsg.UnixTime);
+        const receiver = imMsg.To.peerAddr;
+        const peerAddr = imMsg.From;
+        if (!receiver) {
+            console.log("unsupported group msg")
+            return;
+        }
+
+        if (this.address !== receiver) {
+            console.log("this message is not for me!!!")
+            return;
+        }
+
+        const key = this.callback.AesKeyFromPeer(peerAddr);
+        AesDecryptData(imMsg.PayLoad, key).then(msg => {
+            const result = unwrapWithType(msg);
+            this.callback.newPeerMsg(imMsg.From, result, imMsg.UnixTime);
+        });
+    }
+
+    async sendPlainTxt(msg, peerAddr, time) {
+        const txtMsg = { txt: msg };
+        const wrappedMsg = wrapWithType(MsgMediaTyp.MMTTxt, txtMsg);
+        const key = this.callback.AesKeyFromPeer(peerAddr);
+        const encryptedMsg = await AesEncryptData(wrappedMsg, key);
+        const unixTime = Math.floor(time.getTime());
+        const cryptoMsgObj = {
+            version: 1,
+            ID: unixTime,
+            From: this.address,
+            To: {peerAddr: peerAddr}, // Set the destination peerAddr
+            PayLoad: encryptedMsg, // Set your payload data
+            UnixTime: unixTime,
+        };
+
+        const cryptoMsg = WSCryptoMsg.create(cryptoMsgObj);
+
+        const wsMessage = WsMsg.create({
+            version: 1,
+            Hash: null,
+            Sig: null, // Set your signature data
+            typ: pbsProtocolRootObj.lookupEnum("WsMsgType").values.IMData, // Set the appropriate message type
+            msg: cryptoMsg,
+        });
+
+
+        const binaryData = WsMsg.encode(wsMessage).finish();
+        // console.log(uint8ArrayToHexString(binaryData));
+        // const trimmedBinaryData = trimZeroData(binaryData);
+        this.socket.send(binaryData);
     }
 }

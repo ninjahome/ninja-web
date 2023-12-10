@@ -32,6 +32,7 @@ function clearCallLocalCache() {
 }
 
 let selfAccountInfo = null;
+let currentPeer = null;
 
 function selfAccountSettings() {
     loadSelfDetails(curWalletObj, true).then(result => {
@@ -73,17 +74,45 @@ Handlebars.registerHelper('formatTime', function (time) {
     }
 });
 
+async function findProperMeta(address) {
+    const contact = getCombinedContactByAddress(address);
+    let name = ""
+    let avatar = null;
+    if (!contact) {
+        let meta = await dbManager.getData(IndexedDBManager.META_TABLE_NAME, address);
+        if (!meta) {
+            meta = await reloadMetaFromSrv(address);
+        }
+        if (!meta) {
+            return {name, avatar};
+        }
+        name = meta.name;
+        avatar = meta.avatarBase64;
+        return {name, avatar};
+    }
+
+    name = contact.alias ?? contact.meta.name;
+    avatar = contact.meta.avatarBase64;
+    return {name, avatar};
+}
+
 class IMManager {
     constructor() {
-        this.socket = null;
     }
 
-    getAddress() {
-        return curWalletObj.address;
-    }
 
-    newPeerMsg(data) {
-        console.log("got new mssg");
+    async newPeerMsg(from, data, time) {
+        switch (data.typ) {
+            case MsgMediaTyp.MMTTxt:
+                const txt = data.msg.txt;
+                let meta = await findProperMeta(from);
+                const message = new showAbleMsgItem(true, meta.avatar,
+                    meta.name, txt, new Date(time));
+                appendNewMsgNode(message);
+                break;
+            default:
+                console.log("unknown msg", data);
+        }
     }
 
     SocketClosed() {
@@ -98,6 +127,10 @@ class IMManager {
         return curWalletObj.SignRawData(data);
     }
 
+    AesKeyFromPeer(peer) {
+        return curWalletObj.AesKeyFromPeer(peer);
+    }
+
     OnlineResult(err) {
         if (!err) {
             console.log("online success!");
@@ -109,21 +142,21 @@ class IMManager {
 
 let cachedMsgTipMap = new Map();
 let curWalletObj = null;
-let curMsgManager = new IMManager();
+let websocketApi = null;
 document.addEventListener("DOMContentLoaded", async function () {
-    await dbManager.openDatabase()
+    await dbManager.openDatabase();
     checkSessionKeyPriKey();
     window.addEventListener('popstate', function () {
         clearSessionStorage();
     })
+    websocketApi = new WSDelegate(curWalletObj.address, new IMManager())
 
     initModal().then(async response => {
         cachedMsgTipMap = await cacheLoadCachedMsgTipsList();
         refreshMsgTipsList().then(r => {
         });
         loadCombinedContacts(false);
-        wsOnline(curMsgManager).then(s => {
-            curMsgManager.socket = s;
+        websocketApi.wsOnline().then(s => {
         });
         initMsgSender();
     });
@@ -223,8 +256,15 @@ function initMsgSender() {
     });
 }
 
-async function sendMessage() {
+function appendNewMsgNode(message) {
     const messageContainer = document.getElementById('messageContainer');
+    const messageTemplate = Handlebars.compile(document.getElementById('messageTemplate').innerHTML);
+    messageContainer.innerHTML += messageTemplate({messages: [message]});
+
+    messageContainer.scrollTop = messageContainer.scrollHeight;
+}
+
+async function sendMessage() {
     const messageInput = document.getElementById('messageInput');
     const messageText = messageInput.value;
     if (messageText.trim() === '') {
@@ -234,14 +274,14 @@ async function sendMessage() {
         selfAccountInfo = await loadSelfDetails(curWalletObj, true);
     }
 
+    const msgTime = new Date();
     const message = new showAbleMsgItem(true, selfAccountInfo.avatarBase64,
-        selfAccountInfo.name, messageText, new Date());
-
-    const messageTemplate = Handlebars.compile(document.getElementById('messageTemplate').innerHTML);
-    messageContainer.innerHTML += messageTemplate({ messages: [message] });
+        selfAccountInfo.name, messageText, msgTime);
+    websocketApi.sendPlainTxt(messageText, currentPeer, msgTime).then(r => {
+    });
 
     messageInput.value = '';
-    messageContainer.scrollTop = messageContainer.scrollHeight;
+    appendNewMsgNode(message);
 }
 
 function checkSessionKeyPriKey() {
@@ -271,6 +311,7 @@ function loadCachedMsgListForAddr(item, address) {
     }
     item.classList.add('selected');
     lastSelectedMsgItem = item;
+    currentPeer = address;
 
     const messages = cacheLoadCachedMsgListForAddr(address);
     const messageTemplate = Handlebars.compile(document.getElementById('messageTemplate').innerHTML);

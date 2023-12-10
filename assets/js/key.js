@@ -40,6 +40,10 @@ class LightSubKey {
         const privateKeyUint8Array = new Uint8Array(this.privateKey);
         return sodium.crypto_sign_detached(data, privateKeyUint8Array);
     }
+
+    AesKeyFromPeer(peerAddr){
+        return GenerateAesKey(peerAddr, this.privateKey);
+    }
 }
 
 function ToSubAddr(addStr) {

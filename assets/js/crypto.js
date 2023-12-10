@@ -223,5 +223,9 @@ async function AesDecryptData(ciphertext, key) {
         encryptedData
     );
 
-    return new Uint8Array(decrypted);
+    return removePadding(new Uint8Array(decrypted));
+}
+function removePadding(data) {
+    const padding = data[data.length - 1];
+    return data.subarray(0, data.length - padding);
 }

@@ -231,7 +231,7 @@ function cacheLoadCachedMsgListForAddr(address) {
     const msg_1 = new showAbleMsgItem(true, null, "中本聪", "早上好", twoDaysAgo);
     const msg_2 = new showAbleMsgItem(false, null, "日本聪", "您好！很开心和您聊天😊", twoDaysAgo);
     const msg_3 = new showAbleMsgItem(true, null, "中本聪", "最近项目的进展咋样？", currentDate);
-    const msg_4 = new showAbleMsgItem(false, null, "日本聪", "项目进展顺利项目进展顺利项目进展顺利项目进展顺利项目进展顺利项目进展顺利项目进展顺利，我们在使用新的技术编程", currentDate);
+    const msg_4 = new showAbleMsgItem(false, null, "日本聪", "项目进展顺利项\r\n目进展顺利\r\n项目进展顺利项目进展顺利项目进展顺利项目进展顺利项目进展顺利，我们在使用新的技术编程", currentDate);
 
     result.push(msg_1);
     result.push(msg_2);

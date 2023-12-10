@@ -119,7 +119,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     initModal().then(async response => {
         cachedMsgTipMap = await cacheLoadCachedMsgTipsList();
-        refreshMsgTipsList().then(r=>{
+        refreshMsgTipsList().then(r => {
         });
         loadCombinedContacts(false);
         wsOnline(curMsgManager).then(s => {
@@ -212,18 +212,13 @@ function initMsgSender() {
     const messageInput = document.getElementById('messageInput');
     // Event listener for Enter key
     messageInput.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter' && !event.shiftKey) {
-            event.preventDefault(); // Prevent the newline
-            sendMessage().then(r => {
-                console.log("send message success");
-            });
-        }
-    });
-
-    // Event listener for Shift+Enter to insert newline
-    messageInput.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter' && event.shiftKey) {
-            // Do nothing or add newline logic
+        if (event.key === 'Enter') {
+            if (!event.shiftKey) {
+                event.preventDefault(); // Prevent the newline
+                sendMessage().then(r => {
+                    console.log("send message success");
+                });
+            }
         }
     });
 }
@@ -240,7 +235,7 @@ async function sendMessage() {
     }
 
     const message = new showAbleMsgItem(true, selfAccountInfo.avatarBase64,
-         selfAccountInfo.name, messageText, new Date());
+        selfAccountInfo.name, messageText, new Date());
 
     const divItem = document.createElement('div');
     divItem.classList.add('messageItem', 'self');
@@ -250,6 +245,7 @@ async function sendMessage() {
 
     messageContainer.appendChild(divItem);
     messageInput.value = '';
+    messageContainer.scrollTop = messageContainer.scrollHeight;
 }
 
 function checkSessionKeyPriKey() {
@@ -294,12 +290,13 @@ async function refreshMsgTipsList() {
     document.getElementById("messageTipsList").innerHTML = template({messages: messages});
 }
 
-function removeMsgTipsItem(event,address) {
-    console.log("start to remove this item=>",address);
+function removeMsgTipsItem(event, address) {
+    console.log("start to remove this item=>", address);
     event.stopPropagation();
     cachedMsgTipMap.delete(address);
-    removeCachedMsgTipsFromDb(address).then(r=>{
-        refreshMsgTipsList().then(r=>{});
+    removeCachedMsgTipsFromDb(address).then(r => {
+        refreshMsgTipsList().then(r => {
+        });
     });
 }
 

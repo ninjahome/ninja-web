@@ -237,13 +237,9 @@ async function sendMessage() {
     const message = new showAbleMsgItem(true, selfAccountInfo.avatarBase64,
         selfAccountInfo.name, messageText, new Date());
 
-    const divItem = document.createElement('div');
-    divItem.classList.add('messageItem', 'self');
-
     const messageTemplate = Handlebars.compile(document.getElementById('messageTemplate').innerHTML);
-    divItem.innerHTML = messageTemplate({messages: [message]});
+    messageContainer.innerHTML += messageTemplate({ messages: [message] });
 
-    messageContainer.appendChild(divItem);
     messageInput.value = '';
     messageContainer.scrollTop = messageContainer.scrollHeight;
 }

@@ -460,7 +460,7 @@ body {
 }
 
 .messageItem .messageContent {
-    max-width: 100%; /* 调整消息内容最大宽度 */
+    max-width: 70%;
     padding: 10px;
     border-radius: 10px;
     min-width: 100px;
@@ -468,6 +468,8 @@ body {
 
 .messageItem .messageContent .msgPayload {
     white-space: pre-line;
+    word-wrap: break-word; /* 添加这行样式 */
+    overflow-wrap: break-word; /* 添加这一行 */
 }
 
 .messageItem.self {

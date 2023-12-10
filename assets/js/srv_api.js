@@ -150,7 +150,7 @@ async function apiLoadContactListFromServer(address) {
     const refreshedContact = [];
     for (const key in friendsOfContact) {
         const value = friendsOfContact[key];
-        console.log(`friend relation data => Key: ${key}, Value: ${value}, alias:${value.alias} remark:${value.remark}`);
+        // console.log(`friend relation data => Key: ${key}, Value: ${value}, alias:${value.alias} remark:${value.remark}`);
         const item = new contactItem(key, value.alias, value.remark)
         refreshedContact.push(item);
     }

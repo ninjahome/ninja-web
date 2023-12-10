@@ -69,16 +69,6 @@ class contactItem {
     }
 }
 
-function contactListKey() {
-    return DBKeyAllContactData + getGlobalCurrentAddr();
-}
-
-
-/*****************************************************************************************
- *
- *                               contract
- *
- * *****************************************************************************************/
 class combinedContact {
     constructor(meta, contact) {
         this.meta = meta;
@@ -97,15 +87,14 @@ async function initAllContactWithDetails(forceReload = false) {
     }
 
     __globalAllCombinedContact = new Map();
-    let contactList;
-    const storedData = localStorage.getItem(contactListKey())
-    if (forceReload || !storedData) {
+
+    let contactList = await dbManager.getAllData(IndexedDBManager.CONTACT_TABLE_NAME);
+
+    if (forceReload || !contactList) {
         contactList = await apiLoadContactListFromServer(getGlobalCurrentAddr());
-        if (contactList) {
-            localStorage.setItem(contactListKey(), JSON.stringify(contactList))
+        if (contactList){
+            await dbManager.clearAndFillTable(IndexedDBManager.CONTACT_TABLE_NAME, contactList)
         }
-    } else {
-        contactList = JSON.parse(storedData);
     }
 
     if (!contactList) {
@@ -176,23 +165,22 @@ class messageTipsItem {
     }
 }
 
-function msgTipsListDbKey() {
-    return DBKeyCachedMsgTipsList + getGlobalCurrentAddr();
+async function cacheSyncCachedMsgTipsToDb(address, item) {
+    await dbManager.addOrUpdateData(IndexedDBManager.MSG_TIP_TABLE_NAME,address, item);
+}
+async function removeCachedMsgTipsFromDb(address){
+    await dbManager.deleteData(IndexedDBManager.MSG_TIP_TABLE_NAME, address);
 }
 
-async function cacheSyncCachedMsgTipsToDb(theMap) {
-    const values = Array.from(theMap.entries());
-    storeDataToLocalStorage(msgTipsListDbKey(), values);
-}
-
-function cacheLoadCachedMsgTipsList() {
+async function cacheLoadCachedMsgTipsList() {
     const result = new Map();
-    const storedData = getDataFromLocalStorage(msgTipsListDbKey());
-    if (!storedData) {
-        return result;
-    }
-    return new Map(storedData);
 
+    const arrays = await dbManager.getAllData(IndexedDBManager.MSG_TIP_TABLE_NAME)
+    for (const item of arrays){
+        result.set(item.address, item);
+    }
+
+    return result;
 }
 
 async function wrapToShowAbleMsgTipsList(data) {

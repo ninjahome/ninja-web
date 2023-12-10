@@ -118,9 +118,8 @@ document.addEventListener("DOMContentLoaded", async function () {
     })
 
     initModal().then(async response => {
-        cachedMsgTipMap = cacheLoadCachedMsgTipsList();
+        cachedMsgTipMap = await cacheLoadCachedMsgTipsList();
         refreshMsgTipsList().then(r=>{
-
         });
         loadCombinedContacts(false);
         wsOnline(curMsgManager).then(s => {
@@ -240,8 +239,8 @@ async function sendMessage() {
         selfAccountInfo = await loadSelfDetails(curWalletObj, true);
     }
 
-    const message = new showAbleMsgItem(true, selfAccountInfo.meta.avatarBase64,
-        selfAccountInfo.meta.name, messageText, new Date());
+    const message = new showAbleMsgItem(true, selfAccountInfo.avatarBase64,
+         selfAccountInfo.name, messageText, new Date());
 
     const divItem = document.createElement('div');
     divItem.classList.add('messageItem', 'self');
@@ -289,21 +288,19 @@ function loadCachedMsgListForAddr(item, address) {
 
 
 async function refreshMsgTipsList() {
-    if (cachedMsgTipMap.size === 0) {
-        return;
-    }
     const source = document.getElementById("messageTipsListTemplate").innerHTML;
     const template = Handlebars.compile(source);
     const messages = await wrapToShowAbleMsgTipsList(cachedMsgTipMap);
     document.getElementById("messageTipsList").innerHTML = template({messages: messages});
-
 }
 
 function removeMsgTipsItem(event,address) {
     console.log("start to remove this item=>",address);
     event.stopPropagation();
     cachedMsgTipMap.delete(address);
-    refreshMsgTipsList().then(r=>{});
+    removeCachedMsgTipsFromDb(address).then(r=>{
+        refreshMsgTipsList().then(r=>{});
+    });
 }
 
 function clearCachedMsg() {
@@ -374,7 +371,7 @@ async function startChatWithFriend(address, callback) {
     if (!msgTipItem) {
         msgTipItem = new messageTipsItem(address, new Date(), "开始聊天");
         cachedMsgTipMap.set(address, msgTipItem);
-        cacheSyncCachedMsgTipsToDb(cachedMsgTipMap).then(r => {
+        cacheSyncCachedMsgTipsToDb(address, msgTipItem).then(r => {
         });
         await refreshMsgTipsList();
     }

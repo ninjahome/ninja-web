@@ -250,6 +250,40 @@ class IndexedDBManager {
             };
         });
     }
+
+    clearAndFillTable(storeName, newData) {
+
+        const clearTransaction = this.db.transaction([storeName], 'readwrite');
+        const objectStore = clearTransaction.objectStore(storeName);
+
+        // 清空表
+        const clearRequest = objectStore.clear();
+
+        clearRequest.onsuccess = () => {
+            // 在清空后，创建一个新的事务来添加新的数据
+            const fillTransaction = this.db.transaction([storeName], 'readwrite');
+            const fillObjectStore = fillTransaction.objectStore(storeName);
+
+            // 将新的数组数据添加到表中
+            if (Array.isArray(newData) && newData.length > 0) {
+                newData.forEach(data => {
+                    fillObjectStore.add(data);
+                });
+            }
+
+            fillTransaction.oncomplete = () => {
+                console.log(`Table ${storeName} cleared and filled with new data.`);
+            };
+
+            fillTransaction.onerror = (event) => {
+                console.error(`Error filling table ${storeName}: ${event.target.error}`);
+            };
+        };
+
+        clearRequest.onerror = (event) => {
+            console.error(`Error clearing table ${storeName}: ${event.target.error}`);
+        };
+    }
 }
 
 // Example Usage:

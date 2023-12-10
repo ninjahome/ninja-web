@@ -55,11 +55,8 @@
                     {{#each messages}}
                     <li class="messageTipsItem" data-address="{{tips.address}}"
                         onclick="loadCachedMsgListForAddr(this,'{{tips.address}}')">
-                        {{#if meta.avatarBase64}}
-                        <img src="data:image/png;base64,{{meta.avatarBase64}}" alt="Avatar">
-                        {{else}}
-                        <img src="/assets/logo.png" alt="Avatar">
-                        {{/if}}
+                        <img src="{{#if meta.avatarBase64}}data:image/png;base64,{{meta.avatarBase64}}{{else}}/assets/logo.png{{/if}}"
+                             alt="Avatar">
                         <div class="info-container">
                             <div class="nickname-time">
                                 <span class="nickname">{{meta.name}}</span>
@@ -67,7 +64,7 @@
                             </div>
                             <div class="msgPayload">{{tips.description}}</div>
                         </div>
-<!--                        <button class="clearButton" onclick="removeMsgTipsItem('{{tips.address}}')">清除</button>-->
+                        <button class="clearButton" onclick="removeMsgTipsItem(event,'{{tips.address}}')">清除</button>
                     </li>
                     {{/each}}
                 </script>

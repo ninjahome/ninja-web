@@ -255,6 +255,18 @@ body {
     margin-top: auto;
 }
 
+.messageTipsItem .clearButton {
+    background-color: transparent;
+    border: none;
+    color: #3498db;
+    cursor: pointer;
+    margin-left: 10px; /* 调整按钮与描述文本之间的间距 */
+}
+
+.messageTipsItem .clearButton:hover {
+    text-decoration: underline; /* 悬停时添加下划线效果 */
+}
+
 /* 新增样式规则 */
 #friendControlPanel {
     width: 100%;

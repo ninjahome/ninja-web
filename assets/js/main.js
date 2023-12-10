@@ -299,8 +299,11 @@ async function refreshMsgTipsList() {
 
 }
 
-function removeMsgTipsItem() {
-
+function removeMsgTipsItem(event,address) {
+    console.log("start to remove this item=>",address);
+    event.stopPropagation();
+    cachedMsgTipMap.delete(address);
+    refreshMsgTipsList().then(r=>{});
 }
 
 function clearCachedMsg() {

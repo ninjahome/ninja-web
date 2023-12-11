@@ -53,8 +53,8 @@
             <div id="messageControlPanel">
                 <script id="messageTipsListTemplate" type="text/x-handlebars-template">
                     {{#each messages}}
-                    <li class="messageTipsItem" data-address="{{tips.address}}"
-                        onclick="loadCachedMsgListForAddr(this,'{{tips.address}}')">
+                    <li class="messageTipsItem" data-address="{{tips.peer}}"
+                        onclick="loadCachedMsgListForAddr(this,'{{tips.peer}}')">
                         <img src="{{#if meta.avatarBase64}}data:image/png;base64,{{meta.avatarBase64}}{{else}}/assets/logo.png{{/if}}"
                              alt="Avatar">
                         <div class="info-container">
@@ -64,7 +64,7 @@
                             </div>
                             <div class="msgPayload">{{tips.description}}</div>
                         </div>
-                        <button class="clearButton" onclick="removeMsgTipsItem(event,'{{tips}}')">清除</button>
+                        <button class="clearButton" onclick="removeMsgTipsItem(event,'{{tips.peer}}',{{tips.id}})">清除</button>
                     </li>
                     {{/each}}
                 </script>

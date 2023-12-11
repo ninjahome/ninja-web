@@ -326,11 +326,10 @@ async function refreshMsgTipsList() {
     document.getElementById("messageTipsList").innerHTML = template({messages: messages});
 }
 
-function removeMsgTipsItem(event, tips) {
-    console.log("start to remove this item=>", tips);
+function removeMsgTipsItem(event, address, id) {
     event.stopPropagation();
-    cachedMsgTipMap.delete(tips.peer);
-    removeCachedMsgTipsFromDb(tips.id).then(r => {
+    cachedMsgTipMap.delete(address);
+    removeCachedMsgTipsFromDb(id).then(r => {
         refreshMsgTipsList().then(r => {
         });
     });
@@ -403,7 +402,7 @@ async function startChatWithFriend(address, callback) {
 
     let msgTipItem = cachedMsgTipMap.get(address);
     if (!msgTipItem) {
-        msgTipItem = new messageTipsItem(null, selfAccountInfo.address, address, new Date(), "开始聊天");
+        msgTipItem = new messageTipsItem(selfAccountInfo.address, address, new Date(), "开始聊天");
         cachedMsgTipMap.set(address, msgTipItem);
         cacheSyncCachedMsgTipsToDb(msgTipItem).then(r => {
         });

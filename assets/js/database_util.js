@@ -146,8 +146,7 @@ class messageTipsToShow {
 }
 
 class messageTipsItem {
-    constructor(id, owner, peer, time, description) {
-        this.id = id;
+    constructor(owner, peer, time, description) {
         this.owner = owner;
         this.peer  = peer;
         this.time = time;
@@ -157,9 +156,7 @@ class messageTipsItem {
 
 async function cacheSyncCachedMsgTipsToDb(item) {
     const result =  await dbManager.addOrUpdateData(IndexedDBManager.MSG_TIP_TABLE_NAME, item);
-    if (result.isNewData){
-        item.id = result.id;
-    }
+    item.id = result.id
 }
 async function removeCachedMsgTipsFromDb(id){
     await dbManager.deleteData(IndexedDBManager.MSG_TIP_TABLE_NAME, id);

@@ -106,8 +106,8 @@ class IMManager {
             case MsgMediaTyp.MMTTxt:
                 const txt = data.msg.txt;
                 let meta = await findProperMeta(from);
-                const message = new showAbleMsgItem(true, meta.avatar,
-                    meta.name, txt, new Date(time));
+                const message = new showAbleMsgItem(false, meta.avatar,
+                    meta.name, txt, new Date(time),from);
                 appendNewMsgNode(message);
                 break;
             default:

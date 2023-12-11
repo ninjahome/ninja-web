@@ -194,13 +194,13 @@ async function wrapToShowAbleMsgTipsList(data) {
  * *****************************************************************************************/
 
 class showAbleMsgItem {
-    constructor(isSelf, avatarBase64, nickname, msgPayload, time,to) {
+    constructor(isSelf, avatarBase64, nickname, msgPayload, time,peer) {
         this.isSelf = isSelf;
         this.avatarBase64 = avatarBase64;
         this.nickname = nickname;
         this.msgPayload = msgPayload;
         this.time = time;
-        this.peerAddr = to;
+        this.peerAddr = peer;
     }
 }
 

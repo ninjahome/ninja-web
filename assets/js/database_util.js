@@ -46,14 +46,11 @@ async function reloadMetaFromSrv(address) {
  * *****************************************************************************************/
 
 class contactItem {
-    constructor(address, alias, remark) {
+    constructor(owner,address, alias, remark) {
+        this.owner = owner;
         this.address = address;
         this.alias = alias;
         this.remark = remark;
-    }
-
-    static fromJson(json) {
-        return new contactItem(json.address, json.alias, json.remark);
     }
 }
 
@@ -76,12 +73,16 @@ async function initAllContactWithDetails(curAddr, forceReload = false) {
 
     __globalAllCombinedContact = new Map();
 
-    let contactList = await dbManager.getAllData(IndexedDBManager.CONTACT_TABLE_NAME);
+    let contactList = await dbManager.queryData(IndexedDBManager.CONTACT_TABLE_NAME, (data)=>{
+        return data.owner === curAddr;
+    });
 
     if (forceReload || contactList.length === 0) {
         contactList = await apiLoadContactListFromServer(curAddr);
         if (contactList){
-            await dbManager.clearAndFillTable(IndexedDBManager.CONTACT_TABLE_NAME, contactList)
+            await dbManager.clearAndFillWithCondition(IndexedDBManager.CONTACT_TABLE_NAME, contactList,(data)=>{
+                return data.owner === curAddr;
+            })
         }
     }
 
@@ -89,8 +90,7 @@ async function initAllContactWithDetails(curAddr, forceReload = false) {
         return __globalAllCombinedContact;
     }
 
-    for (const contactData of contactList) {
-        const contact = contactItem.fromJson(contactData)
+    for (const contact of contactList) {
         const address = contact.address
         let meta = await dbManager.getData(IndexedDBManager.META_TABLE_NAME, address);
         const cc = new combinedContact(meta, contact);

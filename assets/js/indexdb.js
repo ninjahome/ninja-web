@@ -51,8 +51,9 @@ class IndexedDBManager {
 
     initContactTable(db) {
         if (!db.objectStoreNames.contains(IndexedDBManager.CONTACT_TABLE_NAME)) {
-            const walletStore = db.createObjectStore(IndexedDBManager.CONTACT_TABLE_NAME, {keyPath: 'address'});
-            walletStore.createIndex('addressIndex', 'address', {unique: true});
+            const walletStore = db.createObjectStore(IndexedDBManager.CONTACT_TABLE_NAME, { keyPath: 'id', autoIncrement: true });
+            walletStore.createIndex('ownerIndex', 'owner', {unique: false});
+            walletStore.createIndex('addressIndex', 'address', {unique: false});
             walletStore.createIndex('aliasIndex', 'alias', {unique: false});
             walletStore.createIndex('remarkIndex', 'remark', {unique: false});
         }
@@ -254,39 +255,54 @@ class IndexedDBManager {
         });
     }
 
-    clearAndFillTable(storeName, newData) {
+    clearAndFillWithCondition(storeName, newData, conditionFn) {
+        const clearAndFillTransaction = this.db.transaction([storeName], 'readwrite');
+        const objectStore = clearAndFillTransaction.objectStore(storeName);
 
-        const clearTransaction = this.db.transaction([storeName], 'readwrite');
-        const objectStore = clearTransaction.objectStore(storeName);
+        // 根据条件删除数据
+        const clearRequest = objectStore.openCursor();
 
-        // 清空表
-        const clearRequest = objectStore.clear();
+        clearRequest.onsuccess = event => {
+            const cursor = event.target.result;
+            if (cursor) {
+                const data = cursor.value;
+                if (conditionFn(data)) {
+                    cursor.delete();
+                }
+                cursor.continue();
+            } else {
+                // 在清空后，创建一个新的事务来添加新的数据
+                const fillTransaction = this.db.transaction([storeName], 'readwrite');
+                const fillObjectStore = fillTransaction.objectStore(storeName);
 
-        clearRequest.onsuccess = () => {
-            // 在清空后，创建一个新的事务来添加新的数据
-            const fillTransaction = this.db.transaction([storeName], 'readwrite');
-            const fillObjectStore = fillTransaction.objectStore(storeName);
+                // 将新的数组数据添加到表中
+                if (Array.isArray(newData) && newData.length > 0) {
+                    newData.forEach(data => {
+                        if (!data.id) {
+                            // 如果没有 id 属性，使用 add 方法添加新数据
+                            fillObjectStore.add(data);
+                        } else {
+                            // 如果有 id 属性，使用 put 方法添加或更新数据
+                            fillObjectStore.put(data);
+                        }
+                    });
+                }
 
-            // 将新的数组数据添加到表中
-            if (Array.isArray(newData) && newData.length > 0) {
-                newData.forEach(data => {
-                    fillObjectStore.add(data);
-                });
+                fillTransaction.oncomplete = () => {
+                    console.log(`Table ${storeName} cleared and filled with new data.`);
+                };
+
+                fillTransaction.onerror = event => {
+                    console.error(`Error filling table ${storeName}: ${event.target.error}`);
+                };
             }
-
-            fillTransaction.oncomplete = () => {
-                console.log(`Table ${storeName} cleared and filled with new data.`);
-            };
-
-            fillTransaction.onerror = (event) => {
-                console.error(`Error filling table ${storeName}: ${event.target.error}`);
-            };
         };
 
-        clearRequest.onerror = (event) => {
+        clearRequest.onerror = event => {
             console.error(`Error clearing table ${storeName}: ${event.target.error}`);
         };
     }
+
 }
 
 // Example Usage:

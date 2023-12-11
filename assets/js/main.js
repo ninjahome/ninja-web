@@ -246,7 +246,7 @@ function initMsgSender() {
     messageInput.addEventListener('keydown', (event) => {
         if (event.key === 'Enter') {
             if (!event.shiftKey) {
-                event.preventDefault(); // Prevent the newline
+                event.preventDefault();
                 sendMessage().then(r => {
                     console.log("send message success");
                 });
@@ -261,6 +261,9 @@ function appendNewMsgNode(message) {
     messageContainer.innerHTML += messageTemplate({messages: [message]});
 
     messageContainer.scrollTop = messageContainer.scrollHeight;
+
+    addOrUpdateMsgTipsItem(message.peerAddr, message.msgPayload).then(r => {
+    })
 }
 
 async function sendMessage() {
@@ -275,7 +278,7 @@ async function sendMessage() {
 
     const msgTime = new Date();
     const message = new showAbleMsgItem(true, selfAccountInfo.avatarBase64,
-        selfAccountInfo.name, messageText, msgTime);
+        selfAccountInfo.name, messageText, msgTime, currentPeer);
     websocketApi.sendPlainTxt(messageText, currentPeer, msgTime).then(r => {
     });
 
@@ -301,15 +304,13 @@ function clearSessionStorage() {
     curWalletObj = null;
 }
 
-let lastSelectedMsgItem = null;
-
 function loadCachedMsgListForAddr(item, address) {
     document.getElementById("messageContentArea").style.display = 'block';
-    if (lastSelectedMsgItem) {
-        lastSelectedMsgItem.classList.remove('selected');
+    if (currentPeer) {
+        const itemElem = document.querySelector('li[data-address="' + currentPeer + '"]');
+        itemElem.classList.remove('selected');
     }
     item.classList.add('selected');
-    lastSelectedMsgItem = item;
     currentPeer = address;
 
     const messages = cacheLoadCachedMsgListForAddr(address);
@@ -324,6 +325,11 @@ async function refreshMsgTipsList() {
     const template = Handlebars.compile(source);
     const messages = await wrapToShowAbleMsgTipsList(cachedMsgTipMap);
     document.getElementById("messageTipsList").innerHTML = template({messages: messages});
+
+    if (currentPeer) {
+        const itemElem = document.querySelector('li[data-address="' + currentPeer + '"]');
+        itemElem.classList.add('selected');
+    }
 }
 
 function removeMsgTipsItem(event, address, id) {
@@ -341,7 +347,7 @@ function clearCachedMsg() {
 
 function loadCombinedContacts(force) {
     const address = curWalletObj.address;
-    initAllContactWithDetails(address,force).then(friends => {
+    initAllContactWithDetails(address, force).then(friends => {
         const valuesArray = Array.from(friends.values());
         const source = document.getElementById("friendListTemplate").innerHTML;
         const template = Handlebars.compile(source);
@@ -398,16 +404,24 @@ async function fullFillContact(item, address) {
     `;
 }
 
-async function startChatWithFriend(address, callback) {
-
+async function addOrUpdateMsgTipsItem(address, desc) {
     let msgTipItem = cachedMsgTipMap.get(address);
     if (!msgTipItem) {
-        msgTipItem = new messageTipsItem(selfAccountInfo.address, address, new Date(), "开始聊天");
+        msgTipItem = new messageTipsItem(selfAccountInfo.address, address, new Date(), desc);
         cachedMsgTipMap.set(address, msgTipItem);
-        cacheSyncCachedMsgTipsToDb(msgTipItem).then(r => {
-        });
-        await refreshMsgTipsList();
+    } else {
+        msgTipItem.time = new Date();
+        msgTipItem.description = desc;
     }
+
+    await refreshMsgTipsList();
+    cacheSyncCachedMsgTipsToDb(msgTipItem).then(r => {
+    });
+}
+
+async function startChatWithFriend(address, callback) {
+
+    await addOrUpdateMsgTipsItem(address, "");
 
     const btn = document.getElementById("messageButton");
     togglePanels(btn, 'messageControlPanel');

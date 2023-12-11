@@ -183,7 +183,7 @@ async function wrapToShowAbleMsgTipsList(data) {
         const item = new messageTipsToShow(value, meta);
         result.push(item);
     }
-    result.sort((a, b) => b.time - a.time);
+    result.sort((a, b) => b.tips.time - a.tips.time);
     return result;
 }
 
@@ -194,12 +194,13 @@ async function wrapToShowAbleMsgTipsList(data) {
  * *****************************************************************************************/
 
 class showAbleMsgItem {
-    constructor(isSelf, avatarBase64, nickname, msgPayload, time) {
+    constructor(isSelf, avatarBase64, nickname, msgPayload, time,to) {
         this.isSelf = isSelf;
         this.avatarBase64 = avatarBase64;
         this.nickname = nickname;
         this.msgPayload = msgPayload;
         this.time = time;
+        this.peerAddr = to;
     }
 }
 

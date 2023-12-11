@@ -46,7 +46,7 @@ async function reloadMetaFromSrv(address) {
  * *****************************************************************************************/
 
 class contactItem {
-    constructor(owner,address, alias, remark) {
+    constructor(owner, address, alias, remark) {
         this.owner = owner;
         this.address = address;
         this.alias = alias;
@@ -73,14 +73,14 @@ async function initAllContactWithDetails(curAddr, forceReload = false) {
 
     __globalAllCombinedContact = new Map();
 
-    let contactList = await dbManager.queryData(IndexedDBManager.CONTACT_TABLE_NAME, (data)=>{
+    let contactList = await dbManager.queryData(IndexedDBManager.CONTACT_TABLE_NAME, (data) => {
         return data.owner === curAddr;
     });
 
     if (forceReload || contactList.length === 0) {
         contactList = await apiLoadContactListFromServer(curAddr);
-        if (contactList){
-            await dbManager.clearAndFillWithCondition(IndexedDBManager.CONTACT_TABLE_NAME, contactList,(data)=>{
+        if (contactList) {
+            await dbManager.clearAndFillWithCondition(IndexedDBManager.CONTACT_TABLE_NAME, contactList, (data) => {
                 return data.owner === curAddr;
             })
         }
@@ -148,28 +148,29 @@ class messageTipsToShow {
 class messageTipsItem {
     constructor(owner, peer, time, description) {
         this.owner = owner;
-        this.peer  = peer;
+        this.peer = peer;
         this.time = time;
         this.description = description;
     }
 }
 
 async function cacheSyncCachedMsgTipsToDb(item) {
-    const result =  await dbManager.addOrUpdateData(IndexedDBManager.MSG_TIP_TABLE_NAME, item);
+    const result = await dbManager.addOrUpdateData(IndexedDBManager.MSG_TIP_TABLE_NAME, item);
     item.id = result.id
 }
-async function removeCachedMsgTipsFromDb(id){
+
+async function removeCachedMsgTipsFromDb(id) {
     await dbManager.deleteData(IndexedDBManager.MSG_TIP_TABLE_NAME, id);
 }
 
 async function cacheLoadCachedMsgTipsList(address) {
     const result = new Map();
 
-    const arrays = await dbManager.queryData(IndexedDBManager.MSG_TIP_TABLE_NAME,(data)=>{
+    const arrays = await dbManager.queryData(IndexedDBManager.MSG_TIP_TABLE_NAME, (data) => {
         return data.owner === address;
     });
 
-    for (const item of arrays){
+    for (const item of arrays) {
         result.set(item.peer, item);
     }
 
@@ -194,7 +195,7 @@ async function wrapToShowAbleMsgTipsList(data) {
  * *****************************************************************************************/
 
 class showAbleMsgItem {
-    constructor(isSelf, avatarBase64, nickname, msgPayload, time,peer) {
+    constructor(isSelf, avatarBase64, nickname, msgPayload, time, peer) {
         this.isSelf = isSelf;
         this.avatarBase64 = avatarBase64;
         this.nickname = nickname;
@@ -206,30 +207,78 @@ class showAbleMsgItem {
 
 class msgPayLoad {
     constructor(typ, txt, data) {
+        this.typ = typ;
+        this.txt = txt;
+        this.data = data;
+    }
+    wrapToWebsocket(){
+        return  wrapWithType(MsgMediaTyp.MMTTxt, {txt: this.txt});
     }
 }
 
 class storedMsgItem {
-    constructor(mid, from, to, payload, isGrp) {
+
+    constructor(msgId, from, to, payload, isGrp, owner) {
+        this.msgId = msgId;
+        this.from = from;
+        this.to = to;
+        this.payload = payload;
+        this.isGrp = isGrp;
+        this.owner = owner;
     }
 }
 
-function cacheLoadCachedMsgListForAddr(address) {
+async function toShowAbleMsgItem(msg) {
+    let meta = await findProperMeta(msg.from);
+    const isSelf = msg.from === msg.owner;
+    const peerAddr = isSelf ? msg.to : msg.from;
+    return new showAbleMsgItem(isSelf, meta.avatar, meta.name,
+        msg.payload.txt, new Date(msg.msgId), peerAddr);
+}
 
-    const result = [];
+async function saveNewMsg(item) {
+    dbManager.addData(IndexedDBManager.MESSAGE_TABLE_NAME, item).then(id => {
+        item.id = id;
+    });
+}
 
-    const currentDate = new Date();
-    const twoDaysAgo = new Date();
-    twoDaysAgo.setDate(currentDate.getDate() - 2);
+async function cacheLoadCachedMsgListForAddr(address, owner) {
 
-    const msg_1 = new showAbleMsgItem(true, null, "中本聪", "早上好", twoDaysAgo);
-    const msg_2 = new showAbleMsgItem(false, null, "日本聪", "您好！很开心和您聊天😊", twoDaysAgo);
-    const msg_3 = new showAbleMsgItem(true, null, "中本聪", "最近项目的进展咋样？", currentDate);
-    const msg_4 = new showAbleMsgItem(false, null, "日本聪", "项目进展顺利项\r\n目进展顺利\r\n项目进展顺利项目进展顺利项目进展顺利项目进展顺利项目进展顺利，我们在使用新的技术编程", currentDate);
+    const items = await dbManager.queryData(IndexedDBManager.MESSAGE_TABLE_NAME, (data) => {
+        return data.owner === owner;
+    })
+    if (items.length === 0) {
+        return [];
+    }
 
-    result.push(msg_1);
-    result.push(msg_2);
-    result.push(msg_3);
-    result.push(msg_4);
-    return result;
+    const showAble = [];
+    for (const msg of items) {
+        const item = await toShowAbleMsgItem(msg);
+        showAble.push(item);
+    }
+
+    showAble.sort((a, b) => a.time - b.time);
+    return showAble;
+}
+
+async function findProperMeta(address) {
+    const contact = getCombinedContactByAddress(address);
+    let name = ""
+    let avatar = null;
+    if (!contact) {
+        let meta = await dbManager.getData(IndexedDBManager.META_TABLE_NAME, address);
+        if (!meta) {
+            meta = await reloadMetaFromSrv(address);
+        }
+        if (!meta) {
+            return {name, avatar};
+        }
+        name = meta.name;
+        avatar = meta.avatarBase64;
+        return {name, avatar};
+    }
+
+    name = contact.alias ?? (contact.meta ? contact.meta.name : "");
+    avatar = contact.meta ?  (contact.meta.avatarBase64 ?? null) :null;
+    return {name, avatar};
 }

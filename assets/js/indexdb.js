@@ -72,10 +72,13 @@ class IndexedDBManager {
 
     initMsgItemTable(db) {
         if (!db.objectStoreNames.contains(IndexedDBManager.MESSAGE_TABLE_NAME)) {
-            const walletStore = db.createObjectStore(IndexedDBManager.MESSAGE_TABLE_NAME, {keyPath: 'msgId'});
-            walletStore.createIndex('addressIndex', 'address', {unique: true});
+            const walletStore = db.createObjectStore(IndexedDBManager.MESSAGE_TABLE_NAME, { keyPath: 'id', autoIncrement: true });
             walletStore.createIndex('msgIdIndex', 'msgId', {unique: false});
+            walletStore.createIndex('ownerIndex', 'owner', {unique: false});
+            walletStore.createIndex('fromIndex', 'from', {unique: false});
+            walletStore.createIndex('toIndex', 'to', {unique: false});
             walletStore.createIndex('payloadIndex', 'payload', {unique: false});
+            walletStore.createIndex('isGrpIndex', 'isGrp', {unique: false});
         }
     }
 
@@ -125,7 +128,7 @@ class IndexedDBManager {
             const request = objectStore.add(data);
 
             request.onsuccess = () => {
-                resolve(`Data added to ${storeName} successfully`);
+                resolve(request.result);
             };
 
             request.onerror = event => {

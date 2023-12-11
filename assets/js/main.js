@@ -74,45 +74,20 @@ Handlebars.registerHelper('formatTime', function (time) {
     }
 });
 
-async function findProperMeta(address) {
-    const contact = getCombinedContactByAddress(address);
-    let name = ""
-    let avatar = null;
-    if (!contact) {
-        let meta = await dbManager.getData(IndexedDBManager.META_TABLE_NAME, address);
-        if (!meta) {
-            meta = await reloadMetaFromSrv(address);
-        }
-        if (!meta) {
-            return {name, avatar};
-        }
-        name = meta.name;
-        avatar = meta.avatarBase64;
-        return {name, avatar};
-    }
-
-    name = contact.alias ?? contact.meta.name;
-    avatar = contact.meta.avatarBase64;
-    return {name, avatar};
-}
 
 class IMManager {
     constructor() {
     }
 
-
-    async newPeerMsg(from, data, time) {
-        switch (data.typ) {
-            case MsgMediaTyp.MMTTxt:
-                const txt = data.msg.txt;
-                let meta = await findProperMeta(from);
-                const message = new showAbleMsgItem(false, meta.avatar,
-                    meta.name, txt, new Date(time),from);
-                appendNewMsgNode(message);
-                break;
-            default:
-                console.log("unknown msg", data);
+    async newPeerMsg(msgItem) {
+        saveNewMsg(msgItem).then(message => {
+        });
+        const message = await toShowAbleMsgItem(msgItem);
+        if (currentPeer === msgItem.from) {
+            appendNewMsgNode(message);
         }
+        addOrUpdateMsgTipsItem(message.peerAddr, message.msgPayload).then(r => {
+        })
     }
 
     SocketClosed() {
@@ -261,14 +236,12 @@ function appendNewMsgNode(message) {
     messageContainer.innerHTML += messageTemplate({messages: [message]});
 
     messageContainer.scrollTop = messageContainer.scrollHeight;
-
-    addOrUpdateMsgTipsItem(message.peerAddr, message.msgPayload).then(r => {
-    })
 }
 
 async function sendMessage() {
     const messageInput = document.getElementById('messageInput');
     const messageText = messageInput.value;
+    messageInput.value = '';
     if (messageText.trim() === '') {
         return;
     }
@@ -276,14 +249,21 @@ async function sendMessage() {
         selfAccountInfo = await loadSelfDetails(curWalletObj, true);
     }
 
+    const payload = new msgPayLoad(MsgMediaTyp.MMTTxt, messageText);
     const msgTime = new Date();
+    const storedItem = new storedMsgItem(Math.floor(msgTime.getTime()),
+        selfAccountInfo.address, currentPeer, payload, false, selfAccountInfo.address);
+
     const message = new showAbleMsgItem(true, selfAccountInfo.avatarBase64,
         selfAccountInfo.name, messageText, msgTime, currentPeer);
-    websocketApi.sendPlainTxt(messageText, currentPeer, msgTime).then(r => {
-    });
-
-    messageInput.value = '';
     appendNewMsgNode(message);
+
+    websocketApi.sendPlainTxt(payload.wrapToWebsocket(), currentPeer, msgTime).then(r => {
+        addOrUpdateMsgTipsItem(message.peerAddr, message.msgPayload).then(r => {
+        })
+        saveNewMsg(storedItem).then(r => {
+        });
+    });
 }
 
 function checkSessionKeyPriKey() {
@@ -313,10 +293,11 @@ function loadCachedMsgListForAddr(item, address) {
     item.classList.add('selected');
     currentPeer = address;
 
-    const messages = cacheLoadCachedMsgListForAddr(address);
-    const messageTemplate = Handlebars.compile(document.getElementById('messageTemplate').innerHTML);
-    document.getElementById('messageContainer').innerHTML = messageTemplate({messages});
-    document.getElementById('blockchainAddressOfPeer').innerText = address
+    cacheLoadCachedMsgListForAddr(address, curWalletObj.address).then(messages=>{
+        const messageTemplate = Handlebars.compile(document.getElementById('messageTemplate').innerHTML);
+        document.getElementById('messageContainer').innerHTML = messageTemplate({messages});
+        document.getElementById('blockchainAddressOfPeer').innerText = address
+    })
 }
 
 

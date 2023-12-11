@@ -170,7 +170,7 @@ const MsgMediaTyp = {
     MMTImg: 2,
     MMTRedPacket: 22,
     MMTContact: 23,
-    MMNostrMsg:30,
+    MMNostrMsg: 30,
 };
 
 // 封装消息
@@ -178,8 +178,8 @@ function wrapWithType(typ, msg) {
     let data = null;
     switch (typ) {
         case MsgMediaTyp.MMTTxt:
-             data = ProPlainTxt.encode(ProPlainTxt.create(msg)).finish();
-        break;
+            data = ProPlainTxt.encode(ProPlainTxt.create(msg)).finish();
+            break;
         default:
             console.error("Unknown message type:", typ);
             return null;
@@ -200,14 +200,12 @@ function unwrapWithType(data) {
     switch (typ) {
         case MsgMediaTyp.MMTTxt:
             msg = ProPlainTxt.decode(msgData);
-            break;
+            return new msgPayLoad(MsgMediaTyp.MMTTxt, msg.txt)
 
         default:
             console.error("Unknown message type:", typ);
             return null;
     }
-
-    return {typ,msg};
 }
 
 class WSDelegate {
@@ -311,7 +309,7 @@ class WSDelegate {
     }
 
     procCryptoIM(imMsg) {
-        console.log("Received WSCryptoMsg payload:", imMsg.From, imMsg.To,imMsg.UnixTime);
+        console.log("Received WSCryptoMsg payload:", imMsg.From, imMsg.To, imMsg.UnixTime);
         const receiver = imMsg.To.peerAddr;
         const peerAddr = imMsg.From;
         if (!receiver) {
@@ -327,13 +325,14 @@ class WSDelegate {
         const key = this.callback.AesKeyFromPeer(peerAddr);
         AesDecryptData(imMsg.PayLoad, key).then(msg => {
             const result = unwrapWithType(msg);
-            this.callback.newPeerMsg(imMsg.From, result, imMsg.UnixTime);
+            const msgItem = new storedMsgItem(imMsg.UnixTime, peerAddr,
+                this.address, result, false, this.address);
+            this.callback.newPeerMsg(msgItem).then(r => {
+            });
         });
     }
 
-    async sendPlainTxt(msg, peerAddr, time) {
-        const txtMsg = { txt: msg };
-        const wrappedMsg = wrapWithType(MsgMediaTyp.MMTTxt, txtMsg);
+    async sendPlainTxt(wrappedMsg, peerAddr, time) {
         const key = this.callback.AesKeyFromPeer(peerAddr);
         const encryptedMsg = await AesEncryptData(wrappedMsg, key);
         const unixTime = Math.floor(time.getTime());

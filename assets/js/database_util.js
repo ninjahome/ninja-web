@@ -1,16 +1,4 @@
-let __globalCurWalletAddr = null;
 let __globalAllCombinedContact = new Map();
-
-function initCurrentDBKey(address) {
-    storeDataToLocalStorage(DBKeyLastUsedWallet, address);
-}
-
-function getGlobalCurrentAddr() {
-    if (!__globalCurWalletAddr) {
-        __globalCurWalletAddr = getDataFromLocalStorage(DBKeyLastUsedWallet);
-    }
-    return __globalCurWalletAddr;
-}
 
 /*****************************************************************************************
  *
@@ -46,7 +34,7 @@ async function reloadMetaFromSrv(address) {
         return null;
     }
     meta.avatarBase64 = await queryAvatarData(address);
-    await dbManager.addOrUpdateData(IndexedDBManager.META_TABLE_NAME, address, meta);
+    await dbManager.addOrUpdateData(IndexedDBManager.META_TABLE_NAME, meta);
     return meta;
 }
 
@@ -80,7 +68,7 @@ function getCombinedContactByAddress(address) {
     return __globalAllCombinedContact.get(address)
 }
 
-async function initAllContactWithDetails(forceReload = false) {
+async function initAllContactWithDetails(curAddr, forceReload = false) {
 
     if (__globalAllCombinedContact.size > 0 && !forceReload) {
         return __globalAllCombinedContact;
@@ -90,8 +78,8 @@ async function initAllContactWithDetails(forceReload = false) {
 
     let contactList = await dbManager.getAllData(IndexedDBManager.CONTACT_TABLE_NAME);
 
-    if (forceReload || !contactList) {
-        contactList = await apiLoadContactListFromServer(getGlobalCurrentAddr());
+    if (forceReload || contactList.length === 0) {
+        contactList = await apiLoadContactListFromServer(curAddr);
         if (contactList){
             await dbManager.clearAndFillTable(IndexedDBManager.CONTACT_TABLE_NAME, contactList)
         }
@@ -125,15 +113,15 @@ async function initAllContactWithDetails(forceReload = false) {
  * *****************************************************************************************/
 
 async function loadSelfDetails(walletObj, force) {
-    const address = getGlobalCurrentAddr();
+    const address = walletObj.address
     let meta = await dbManager.getData(IndexedDBManager.META_TABLE_NAME, address)
     if (!force && meta) {
         return meta;
     }
 
-    meta = await apiGetAccountMeta(getGlobalCurrentAddr())
+    meta = await apiGetAccountMeta(address)
     if (!meta) {
-        return new accountMeta(-1, walletObj.address, "",
+        return new accountMeta(-1, address, "",
             null, 0, 0, 0.0, 0.0);
     }
     meta.avatarBase64 = await queryAvatarData(address);
@@ -141,7 +129,7 @@ async function loadSelfDetails(walletObj, force) {
     meta.ethBalance = eth[0];
     meta.usdtBalance = eth[1];
 
-    await dbManager.addOrUpdateData(IndexedDBManager.META_TABLE_NAME, address, meta);
+    await dbManager.addOrUpdateData(IndexedDBManager.META_TABLE_NAME, meta);
     return meta;
 }
 
@@ -158,26 +146,34 @@ class messageTipsToShow {
 }
 
 class messageTipsItem {
-    constructor(address, time, description) {
-        this.address = address;
+    constructor(id, owner, peer, time, description) {
+        this.id = id;
+        this.owner = owner;
+        this.peer  = peer;
         this.time = time;
         this.description = description;
     }
 }
 
-async function cacheSyncCachedMsgTipsToDb(address, item) {
-    await dbManager.addOrUpdateData(IndexedDBManager.MSG_TIP_TABLE_NAME,address, item);
+async function cacheSyncCachedMsgTipsToDb(item) {
+    const result =  await dbManager.addOrUpdateData(IndexedDBManager.MSG_TIP_TABLE_NAME, item);
+    if (result.isNewData){
+        item.id = result.id;
+    }
 }
-async function removeCachedMsgTipsFromDb(address){
-    await dbManager.deleteData(IndexedDBManager.MSG_TIP_TABLE_NAME, address);
+async function removeCachedMsgTipsFromDb(id){
+    await dbManager.deleteData(IndexedDBManager.MSG_TIP_TABLE_NAME, id);
 }
 
-async function cacheLoadCachedMsgTipsList() {
+async function cacheLoadCachedMsgTipsList(address) {
     const result = new Map();
 
-    const arrays = await dbManager.getAllData(IndexedDBManager.MSG_TIP_TABLE_NAME)
+    const arrays = await dbManager.queryData(IndexedDBManager.MSG_TIP_TABLE_NAME,(data)=>{
+        return data.owner === address;
+    });
+
     for (const item of arrays){
-        result.set(item.address, item);
+        result.set(item.peer, item);
     }
 
     return result;

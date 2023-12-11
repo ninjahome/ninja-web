@@ -77,7 +77,7 @@
                 storeDataToSessionStorage(SessionKeyCurWalletObj, result);
                 // 例如，简单地输出钱包地址和密码
                 console.log("Wallet unlock success : " + walletAddr);
-                initCurrentDBKey(walletAddr);
+                storeDataToLocalStorage(DBKeyLastUsedWallet, walletAddr);
                 window.location.href = "/main";
             })
             .catch((error) => {

@@ -152,7 +152,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     websocketApi = new WSDelegate(curWalletObj.address, new IMManager())
 
     initModal().then(async response => {
-        cachedMsgTipMap = await cacheLoadCachedMsgTipsList();
+        cachedMsgTipMap = await cacheLoadCachedMsgTipsList(curWalletObj.address);
         refreshMsgTipsList().then(r => {
         });
         loadCombinedContacts(false);
@@ -225,7 +225,6 @@ async function searchAccountMetaByAddress() {
         showModal("不是有效的Ninja地址");
         return null;
     }
-    console.log('用户输入的地址:', blockchainAddress);
     let meta = await dbManager.getData(IndexedDBManager.META_TABLE_NAME, blockchainAddress);
 
     reloadMetaFromSrv(blockchainAddress).then(r => {
@@ -327,11 +326,11 @@ async function refreshMsgTipsList() {
     document.getElementById("messageTipsList").innerHTML = template({messages: messages});
 }
 
-function removeMsgTipsItem(event, address) {
-    console.log("start to remove this item=>", address);
+function removeMsgTipsItem(event, tips) {
+    console.log("start to remove this item=>", tips);
     event.stopPropagation();
-    cachedMsgTipMap.delete(address);
-    removeCachedMsgTipsFromDb(address).then(r => {
+    cachedMsgTipMap.delete(tips.peer);
+    removeCachedMsgTipsFromDb(tips.id).then(r => {
         refreshMsgTipsList().then(r => {
         });
     });
@@ -342,7 +341,8 @@ function clearCachedMsg() {
 }
 
 function loadCombinedContacts(force) {
-    initAllContactWithDetails(force).then(friends => {
+    const address = curWalletObj.address;
+    initAllContactWithDetails(address,force).then(friends => {
         const valuesArray = Array.from(friends.values());
         const source = document.getElementById("friendListTemplate").innerHTML;
         const template = Handlebars.compile(source);
@@ -403,9 +403,9 @@ async function startChatWithFriend(address, callback) {
 
     let msgTipItem = cachedMsgTipMap.get(address);
     if (!msgTipItem) {
-        msgTipItem = new messageTipsItem(address, new Date(), "开始聊天");
+        msgTipItem = new messageTipsItem(null, selfAccountInfo.address, address, new Date(), "开始聊天");
         cachedMsgTipMap.set(address, msgTipItem);
-        cacheSyncCachedMsgTipsToDb(address, msgTipItem).then(r => {
+        cacheSyncCachedMsgTipsToDb(msgTipItem).then(r => {
         });
         await refreshMsgTipsList();
     }

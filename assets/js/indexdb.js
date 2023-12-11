@@ -60,12 +60,14 @@ class IndexedDBManager {
 
     initMsgTipTable(db) {
         if (!db.objectStoreNames.contains(IndexedDBManager.MSG_TIP_TABLE_NAME)) {
-            const walletStore = db.createObjectStore(IndexedDBManager.MSG_TIP_TABLE_NAME, {keyPath: 'address'});
-            walletStore.createIndex('addressIndex', 'address', {unique: true});
-            walletStore.createIndex('timeIndex', 'time', {unique: false});
-            walletStore.createIndex('descriptionIndex', 'description', {unique: false});
+            const walletStore = db.createObjectStore(IndexedDBManager.MSG_TIP_TABLE_NAME, { keyPath: 'id', autoIncrement: true });
+            walletStore.createIndex('ownerIndex', 'owner', { unique: false });
+            walletStore.createIndex('peerIndex', 'peer', { unique: false });
+            walletStore.createIndex('timeIndex', 'time', { unique: false });
+            walletStore.createIndex('descriptionIndex', 'description', { unique: false });
         }
     }
+
 
     initMsgItemTable(db) {
         if (!db.objectStoreNames.contains(IndexedDBManager.MESSAGE_TABLE_NAME)) {
@@ -170,7 +172,7 @@ class IndexedDBManager {
         });
     }
 
-    addOrUpdateData(storeName, key, data) {
+    addOrUpdateData(storeName, data) {
         const transaction = this.db.transaction([storeName], 'readwrite');
         const objectStore = transaction.objectStore(storeName);
 
@@ -179,7 +181,8 @@ class IndexedDBManager {
 
         return new Promise((resolve, reject) => {
             request.onsuccess = () => {
-                resolve(`Data added/updated in ${storeName} successfully`);
+                const isNewData = request.source === null;
+                resolve({ isNewData, id: request.result });
             };
 
             request.onerror = event => {

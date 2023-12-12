@@ -25,6 +25,9 @@
     <script src="/assets/js/modal.js"></script>
     <script src="/assets/js/websocket.js"></script>
     <script src="/assets/js/main.js"></script>
+    <style>
+
+    </style>
 </head>
 <body>
 
@@ -149,7 +152,6 @@
                 <button>删除好友</button>
             </div>
         </div>
-
         <div id="settingContentArea">
 
             <div id="accountSettingContentArea">
@@ -163,7 +165,13 @@
 <!--                <img id="avatarImage" src="/assets/logo.png" alt="头像">-->
                 <div id="accountInfoContainer">
                     <p>地址: <span id="blockchainAddress">xxxxxx</span></p>
-                    <p>昵称: <span id="nickname">xxxx</span></p>
+                    <p>
+                        昵称:
+                        <span id="selfAccountNickname" >xxxx</span>
+                        <button class="nickNameBtn" id="nickNameEditButton" onclick="startEditingNickname(this)">编辑</button>
+                        <button class="nickNameBtn" style="display: none" id="nickNameSaveButton" onclick="saveEditingNickname(this)">保存</button>
+                    </p>
+
                     <p>会员: <span id="expireDays">xxxx</span></p>
                     <p>ETH地址: <span id="ethAddress">xxxx</span></p>
                     <p>ETH: <span id="ethBalance">0.00 ETH</span></p>

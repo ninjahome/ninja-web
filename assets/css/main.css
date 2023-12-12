@@ -407,7 +407,7 @@ body {
     margin-bottom: 10px;
 }
 
-#accountSettingContentArea button {
+#accountSettingContentArea .button-row button {
     background-color: #3498db; /* 按钮背景颜色 */
     color: #fff; /* 按钮文字颜色 */
     padding: 12px; /* 按钮内边距调整 */
@@ -418,9 +418,24 @@ body {
     width: 60%;
 }
 
-#accountSettingContentArea button:hover {
+#accountSettingContentArea .button-row button:hover {
     background-color: #2980b9; /* 按钮悬停时背景颜色 */
 }
+
+#accountSettingContentArea .nickNameBtn {
+    background-color: #3498db;
+    border: none;
+    color: #fff; /* 设置按钮文本颜色 */
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 14px;
+    text-decoration: underline; /* 下划线样式表示链接 */
+}
+
+#accountSettingContentArea .nickNameBtn:hover {
+    text-decoration: none; /* 悬停时去掉下划线 */
+}
+
 
 #messageContentArea {
     /* 其他样式... */

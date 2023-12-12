@@ -45,7 +45,7 @@ function selfAccountSettings() {
             document.getElementById('avatarImage').src = DefaultAvatarUrl;
         }
         document.getElementById('blockchainAddress').innerText = curWalletObj.address;
-        document.getElementById('nickname').innerText = result.name;
+        document.getElementById('selfAccountNickname').innerText = result.name;
         document.getElementById('expireDays').innerText = calculateDays(result.balance) + ' 天';
         document.getElementById('ethAddress').innerText = curWalletObj.EthAddrStr();
         document.getElementById('ethBalance').innerText = result.ethBalance + ' ETH';
@@ -469,9 +469,7 @@ function handleFileSelectForAvatar(event) {
                     quality -= 0.01;
                 }
                 const base64ImageDataWithPrefix = canvas.toDataURL('image/jpeg', quality);
-                // 去掉前缀
-                const base64ImageData = base64ImageDataWithPrefix.split(',')[1];
-                postToServer(base64ImageData);
+                postToServer(base64ImageDataWithPrefix);
             };
         };
 
@@ -492,13 +490,15 @@ function saveCompressedImage(blob) {
 }
 
 function postToServer(compressedData) {
-    const item = new UpdateAccount(curWalletObj.address, "", compressedData);
+    const base64ImageData = compressedData.split(',')[1];
+    const item = new UpdateAccount(curWalletObj.address, "", base64ImageData);
     const param = item.raw();
     // saveDataToFile(param, 'raw_data.bin');
     const sig = curWalletObj.SignRawData(param)
     httpRequest(chainData_api_updateAccount, param, false, sig).then(result => {
         console.log("update avatar result:", result);
         showModal("更新成功")
+        document.getElementById('avatarImage').src = compressedData;
     }).catch(err => {
         showModal("更新失败:", err.toString());
     })
@@ -517,4 +517,42 @@ function saveDataToFile(data, fileName) {
 
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+}
+
+function saveEditingNickname(btnElement){
+    const editBtn = document.getElementById("nickNameEditButton");
+    editBtn.style.display = 'block';
+    btnElement.style.display = 'none';
+    const editInput = document.getElementById("newNickNameForEdit");
+    console.log(editInput.value);
+
+    const item = new UpdateAccount(curWalletObj.address, editInput.value, null);
+    const param = item.raw();
+    const sig = curWalletObj.SignRawData(param)
+    httpRequest(chainData_api_updateAccount, param, false, sig).then(result => {
+        console.log("update avatar result:", result);
+    }).catch(err => {
+        showModal("更新失败:", err.toString());
+    })
+
+    const element = document.getElementById("selfAccountNickname")
+    element.innerHTML = editInput.value;
+    const parentElement = editInput.parentNode;
+    if (parentElement) {
+        parentElement.removeChild(editInput);
+    }
+}
+
+function startEditingNickname(btnEle) {
+    const element = document.getElementById("selfAccountNickname")
+    const saveBtn = document.getElementById("nickNameSaveButton");
+    saveBtn.style.display = 'block';
+    btnEle.style.display = 'none';
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.id = "newNickNameForEdit";
+    input.value = element.textContent;
+    element.innerHTML = '';
+    element.appendChild(input);
+    input.focus();
 }

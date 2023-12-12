@@ -2,6 +2,7 @@ const chainData_api_allFriendIDs = "/query/friend/List";
 const chainData_api_updateAccount   = "/tx/account/update"
 const chainData_api_account_meta = "/query/account/accSimpleMeta";
 const chainData_api_account_avatar = "/query/account/accAvatar";
+const websocket_api_load_unread = "/tx/message/unread";
 
 const CurrentServerUrl = "127.0.0.1:26668";
 // const CurrentServerUrl = "chat.simplenets.org:26668";

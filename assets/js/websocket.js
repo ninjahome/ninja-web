@@ -161,6 +161,7 @@ let pbsProtocolRootObj = protobuf.parse(webSocketProtoDefinition).root;
 const WsMsg = pbsProtocolRootObj.lookupType("WsMsg");
 const WsOnlineMsg = pbsProtocolRootObj.lookupType("WSOnline");
 const WSCryptoMsg = pbsProtocolRootObj.lookupType("WSCryptoMsg");
+const WSPackedUnread = pbsProtocolRootObj.lookupType("WSPackedUnread");
 
 let pbsClientMsgRootObj = protobuf.parse(clientMsgProtoDefinition).root;
 const ProPlainTxt = pbsClientMsgRootObj.lookupType("ProPlainTxt");
@@ -208,6 +209,20 @@ function unwrapWithType(data) {
     }
 }
 
+class UnreadMsgQuery {
+    constructor(receiver, fromTim) {
+        this.owner = receiver;
+        this.time = fromTim;
+    }
+
+    Raw() {
+        // 将对象转换为 JSON 字符串
+        const rawData = JSON.stringify(this);
+        // 将 JSON 字符串编码为 Uint8Array
+        return new TextEncoder().encode(rawData);
+    }
+}
+
 class WSDelegate {
     constructor(address, callback) {
         this.address = address;
@@ -220,6 +235,7 @@ class WSDelegate {
         const socket = new WebSocket(WebSocketUrl);
         this.socket = socket;
         socket.onopen = (event) => {
+            this.queryUnreadMsg();
             this.online();
         };
 
@@ -288,7 +304,7 @@ class WSDelegate {
             case pbsProtocolRootObj.lookupEnum("WsMsgType").values.IMData:
                 const msgPayload = responseData.msg;
                 console.log("Received WSCryptoMsg payload:", msgPayload);
-                this.procCryptoIM(msgPayload)
+                this.procCryptoIM(msgPayload);
 
                 break;
             case pbsProtocolRootObj.lookupEnum("WsMsgType").values.PullUnread:
@@ -331,6 +347,40 @@ class WSDelegate {
             });
         });
     }
+
+    async queryUnreadMsg() {
+        let hasData = true;
+        let startTim = 0;
+        while (hasData) {
+            startTim = startTim + 1;
+            const query = new UnreadMsgQuery(this.address, startTim)
+            const param = query.Raw();
+            const sig = this.callback.SignData(param)
+            const msgData = await httpRequest(websocket_api_load_unread, param, true, sig);
+            if (!msgData || msgData.length === 0) {
+                console.log("no unread messages");
+                return;
+            }
+            const msgRaw = WSPackedUnread.decode(msgData);
+            const unreadObj = WSPackedUnread.toObject(msgRaw);
+            console.log(unreadObj.Receiver)
+            console.log(unreadObj.msg)
+            if (unreadObj.msg.length === 0) {
+                hasData = false;
+                return;
+            }
+
+            for (const wsMsg of unreadObj.msg) {
+                const msg = wsMsg.msg;
+                this.procCryptoIM(msg);
+                console.log(msg.UnixTime)
+                if (msg.UnixTime > startTim) {
+                    startTim = msg.UnixTime;
+                }
+            }
+        }
+    }
+
 
     async sendPlainTxt(wrappedMsg, peerAddr, time) {
         const key = this.callback.AesKeyFromPeer(peerAddr);

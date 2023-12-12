@@ -4,11 +4,8 @@ const chainData_api_account_meta = "/query/account/accSimpleMeta";
 const chainData_api_account_avatar = "/query/account/accAvatar";
 const websocket_api_load_unread = "/tx/message/unread";
 
-const CurrentServerUrl = "127.0.0.1:26668";
-// const CurrentServerUrl = "chat.simplenets.org:26668";
 const DefaultHttpTimeOut = 60_000//10_000 //10 seconds
 
-const YOUR_ETHEREUM_NODE_URL = 'https://sepolia.infura.io/v3/a3a5c09826a246d0bfbef8084b81df1f';
 const web3Api = new Web3(new Web3.providers.HttpProvider(YOUR_ETHEREUM_NODE_URL));
 const USDT_CONTRACT_ADDRESS = '0x7243E5de57BD28aE2F2a34394CEd01F90B5577C7';  // USDT 合约地址
 

@@ -241,8 +241,9 @@ async function toShowAbleMsgItem(msg) {
     let meta = await findProperMeta(msg.from);
     const isSelf = msg.from === msg.owner;
     const peerAddr = isSelf ? msg.to : msg.from;
+    const tipsTxt = msg.payload ? msg.payload.txt : "";
     return new showAbleMsgItem(isSelf, meta.avatar, meta.name,
-        msg.payload.txt, new Date(msg.msgId), peerAddr);
+        tipsTxt, new Date(msg.msgId), peerAddr);
 }
 
 async function saveNewMsg(item) {
@@ -254,7 +255,7 @@ async function saveNewMsg(item) {
 async function cacheLoadCachedMsgListForAddr(address, owner) {
 
     const items = await dbManager.queryData(IndexedDBManager.MESSAGE_TABLE_NAME, (data) => {
-        return data.owner === owner;
+        return data.owner === owner &&(data.from === address || data.to === address);
     })
     if (items.length === 0) {
         return [];

@@ -1,5 +1,3 @@
-const WebSocketUrl = "ws://127.0.0.1:26666/user/online";
-// const WebSocketUrl = "ws://chat.simplenets.org:26666";
 
 const webSocketProtoDefinition = `
             syntax = "proto3";
@@ -382,7 +380,11 @@ class WSDelegate {
 
     async sendPlainTxt(wrappedMsg, peerAddr, time) {
         const key = this.callback.AesKeyFromPeer(peerAddr);
+        console.log("shared key:=>",uint8ArrayToHexString(key))
+        console.log("raw data:=>",uint8ArrayToHexString(wrappedMsg))
         const encryptedMsg = await AesEncryptData(wrappedMsg, key);
+        console.log("encrypted:=>",uint8ArrayToHexString(encryptedMsg))
+
         const unixTime = Math.floor(time.getTime());
         const cryptoMsgObj = {
             version: 1,

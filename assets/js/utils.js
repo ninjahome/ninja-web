@@ -101,3 +101,10 @@ const SessionKeyCurWalletObj = '__key_global_private_key__';
 const SessionWalletJsonString = '__key_global_current_wallet__';
 
 const DefaultAvatarUrl = "/assets/logo.png";
+
+// const CurrentServerUrl = "127.0.0.1:26668";
+const CurrentServerUrl = "chat.simplenets.org:26668";
+const YOUR_ETHEREUM_NODE_URL = 'https://sepolia.infura.io/v3/a3a5c09826a246d0bfbef8084b81df1f';
+
+// const WebSocketUrl = "ws://127.0.0.1:26666/user/online";
+const WebSocketUrl = "ws://chat.simplenets.org:26666/user/online";

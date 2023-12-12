@@ -212,12 +212,13 @@ function isBlockchainAddress(address) {
 }
 
 let isComposing = false
+
 function initMsgSender() {
     const messageInput = document.getElementById('messageInput');
     messageInput.addEventListener('keydown', (event) => {
         if (event.key === 'Enter') {
             if (!event.shiftKey) {
-                if (isComposing){
+                if (isComposing) {
                     return;
                 }
                 event.preventDefault();
@@ -227,11 +228,11 @@ function initMsgSender() {
             }
         }
     });
-    messageInput.addEventListener('compositionstart', function(event) {
+    messageInput.addEventListener('compositionstart', function (event) {
         isComposing = true;
     });
 
-    messageInput.addEventListener('compositionend', function(event) {
+    messageInput.addEventListener('compositionend', function (event) {
         // const finalInput = event.data;
         isComposing = false;
     });
@@ -295,7 +296,9 @@ function loadCachedMsgListForAddr(item, address) {
     document.getElementById("messageContentArea").style.display = 'block';
     if (currentPeer) {
         const itemElem = document.querySelector('li[data-address="' + currentPeer + '"]');
-        itemElem.classList.remove('selected');
+        if (itemElem) {
+            itemElem.classList.remove('selected');
+        }
     }
     item.classList.add('selected');
     currentPeer = address;
@@ -323,7 +326,8 @@ async function refreshMsgTipsList() {
 function removeMsgTipsItem(event, address, id) {
     event.stopPropagation();
     cachedMsgTipMap.delete(address);
-    removeMsgOfPeer(address, curWalletObj.address).then(r=>{});
+    removeMsgOfPeer(address, curWalletObj.address).then(r => {
+    });
     removeCachedMsgTipsFromDb(id).then(r => {
         refreshMsgTipsList().then(r => {
         });
@@ -331,14 +335,14 @@ function removeMsgTipsItem(event, address, id) {
 }
 
 function clearCachedMsg() {
-    openDialog(function (){
+    openDialog(function () {
         cachedMsgTipMap.clear();
-        removeMsgOfAccount(curWalletObj.address).then(r=>{
-            removeMsgTipsOfAccount(curWalletObj.address).then(r=>{
+        removeMsgOfAccount(curWalletObj.address).then(r => {
+            removeMsgTipsOfAccount(curWalletObj.address).then(r => {
                 window.location.reload();
             })
         });
-    },"确认要删除当前账号的所有消息吗？");
+    }, "确认要删除当前账号的所有消息吗？");
 }
 
 function loadCombinedContacts(force) {
@@ -443,7 +447,7 @@ function removeWallet(keyString, password) {
 }
 
 function openFileInputForAvatarImg() {
-    if (!IsVip(selfAccountInfo)){
+    if (!IsVip(selfAccountInfo)) {
         showModal("只有会员才能操作头像");
         return;
     }
@@ -538,7 +542,7 @@ function saveDataToFile(data, fileName) {
     URL.revokeObjectURL(url);
 }
 
-function saveEditingNickname(btnElement){
+function saveEditingNickname(btnElement) {
     const editBtn = document.getElementById("nickNameEditButton");
     editBtn.style.display = 'block';
     btnElement.style.display = 'none';
@@ -563,7 +567,7 @@ function saveEditingNickname(btnElement){
 }
 
 function startEditingNickname(btnEle) {
-    if (!IsVip(selfAccountInfo)){
+    if (!IsVip(selfAccountInfo)) {
         showModal("只有会员才能修改昵称");
         return;
     }

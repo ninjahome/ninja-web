@@ -142,10 +142,8 @@ function GenerateAesKey(peerNjAddr, selfPriKey){
 
     // console.log('X25519私钥:', uint8ArrayToHexString(x25519PrivateKey));
 
-    const sharedKey = sodium.crypto_scalarmult(x25519PrivateKey, x25519PublicKey);
     // console.log("aes key is=>",uint8ArrayToHexString(sharedKey));
-
-    return sharedKey;
+    return sodium.crypto_scalarmult(x25519PrivateKey, x25519PublicKey);
 }
 
 async function AesEncryptData(plainData, key) {
@@ -157,7 +155,7 @@ async function AesEncryptData(plainData, key) {
 
     // Generate a random IV
     const iv = crypto.getRandomValues(new Uint8Array(16));
-
+    // const iv = hexStringToUint8Array("24cc1d94babc1afe333b7beab3440ac2");
     // Import key
     const importedKey = await crypto.subtle.importKey(
         "raw",
@@ -183,12 +181,11 @@ async function AesEncryptData(plainData, key) {
         importedKey,
         paddedData
     );
-
+    const encryptedBuf = new Uint8Array(encrypted,0, paddedData.length);
     // Combine IV and encrypted data
-    const result = new Uint8Array(iv.length + encrypted.byteLength);
+    const result = new Uint8Array(iv.length + encryptedBuf.length);
     result.set(iv);
-    result.set(new Uint8Array(encrypted), iv.length);
-
+    result.set(encryptedBuf, iv.length);
     return result;
 }
 
@@ -222,10 +219,7 @@ async function AesDecryptData(ciphertext, key) {
         importedKey,
         encryptedData
     );
-
-    return removePadding(new Uint8Array(decrypted));
-}
-function removePadding(data) {
-    const padding = data[data.length - 1];
-    return data.subarray(0, data.length - padding);
+    console.log("encryptedData=>",uint8ArrayToHexString(encryptedData));
+    console.log("decrypted=>",uint8ArrayToHexString(new Uint8Array(decrypted)));
+    return new Uint8Array(decrypted);
 }

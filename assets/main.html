@@ -153,7 +153,14 @@
         <div id="settingContentArea">
 
             <div id="accountSettingContentArea">
-                <img id="avatarImage" src="/assets/logo.png" alt="头像">
+                <div id="avatarContainer">
+                    <img id="avatarImage" src="/assets/logo.png" alt="头像">
+                    <!-- Add a button for uploading an image -->
+                    <button id="uploadImageButton" onclick="openFileInputForAvatarImg()">+</button>
+                    <!-- Input element for file upload (hidden by default) -->
+                    <input type="file" id="avatarImgFileInput" style="display: none;" accept="image/*" >
+                </div>
+<!--                <img id="avatarImage" src="/assets/logo.png" alt="头像">-->
                 <div id="accountInfoContainer">
                     <p>地址: <span id="blockchainAddress">xxxxxx</span></p>
                     <p>昵称: <span id="nickname">xxxx</span></p>

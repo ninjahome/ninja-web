@@ -1,4 +1,5 @@
 const chainData_api_allFriendIDs = "/query/friend/List";
+const chainData_api_updateAccount   = "/tx/account/update"
 const chainData_api_account_meta = "/query/account/accSimpleMeta";
 const chainData_api_account_avatar = "/query/account/accAvatar";
 
@@ -26,7 +27,7 @@ const httpApiProtoDefinition = `
             }
         `;
 
-async function httpRequest(url, requestData, needRawData = false, timeout = DefaultHttpTimeOut) {
+async function httpRequest(url, requestData, needRawData = false, signature = null, timeout = DefaultHttpTimeOut) {
     const apiUrl = 'http://' + CurrentServerUrl + url;
 
     const root = protobuf.parse(httpApiProtoDefinition).root;
@@ -36,7 +37,7 @@ async function httpRequest(url, requestData, needRawData = false, timeout = Defa
     // 创建一个 JavaScript 对象
     const myObject = {
         rawData: requestData,
-        Sig: null,
+        Sig: signature,
     };
     const binaryData = ApiRequest.encode(myObject).finish();
 
@@ -73,6 +74,9 @@ async function httpRequest(url, requestData, needRawData = false, timeout = Defa
             return responseData.chainData;
         }
 
+        if (responseData.txHash){
+            return responseData.txHash;
+        }
         const textDecoder = new TextDecoder('utf-8');
         const jsonString = textDecoder.decode(responseData.chainData);
 
@@ -179,3 +183,19 @@ async function apiWeb3EthBalance(address) {
     console.log(` address ${address}: ${roundedBalance} USDT ${ethBalance} ETH`);
     return [ethBalance, roundedBalance];
 }
+
+class UpdateAccount {
+    constructor(from, nickName, avatar) {
+        this.from = from;
+        this.nick_name = nickName || null;
+        this.avatar = avatar || null;
+    }
+
+    raw() {
+        // 将对象转换为 JSON 字符串
+        const rawData = JSON.stringify(this);
+        // 将 JSON 字符串编码为 Uint8Array
+        return new TextEncoder().encode(rawData);
+    }
+}
+

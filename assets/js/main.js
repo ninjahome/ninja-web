@@ -293,7 +293,7 @@ function loadCachedMsgListForAddr(item, address) {
     item.classList.add('selected');
     currentPeer = address;
 
-    cacheLoadCachedMsgListForAddr(address, curWalletObj.address).then(messages=>{
+    cacheLoadCachedMsgListForAddr(address, curWalletObj.address).then(messages => {
         const messageTemplate = Handlebars.compile(document.getElementById('messageTemplate').innerHTML);
         document.getElementById('messageContainer').innerHTML = messageTemplate({messages});
         document.getElementById('blockchainAddressOfPeer').innerText = address
@@ -425,4 +425,96 @@ function removeWallet(keyString, password) {
     dbManager.deleteData(IndexedDBManager.WALLET_TABLE_NAME, curWalletObj.address).then(r => {
         window.location.href = '/';
     })
+}
+
+function openFileInputForAvatarImg() {
+    // 触发文件选择框点击事件
+    const fileInput = document.getElementById('avatarImgFileInput');
+    fileInput.click();
+
+    // 监听文件选择框的change事件
+    fileInput.addEventListener('change', handleFileSelectForAvatar);
+}
+
+function handleFileSelectForAvatar(event) {
+    const fileInput = event.target;
+
+    if (fileInput.files && fileInput.files[0]) {
+        const selectedFile = fileInput.files[0];
+
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+            const img = new Image();
+            img.src = e.target.result;
+
+            img.onload = function () {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+
+                // 设置 canvas 大小与图片原始大小相同
+                canvas.width = img.width;
+                canvas.height = img.height;
+
+                // 在 canvas 上绘制原始图片
+                ctx.drawImage(img, 0, 0, img.width, img.height);
+
+                // 定义目标文件大小（单位：字节）
+                const targetFileSize = 26 * 1024; // 26 KB
+
+                let quality = 0.9; // 初始压缩质量
+
+                while (canvas.toDataURL('image/jpeg', quality).length > targetFileSize) {
+                    // 不断降低压缩质量，直到满足目标文件大小
+                    quality -= 0.01;
+                }
+                const base64ImageDataWithPrefix = canvas.toDataURL('image/jpeg', quality);
+                // 去掉前缀
+                const base64ImageData = base64ImageDataWithPrefix.split(',')[1];
+                postToServer(base64ImageData);
+            };
+        };
+
+        reader.readAsDataURL(selectedFile);
+    }
+}
+
+// 保存压缩后的图片数据
+function saveCompressedImage(blob) {
+    // 在这里可以处理保存压缩后的图片数据，例如上传到服务器
+    console.log('Compressed Image Blob:', blob);
+
+    // 如果需要保存到本地，可以创建一个下载链接
+    const downloadLink = document.createElement('a');
+    downloadLink.href = URL.createObjectURL(blob);
+    downloadLink.download = 'compressed_image.jpg'; // 你希望的文件名
+    downloadLink.click();
+}
+
+function postToServer(compressedData) {
+    const item = new UpdateAccount(curWalletObj.address, "", compressedData);
+    const param = item.raw();
+    // saveDataToFile(param, 'raw_data.bin');
+    const sig = curWalletObj.SignRawData(param)
+    httpRequest(chainData_api_updateAccount, param, false, sig).then(result => {
+        console.log("update avatar result:", result);
+        showModal("更新成功")
+    }).catch(err => {
+        showModal("更新失败:", err.toString());
+    })
+}
+
+function saveDataToFile(data, fileName) {
+    const blob = new Blob([data], {type: 'application/octet-stream'});
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+
+    document.body.appendChild(a);
+    a.click();
+
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
 }

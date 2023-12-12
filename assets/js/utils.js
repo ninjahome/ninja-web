@@ -41,27 +41,27 @@ function getDataFromSessionStorage(key) {
     return storedValue ? JSON.parse(storedValue) : null;
 }
 
-function removeDataFromSessionStorage(key){
+function removeDataFromSessionStorage(key) {
     sessionStorage.removeItem(key)
 }
 
-function quitFromSession(){
+function quitFromSession() {
     sessionStorage.clear();
     window.location.href = "/";
 }
 
 
-function storeDataToLocalStorage(key, value){
+function storeDataToLocalStorage(key, value) {
     localStorage.setItem(key, JSON.stringify(value));
 }
 
-function  getDataFromLocalStorage(key){
+function getDataFromLocalStorage(key) {
     const storedValue = localStorage.getItem(key);
     return storedValue ? JSON.parse(storedValue) : null;
 }
 
-function saveDataToDisk(data, fileName){
-    const blob = new Blob([data], { type: 'application/json' });
+function saveDataToDisk(data, fileName) {
+    const blob = new Blob([data], {type: 'application/json'});
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = fileName;
@@ -71,19 +71,19 @@ function saveDataToDisk(data, fileName){
 }
 
 function calculateDays(givenSeconds) {
-    const differenceDays = (givenSeconds - Date.now()/1000) / 86400;
-    if (differenceDays <= 0.02){
+    const differenceDays = (givenSeconds - Date.now() / 1000) / 86400;
+    if (differenceDays <= 0.02) {
         return 0.00
     }
     return differenceDays.toFixed(2);
 }
 
-function trimZeroData(data){
+function trimZeroData(data) {
     let nonZeroIndex = 0;
     while (nonZeroIndex < data.length && data[nonZeroIndex] === 0) {
         nonZeroIndex++;
     }
-    return  data.slice(nonZeroIndex);
+    return data.slice(nonZeroIndex);
 }
 
 // Constants
@@ -101,10 +101,23 @@ const SessionKeyCurWalletObj = '__key_global_private_key__';
 const SessionWalletJsonString = '__key_global_current_wallet__';
 
 const DefaultAvatarUrl = "/assets/logo.png";
-
-// const CurrentServerUrl = "127.0.0.1:26668";
-const CurrentServerUrl = "chat.simplenets.org:26668";
 const YOUR_ETHEREUM_NODE_URL = 'https://sepolia.infura.io/v3/a3a5c09826a246d0bfbef8084b81df1f';
 
-// const WebSocketUrl = "ws://127.0.0.1:26666/user/online";
-const WebSocketUrl = "ws://chat.simplenets.org:26666/user/online";
+let WebSocketUrl = "ws://127.0.0.1:26666/user/online";
+let CurrentServerUrl = "http://127.0.0.1:26668";
+
+function initRemoteUrl() {
+    if (window.location.protocol === "https:") {
+        console.log("当前页面通过 HTTPS 加载");
+        WebSocketUrl = "wss://chat.simplenets.org:26671/user/online";
+        CurrentServerUrl = "https://chat.simplenets.org:26670";
+    } else if (window.location.protocol === "http:") {
+        console.log("当前页面通过 HTTP 加载");
+        WebSocketUrl = "ws://chat.simplenets.org:26666/user/online";
+        CurrentServerUrl = "http://chat.simplenets.org:26668";
+    } else {
+        console.log("当前页面使用其他协议加载");
+    }
+}
+
+initRemoteUrl();

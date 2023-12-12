@@ -26,7 +26,7 @@ const httpApiProtoDefinition = `
         `;
 
 async function httpRequest(url, requestData, needRawData = false, signature = null, timeout = DefaultHttpTimeOut) {
-    const apiUrl = 'http://' + CurrentServerUrl + url;
+    const apiUrl =  CurrentServerUrl + url;
 
     const root = protobuf.parse(httpApiProtoDefinition).root;
     const ApiRequest = root.lookupType("ApiRequest");

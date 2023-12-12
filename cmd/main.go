@@ -1,6 +1,8 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"net/http"
 	"path/filepath"
 	"strings"
@@ -10,6 +12,9 @@ import (
 var (
 	staticFileDir = "assets"
 	shouldReload  = true // 控制变量，用于决定是否重新加载文件//TODO：：
+	Version       string
+	Commit        string
+	BuildTime     string
 )
 
 var simpleRouterMap = map[string]string{
@@ -21,12 +26,28 @@ var simpleRouterMap = map[string]string{
 }
 
 func main() {
+	useHttps := flag.Bool("server", false, "启动 HTTPS 服务器")
+	certFile := flag.String("certfile", "", "SSL 证书文件路径")
+	keyFile := flag.String("keyfile", "", "SSL 私钥文件路径")
+	flag.Parse()
+
 	http.Handle("/assets/", http.StripPrefix("/assets/", http.HandlerFunc(assetsRouter)))
-	//http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir(staticFileDir))))
 	for route, fileName := range simpleRouterMap {
 		http.HandleFunc(route, simpleRouter(fileName))
 	}
-	panic(http.ListenAndServe(":80", nil))
+
+	if *useHttps {
+		if *certFile == "" || *keyFile == "" {
+			panic("HTTPS 服务器需要指定证书文件和私钥文件")
+		}
+		fmt.Print("HTTPS模式")
+		// 启动 HTTPS 服务器
+		panic(http.ListenAndServeTLS(":443", *certFile, *keyFile, nil))
+	} else {
+		fmt.Print("简单模式")
+		// 启动默认的 HTTP 服务器
+		panic(http.ListenAndServe(":80", nil))
+	}
 }
 
 func simpleRouter(fileName string) func(http.ResponseWriter, *http.Request) {

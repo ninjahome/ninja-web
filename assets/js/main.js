@@ -443,6 +443,10 @@ function removeWallet(keyString, password) {
 }
 
 function openFileInputForAvatarImg() {
+    if (!IsVip(selfAccountInfo)){
+        showModal("只有会员才能操作头像");
+        return;
+    }
     // 触发文件选择框点击事件
     const fileInput = document.getElementById('avatarImgFileInput');
     fileInput.click();
@@ -559,6 +563,11 @@ function saveEditingNickname(btnElement){
 }
 
 function startEditingNickname(btnEle) {
+    if (!IsVip(selfAccountInfo)){
+        showModal("只有会员才能修改昵称");
+        return;
+    }
+
     const element = document.getElementById("selfAccountNickname")
     const saveBtn = document.getElementById("nickNameSaveButton");
     saveBtn.style.display = 'block';

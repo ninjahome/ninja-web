@@ -111,6 +111,10 @@ async function initAllContactWithDetails(curAddr, forceReload = false) {
  *                               self details
  *
  * *****************************************************************************************/
+function IsVip(meta) {
+    const expireDays = calculateDays(meta.balance)
+    return expireDays > 0.01;
+}
 
 async function loadSelfDetails(walletObj, force) {
     const address = walletObj.address
@@ -163,8 +167,8 @@ async function removeCachedMsgTipsFromDb(id) {
     await dbManager.deleteData(IndexedDBManager.MSG_TIP_TABLE_NAME, id);
 }
 
-async function removeMsgTipsOfAccount(owner){
-    await dbManager.deleteDataWithCondition(IndexedDBManager.MSG_TIP_TABLE_NAME, data=>data.owner === owner);
+async function removeMsgTipsOfAccount(owner) {
+    await dbManager.deleteDataWithCondition(IndexedDBManager.MSG_TIP_TABLE_NAME, data => data.owner === owner);
 }
 
 async function cacheLoadCachedMsgTipsList(address) {
@@ -272,7 +276,7 @@ async function removeMsgOfPeer(address, owner) {
     });
 }
 
-async function removeMsgOfAccount(owner){
+async function removeMsgOfAccount(owner) {
     await dbManager.deleteDataWithCondition(IndexedDBManager.MESSAGE_TABLE_NAME, data => {
         return data.owner === owner
     });

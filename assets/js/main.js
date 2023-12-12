@@ -215,18 +215,29 @@ function isBlockchainAddress(address) {
     return address.toLowerCase().startsWith('nj');
 }
 
+let isComposing = false
 function initMsgSender() {
     const messageInput = document.getElementById('messageInput');
-    // Event listener for Enter key
     messageInput.addEventListener('keydown', (event) => {
         if (event.key === 'Enter') {
             if (!event.shiftKey) {
+                if (isComposing){
+                    return;
+                }
                 event.preventDefault();
                 sendMessage().then(r => {
                     console.log("send message success");
                 });
             }
         }
+    });
+    messageInput.addEventListener('compositionstart', function(event) {
+        isComposing = true;
+    });
+
+    messageInput.addEventListener('compositionend', function(event) {
+        // const finalInput = event.data;
+        isComposing = false;
     });
 }
 

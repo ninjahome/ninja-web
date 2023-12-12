@@ -363,8 +363,6 @@ class WSDelegate {
             }
             const msgRaw = WSPackedUnread.decode(msgData);
             const unreadObj = WSPackedUnread.toObject(msgRaw);
-            console.log(unreadObj.Receiver)
-            console.log(unreadObj.msg)
             if (unreadObj.msg.length === 0) {
                 hasData = false;
                 return;

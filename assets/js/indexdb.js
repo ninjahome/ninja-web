@@ -212,6 +212,30 @@ class IndexedDBManager {
         });
     }
 
+    deleteDataWithCondition(storeName, conditionFn) {
+        return new Promise((resolve, reject) => {
+            const transaction = this.db.transaction([storeName], 'readwrite');
+            const objectStore = transaction.objectStore(storeName);
+            const request = objectStore.openCursor();
+
+            request.onsuccess = event => {
+                const cursor = event.target.result;
+                if (cursor) {
+                    if (conditionFn(cursor.value)) {
+                        cursor.delete();
+                    }
+                    cursor.continue();
+                } else {
+                    resolve(`Data deleted from ${storeName} successfully`);
+                }
+            };
+
+            request.onerror = event => {
+                reject(`Error deleting data with condition from ${storeName}: ${event.target.error}`);
+            };
+        });
+    }
+
     // 查询某个 storeName 下的所有数据
     getAllData(storeName) {
         return new Promise((resolve, reject) => {
@@ -305,7 +329,6 @@ class IndexedDBManager {
             console.error(`Error clearing table ${storeName}: ${event.target.error}`);
         };
     }
-
 }
 
 // Example Usage:

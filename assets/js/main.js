@@ -27,10 +27,6 @@ function logout() {
     quitFromSession();
 }
 
-function clearCallLocalCache() {
-    openDialog(resetCache, "该操作请清空所有数据，包括账号，请确保账号已经保存");
-}
-
 let selfAccountInfo = null;
 let currentPeer = null;
 
@@ -327,6 +323,7 @@ async function refreshMsgTipsList() {
 function removeMsgTipsItem(event, address, id) {
     event.stopPropagation();
     cachedMsgTipMap.delete(address);
+    removeMsgOfPeer(address, curWalletObj.address).then(r=>{});
     removeCachedMsgTipsFromDb(id).then(r => {
         refreshMsgTipsList().then(r => {
         });
@@ -334,7 +331,14 @@ function removeMsgTipsItem(event, address, id) {
 }
 
 function clearCachedMsg() {
-    window.location.reload();
+    openDialog(function (){
+        cachedMsgTipMap.clear();
+        removeMsgOfAccount(curWalletObj.address).then(r=>{
+            removeMsgTipsOfAccount(curWalletObj.address).then(r=>{
+                window.location.reload();
+            })
+        });
+    },"确认要删除当前账号的所有消息吗？");
 }
 
 function loadCombinedContacts(force) {

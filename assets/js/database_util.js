@@ -163,6 +163,10 @@ async function removeCachedMsgTipsFromDb(id) {
     await dbManager.deleteData(IndexedDBManager.MSG_TIP_TABLE_NAME, id);
 }
 
+async function removeMsgTipsOfAccount(owner){
+    await dbManager.deleteDataWithCondition(IndexedDBManager.MSG_TIP_TABLE_NAME, data=>data.owner === owner);
+}
+
 async function cacheLoadCachedMsgTipsList(address) {
     const result = new Map();
 
@@ -211,8 +215,9 @@ class msgPayLoad {
         this.txt = txt;
         this.data = data;
     }
-    wrapToWebsocket(){
-        return  wrapWithType(MsgMediaTyp.MMTTxt, {txt: this.txt});
+
+    wrapToWebsocket() {
+        return wrapWithType(MsgMediaTyp.MMTTxt, {txt: this.txt});
     }
 }
 
@@ -261,6 +266,18 @@ async function cacheLoadCachedMsgListForAddr(address, owner) {
     return showAble;
 }
 
+async function removeMsgOfPeer(address, owner) {
+    await dbManager.deleteDataWithCondition(IndexedDBManager.MESSAGE_TABLE_NAME, data => {
+        return data.owner === owner && (data.from === address || data.to === address)
+    });
+}
+
+async function removeMsgOfAccount(owner){
+    await dbManager.deleteDataWithCondition(IndexedDBManager.MESSAGE_TABLE_NAME, data => {
+        return data.owner === owner
+    });
+}
+
 async function findProperMeta(address) {
     const contact = getCombinedContactByAddress(address);
     let name = ""
@@ -279,6 +296,6 @@ async function findProperMeta(address) {
     }
 
     name = contact.alias ?? (contact.meta ? contact.meta.name : "");
-    avatar = contact.meta ?  (contact.meta.avatarBase64 ?? null) :null;
+    avatar = contact.meta ? (contact.meta.avatarBase64 ?? null) : null;
     return {name, avatar};
 }

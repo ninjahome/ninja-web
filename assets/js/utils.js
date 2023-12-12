@@ -60,10 +60,6 @@ function  getDataFromLocalStorage(key){
     return storedValue ? JSON.parse(storedValue) : null;
 }
 
-function resetCache(){
-    localStorage.clear();
-    window.location.href = "/";
-}
 function saveDataToDisk(data, fileName){
     const blob = new Blob([data], { type: 'application/json' });
     const a = document.createElement('a');
